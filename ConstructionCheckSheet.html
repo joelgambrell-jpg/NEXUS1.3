@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QR Unlock – Google Sheet Logging</title>
+
+<style>
+  :root{
+    --bg:#cc0000;
+    --panel:#ffffff;
+    --shadow:#900000;
+    --overlay:rgba(0,0,0,0.75);
+    --accent:#4caf50;
+    --danger:#ff5252;
+    --warn:#ffd54f;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .layout{
+    width: calc(100vw - 40px);
+    height: calc(95vh);
+    margin: 20px auto;
+    display:flex;
+  }
+
+  .container{
+    position:relative;
+    background: var(--panel);
+    flex:1;
+    border-radius:12px;
+    box-shadow:0 0 15px var(--shadow);
+    overflow:hidden;
+  }
+
+  iframe{
+    width:100%;
+    height:100%;
+    border:none;
+  }
+
+  #lock-overlay{
+    position:absolute;
+    inset:0;
+    background: var(--overlay);
+    z-index:10;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:800;
+    gap:14px;
+    padding:20px;
+    text-align:center;
+  }
+
+  #qr-reader{
+    width:min(480px, 92vw);
+    aspect-ratio:1/1;
+    border:2px solid var(--accent);
+    border-radius:8px;
+    background:#111;
+    overflow:hidden;
+  }
+
+  #access-granted{
+    color:var(--accent);
+    font-size:1.3rem;
+    font-weight:900;
+    display:none;
+  }
+
+  .status{
+    width:min(520px, 92vw);
+    font-weight:800;
+    font-size:0.95rem;
+    line-height:1.25rem;
+    padding:10px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.18);
+    word-break:break-word;
+  }
+  .status .ok{ color: var(--accent); }
+  .status .warn{ color: var(--warn); }
+  .status .bad{ color: var(--danger); }
+
+  .manual-unlock{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:10px;
+    width:min(520px, 92vw);
+  }
+
+  .manual-unlock input{
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    font-weight:800;
+    outline:none;
+  }
+
+  .manual-unlock button{
+    padding:10px 14px;
+    border:none;
+    border-radius:10px;
+    background:var(--accent);
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .overlay-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .overlay-actions button{
+    padding:10px 14px;
+    border:none;
+    border-radius:10px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .danger{
+    background:var(--danger);
+    color:#200;
+  }
+
+  .secondary{
+    background: rgba(255,255,255,0.16);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.22);
+  }
+
+  footer{
+    text-align:center;
+    color:#fff;
+    font-size:0.9rem;
+    margin-bottom:12px;
+  }
+
+/* ===== NEXUS Shared Header ===== */
+.nx-header-wrap{
+  background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+}
+.nx-header{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+}
+.nx-header img{
+  height: 54px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+</style>
+</head>
+
+<body>
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+
+<div class="layout">
+  <div class="container">
+    <iframe
+      src="https://docs.google.com/spreadsheets/d/1uTBgh3jCQLv8iNrwnnxgl3MoTwzbcUYt2uTrtYdWCuw/edit?usp=sharing"
+      title="Google Sheet"
+    ></iframe>
+
+    <div id="lock-overlay">
+      <div>Scan QR code on badge to gain access</div>
+
+      <div id="qr-reader"></div>
+
+      <div id="access-granted">Access Granted</div>
+
+      <div class="status" id="status">
+        <span class="warn">Status:</span> Initializing…
+      </div>
+
+      <div class="manual-unlock">
+        <input id="manual-code" maxlength="7" inputmode="numeric" placeholder="Manual 7-digit badge code">
+        <button id="manual-unlock-btn" type="button">Unlock</button>
+      </div>
+
+      <div class="overlay-actions">
+        <button id="retry-camera" type="button" class="secondary">Retry Camera</button>
+        <button id="stop-camera" type="button" class="danger">Stop Camera</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script type="module">
+  const SHEET_WEBAPP_URL =
+    "https://script.google.com/macros/s/AKfycbwIFiuJXfvk-FlHqnF5IyBTqFBQ0LXh-mZUeP5kAGeMyn_RMILKgJqVlNlFjrnE4B7Tcg/exec";
+
+  let qrScanner = null;
+  let isStarting = false;
+  let lastScanAt = 0;
+
+  const manualInput = document.getElementById("manual-code");
+  const unlockMsg = document.getElementById("access-granted");
+  const statusEl = document.getElementById("status");
+
+  function setStatus(html){
+    statusEl.innerHTML = html;
+  }
+
+  function isValid(code){
+    return /^\d{7}$/.test(code);
+  }
+
+  function getDeviceId(){
+    const k="nexus_device_id_v1";
+    let id=localStorage.getItem(k);
+    if(!id){
+      id=crypto.randomUUID();
+      localStorage.setItem(k,id);
+    }
+    return id;
+  }
+
+  async function sendToSheet(payload){
+    if(!SHEET_WEBAPP_URL){
+      setStatus(`<span class="bad">Status:</span> Missing Web App URL.`);
+      return false;
+    }
+
+    if(!navigator.onLine){
+      setStatus(`<span class="warn">Status:</span> Offline. Scan captured but not logged.`);
+      return false;
+    }
+
+    try{
+      const res = await fetch(SHEET_WEBAPP_URL, {
+        method: "POST",
+        // text/plain avoids CORS preflight in many setups
+        headers: { "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      const text = await res.text().catch(() => "");
+
+      if(!res.ok){
+        console.error("WebApp POST failed:", res.status, text);
+        setStatus(`<span class="bad">Status:</span> Log failed (${res.status}).`);
+        return false;
+      }
+
+      setStatus(`<span class="ok">Status:</span> Logged ${payload.method.toUpperCase()} (${payload.code}).`);
+      return true;
+    }catch(err){
+      console.error("Network error posting to WebApp:", err);
+      setStatus(`<span class="bad">Status:</span> Network error logging scan.`);
+      return false;
+    }
+  }
+
+  async function unlock(){
+    unlockMsg.style.display="block";
+    setStatus(`<span class="ok">Status:</span> Access granted.`);
+    setTimeout(()=>document.getElementById("lock-overlay").style.display="none",1000);
+    await stopScanner();
+  }
+
+  async function handleCode(raw, method){
+    const code = String(raw ?? "").trim();
+
+    // simple debounce so one QR doesn't flood logs
+    const now = Date.now();
+    if(method === "qr" && now - lastScanAt < 900) return;
+    lastScanAt = now;
+
+    const valid = isValid(code);
+
+    setStatus(
+      `<span class="${valid ? "ok" : "warn"}">Status:</span> ` +
+      `${method === "qr" ? "QR" : "Manual"} read: ${code || "(empty)"}`
+    );
+
+    const logged = await sendToSheet({
+      code,
+      valid,
+      method,
+      deviceId: getDeviceId(),
+      scannedAtLocalISO: new Date().toISOString()
+    });
+
+    // Only unlock for valid codes; logging success does not block unlock
+    if(valid) unlock();
+    else if(logged) setStatus(`<span class="warn">Status:</span> Logged, but code not valid (needs 7 digits).`);
+  }
+
+  async function stopScanner(){
+    if(!qrScanner) return;
+    try{
+      const state = qrScanner.getState?.();
+      // If running or paused, stop it
+      if(state !== Html5QrcodeScannerState?.NOT_STARTED){
+        await qrScanner.stop();
+      } else {
+        await qrScanner.stop().catch(()=>{});
+      }
+    }catch(e){
+      // ignore stop errors
+    }finally{
+      try{ await qrScanner.clear?.(); }catch(e){}
+      qrScanner = null;
+    }
+  }
+
+  async function startScanner(){
+    if(isStarting) return;
+    isStarting = true;
+
+    try{
+      await stopScanner();
+
+      setStatus(`<span class="warn">Status:</span> Starting camera…`);
+
+      qrScanner = new Html5Qrcode("qr-reader");
+
+      await qrScanner.start(
+        { facingMode:"environment" },
+        { fps: 10, qrbox: 360, disableFlip: true },
+        (txt) => handleCode(txt, "qr"),
+        (err) => {
+          // frequent decode errors are normal; don't spam UI
+          // console.debug("QR decode:", err);
+        }
+      );
+
+      setStatus(`<span class="ok">Status:</span> Camera ready. Scan badge QR.`);
+    }catch(e){
+      console.error("Camera start error:", e);
+      const msg = (e && (e.message || String(e))) || "Unknown error";
+      setStatus(`<span class="bad">Status:</span> Camera failed. Check permissions. (${msg})`);
+      await stopScanner();
+    }finally{
+      isStarting = false;
+    }
+  }
+
+  document.getElementById("manual-unlock-btn").onclick = () => {
+    const code = manualInput.value.trim();
+    if(code) handleCode(code, "manual");
+    else setStatus(`<span class="warn">Status:</span> Enter a 7-digit badge code.`);
+  };
+
+  document.getElementById("retry-camera").onclick = () => startScanner();
+
+  document.getElementById("stop-camera").onclick = async () => {
+    await stopScanner();
+    setStatus(`<span class="warn">Status:</span> Camera stopped.`);
+  };
+
+  // Auto-start
+  startScanner();
+
+  // Helpful online/offline status updates
+  window.addEventListener("offline", () => setStatus(`<span class="warn">Status:</span> Offline.`));
+  window.addEventListener("online",  () => setStatus(`<span class="ok">Status:</span> Online.`));
+</script>
+
+<footer>
+© Intellectual Property of NEXUS Data Science. Created in joint venture with ACE Electric.
+</footer>
+
+</body>
+</html>
