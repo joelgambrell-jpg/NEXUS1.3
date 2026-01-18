@@ -1,25 +1,20 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Redirecting…</title>
-  <script>
-    (function() {
-      var target = "ConstructionCheckSheet.html";
-      var qs = window.location.search || "";
-      // If target already has a query string, append with &
-      if (target.indexOf("?") !== -1) {
-        if (qs.startsWith("?")) qs = "&" + qs.slice(1);
-      }
-      window.location.replace(target + qs);
-    })();
-  </script>
-  <noscript>
-    <meta http-equiv="refresh" content="0; url=ConstructionCheckSheet.html" />
-  </noscript>
+  <style>
+    body{ margin:0; font-family:Arial; background:#b60000; color:#fff; }
+  </style>
 </head>
 <body>
-  <p>Redirecting to <a href="ConstructionCheckSheet.html">ConstructionCheckSheet.html</a>…</p>
+<script>
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+  const u = new URL("ConstructionCheckSheet.html", location.href);
+  if (eq) u.searchParams.set("eq", eq);
+  location.replace(u.pathname.split("/").pop() + u.search);
+</script>
 </body>
 </html>
