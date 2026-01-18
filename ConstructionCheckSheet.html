@@ -1,313 +1,311 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Construction Check Sheet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Construction Check Sheet</title>
 
-<style>
-  :root{
-    --bg:#b60000;
-    --panel:rgba(255,255,255,0.20);
-    --panel2:rgba(0,0,0,0.30);
-    --line:rgba(255,255,255,0.20);
-    --btn-bg:#0a0f24;
-    --btn-txt:#3ecbff;
-    --accent:#00c2ff;
-    --ok:#00ff66;
-    --bad:#ff3b3b;
-  }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
-  body{
-    background-image:url("transformer.jpg");
-    background-repeat:no-repeat;
-    background-position:center center;
-    background-size:cover;
-    background-attachment:fixed;
-  }
+  <style>
+    :root{
+      --bg:#b60000;
+      --panel:rgba(255,255,255,0.20);
+      --panel2:rgba(0,0,0,0.35);
+      --line:rgba(255,255,255,0.22);
+      --btn-bg:#0a0f24;
+      --btn-txt:#3ecbff;
+      --accent:#00c2ff;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
+    body{
+      background-image:url("transformer.jpg");
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-size:cover;
+      background-attachment:fixed;
+    }
 
-  /* Header */
-  .nx-header-wrap{
-    background: rgba(0,0,0,0.35);
-    border-bottom: 1px solid rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px);
-  }
-  .nx-header{
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap:14px;
-    flex-wrap:wrap;
-  }
-  .nx-header img{
-    height: 54px;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-  }
-  .nx-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-  .btn{
-    padding:12px 16px;
-    font-size:14px;
-    font-weight:900;
-    border-radius:999px;
-    color:var(--btn-txt);
-    background:var(--btn-bg);
-    border:2px solid var(--accent);
-    cursor:pointer;
-    text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    user-select:none;
-  }
-  .btn.secondary{
-    background:rgba(0,0,0,0.20);
-    color:#fff;
-    border:2px solid rgba(255,255,255,0.35);
-  }
+    /* ===== NEXUS Shared Header ===== */
+    .nx-header-wrap{
+      background: rgba(0,0,0,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(8px);
+    }
+    .nx-header{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+    }
+    .nx-header img{
+      height: 54px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
 
-  /* Page card */
-  .wrap{ min-height:calc(100vh - 84px); display:flex; align-items:flex-start; justify-content:center; padding:26px; }
-  .card{
-    width:100%;
-    max-width:1100px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:18px;
-    backdrop-filter:blur(10px);
-  }
+    .wrap{
+      max-width:1100px;
+      margin: 22px auto 60px;
+      padding: 0 18px;
+    }
 
-  .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:14px;
-    flex-wrap:wrap;
-    margin-bottom:12px;
-  }
-  h1{ margin:0; font-size:28px; font-weight:900; }
-  .sub{ margin-top:6px; opacity:0.9; font-weight:800; }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin: 10px 0 14px;
+    }
 
-  .chip{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    font-weight:900;
-    font-size:13px;
-    border:1px solid rgba(255,255,255,0.25);
-    background:rgba(0,0,0,0.18);
-    margin-top:6px;
-  }
+    .backlink{
+      color:#fff;
+      text-decoration:none;
+      font-weight:900;
+      opacity:0.95;
+    }
 
-  /* Meta fields */
-  .meta{
-    margin-top:10px;
-    background:var(--panel2);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:14px;
-  }
-  .meta-grid{
-    display:grid;
-    grid-template-columns:repeat(4, minmax(0,1fr));
-    gap:12px;
-  }
-  @media (max-width:900px){
-    .meta-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-  }
-  label{ display:block; font-weight:900; font-size:12px; letter-spacing:.06em; text-transform:uppercase; opacity:.95; margin-bottom:6px; }
-  input[type="text"], input[type="datetime-local"]{
-    width:100%;
-    padding:10px 10px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,0.18);
-    outline:none;
-    font-size:14px;
-    background:rgba(255,255,255,0.92);
-    color:#111;
-    font-weight:800;
-  }
-  input[readonly]{ opacity:.95; }
+    .title{
+      text-align:center;
+      margin: 8px 0 10px;
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      text-shadow: 0 4px 18px rgba(0,0,0,.35);
+    }
 
-  /* Table */
-  .section-title{
-    margin:16px 0 10px;
-    font-size:16px;
-    font-weight:900;
-    letter-spacing:.02em;
-  }
-  .table-wrap{
-    background:var(--panel2);
-    border:1px solid var(--line);
-    border-radius:16px;
-    overflow:hidden;
-  }
-  table{
-    width:100%;
-    border-collapse:collapse;
-  }
-  th, td{
-    border-bottom:1px solid rgba(255,255,255,0.14);
-    padding:10px 10px;
-    vertical-align:top;
-  }
-  th{
-    text-align:left;
-    font-size:12px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    opacity:.95;
-    background:rgba(0,0,0,0.22);
-  }
-  td input[type="text"]{
-    width:100%;
-    padding:9px 10px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,0.18);
-    background:rgba(255,255,255,0.92);
-    color:#111;
-    font-weight:800;
-    font-size:14px;
-  }
-  .status{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    align-items:center;
-  }
-  .pill{
-    border-radius:999px;
-    padding:8px 12px;
-    font-weight:900;
-    border:2px solid rgba(255,255,255,0.25);
-    background:rgba(0,0,0,0.18);
-    cursor:pointer;
-    color:#fff;
-    user-select:none;
-  }
-  .pill.ok.active{
-    border-color:var(--ok);
-    box-shadow:0 0 12px rgba(0,255,102,.60);
-  }
-  .pill.ng.active{
-    border-color:var(--bad);
-    box-shadow:0 0 12px rgba(255,59,59,.55);
-  }
+    .sub{
+      text-align:center;
+      font-size: 20px;
+      font-weight: 900;
+      margin: 0 0 18px;
+      opacity: 0.98;
+    }
 
-  .row-actions{
-    display:flex;
-    gap:8px;
-    justify-content:flex-end;
-  }
-  .mini{
-    padding:8px 12px;
-    font-size:12px;
-    border-radius:999px;
-  }
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
 
-  .footer-actions{
-    margin-top:14px;
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:center;
-  }
-  .note{
-    opacity:.9;
-    font-weight:800;
-    font-size:13px;
-  }
-</style>
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin: 8px 0 14px;
+    }
+
+    .btn{
+      padding:12px 16px;
+      font-size:15px;
+      font-weight:900;
+      border-radius:999px;
+      color:var(--btn-txt);
+      background:var(--btn-bg);
+      border:2px solid var(--accent);
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+    }
+    .btn.secondary{
+      background: rgba(0,0,0,0.22);
+      color:#fff;
+      border:2px solid rgba(255,255,255,0.35);
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 10px 0 12px;
+    }
+    @media (max-width:900px){
+      .meta-grid{ grid-template-columns:1fr; }
+    }
+
+    .field{
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      text-align:left;
+    }
+    .label{
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .95;
+      margin-bottom: 8px;
+    }
+    input[type="text"], select{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      outline:none;
+      font-size: 16px;
+      font-weight: 900;
+      background: rgba(255,255,255,0.92);
+      color:#111;
+    }
+    .readonly{
+      background: rgba(255,255,255,0.85) !important;
+      color:#111 !important;
+    }
+
+    .status{
+      margin: 8px 0 10px;
+      font-weight: 900;
+      opacity: .95;
+    }
+
+    /* ===== Table ===== */
+    .table-wrap{
+      overflow-x:auto;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.22);
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+    th, td{
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      vertical-align: top;
+    }
+    th{
+      text-align:left;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .95;
+      background: rgba(0,0,0,0.22);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tr.section-row td{
+      background: rgba(255,255,255,0.10);
+      font-weight: 900;
+      letter-spacing: .02em;
+    }
+
+    .cell-input{
+      width: 100%;
+      min-width: 120px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      outline:none;
+      font-weight: 900;
+      background: rgba(255,255,255,0.92);
+      color:#111;
+    }
+    .cell-notes{ min-width: 260px; }
+
+    .footer-note{
+      margin-top: 14px;
+      opacity: .9;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* Print styling */
+    @media print{
+      body{ background:#fff !important; color:#000 !important; }
+      .nx-header-wrap, .actions, .footer-note, .topbar{ display:none !important; }
+      .card{ background:#fff !important; border:none !important; backdrop-filter:none !important; }
+      th{ color:#000 !important; background:#eee !important; }
+      .table-wrap{ border:1px solid #ccc !important; background:#fff !important; }
+      .cell-input{ border:1px solid #999 !important; background:#fff !important; color:#000 !important; }
+    }
+  </style>
 </head>
 
 <body>
   <div class="nx-header-wrap">
     <div class="nx-header">
       <img src="nexus.png" alt="NEXUS" />
-      <div class="nx-actions">
-        <a class="btn secondary" id="backBtn" href="index.html">← Back</a>
-        <button class="btn secondary" id="resetBtn" type="button">Reset Sheet</button>
-        <button class="btn" id="saveBtn" type="button">Save</button>
-      </div>
     </div>
   </div>
 
   <div class="wrap">
+    <div class="topbar">
+      <a class="backlink" id="backToEquipment" href="equipment.html">← Back to Equipment</a>
+      <div style="font-weight:900;opacity:.9" id="nowStamp"></div>
+    </div>
+
+    <div class="title">Construction Check Sheet</div>
+    <div class="sub" id="eqSub">Equipment: (missing eq)</div>
+
     <div class="card">
-      <div class="top">
-        <div>
-          <h1>Construction Check Sheet</h1>
-          <div class="sub">Reference &amp; Check Sheets (not a completion step)</div>
-          <div class="chip" id="statusChip">Ready</div>
+      <div class="actions">
+        <button class="btn secondary" id="btnSave" type="button">Save</button>
+        <button class="btn secondary" id="btnExport" type="button">Export (Print/PDF)</button>
+      </div>
+
+      <div class="meta-grid">
+        <div class="field">
+          <div class="label">Building</div>
+          <input id="building" type="text" placeholder="Building #" />
         </div>
-        <div style="min-width:260px;">
-          <div class="chip" id="eqChip">Equipment: —</div>
+
+        <div class="field">
+          <div class="label">Phase</div>
+          <select id="phase">
+            <option value="">Select…</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="label">Pod</div>
+          <select id="pod">
+            <option value="">Select…</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column:1 / -1;">
+          <div class="label">Foreman</div>
+          <input id="foreman" type="text" placeholder="Foreman name" />
         </div>
       </div>
 
-      <!-- Meta fields -->
-      <div class="meta">
-        <div class="meta-grid">
-          <div>
-            <label>Building</label>
-            <input id="metaBuilding" type="text" placeholder="Bldg #" />
-          </div>
-          <div>
-            <label>Phase</label>
-            <input id="metaPhase" type="text" placeholder="1–12" />
-          </div>
-          <div>
-            <label>Pod</label>
-            <input id="metaPod" type="text" placeholder="1–12" />
-          </div>
-          <div>
-            <label>Date / Time</label>
-            <input id="metaDt" type="datetime-local" />
-          </div>
-
-          <div style="grid-column:1/-1;">
-            <label>User (Firebase email later)</label>
-            <input id="metaUser" type="text" placeholder="(auto when Firebase auth is connected)" readonly />
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">Checklist (editable)</div>
+      <div class="status" id="saveStatus">Not saved</div>
 
       <div class="table-wrap">
-        <table id="sheetTable">
+        <table id="sheetTable" aria-label="Construction Check Sheet">
           <thead>
             <tr>
-              <th style="width:34%;">Item</th>
-              <th style="width:22%;">Location / Tag</th>
-              <th style="width:22%;">Notes</th>
-              <th style="width:16%;">Status</th>
-              <th style="width:6%;">&nbsp;</th>
+              <th style="width:44%;">Item</th>
+              <th style="width:16%;">Date</th>
+              <th style="width:12%;">Initials</th>
+              <th style="width:28%;">Notes</th>
             </tr>
           </thead>
           <tbody id="sheetBody">
-            <!-- rows injected -->
+            <!-- rows inserted by JS -->
           </tbody>
         </table>
       </div>
 
-      <div class="footer-actions">
-        <div class="note">Saved per equipment. Firebase hooks are built-in but optional until enabled.</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn secondary" id="addRowBtn" type="button">+ Add Row</button>
-          <button class="btn secondary" id="exportBtn" type="button">Export to Email (Firebase)</button>
-        </div>
+      <div class="footer-note">
+        Save stores this sheet per equipment. Export uses your device print-to-PDF. Firebase hooks are included as optional stubs (no break if Firebase isn’t configured yet).
       </div>
-
     </div>
   </div>
 
@@ -316,266 +314,155 @@
   const qs = new URLSearchParams(location.search);
   const eq = (qs.get("eq") || "").trim();
 
-  const backBtn = document.getElementById("backBtn");
-  backBtn.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
-  backBtn.textContent = eq ? "← Back to Equipment" : "← Back to Home";
+  // Header helpers
+  document.getElementById("nowStamp").textContent = new Date().toLocaleString();
+  document.getElementById("eqSub").textContent = eq ? `Equipment: ${eq}` : "Equipment: (missing eq)";
 
-  const statusChip = document.getElementById("statusChip");
-  const eqChip = document.getElementById("eqChip");
-  eqChip.textContent = eq ? `Equipment: ${eq}` : "Equipment: —";
+  // Back link always returns to equipment landing page (with eq)
+  const back = document.getElementById("backToEquipment");
+  back.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
 
-  // Storage keys
-  function sheetKey(){ return `nexus_${eq || "NO_EQ"}_construction_sheet_v1`; }
-  function metaKey(){ return `nexus_${eq || "NO_EQ"}_meta`; }
+  // Storage key (local now; Firebase later)
+  const KEY = `nexus_${eq || "NO_EQ"}_construction_check_sheet_v1`;
 
-  // Default rows (editable; user can add/delete)
-  const DEFAULT_ROWS = [
-    { item:"Verify equipment ID matches label and drawings", loc:"", notes:"", status:"" },
-    { item:"Verify proper clearances and access", loc:"", notes:"", status:"" },
-    { item:"Verify terminations identified and dressed", loc:"", notes:"", status:"" },
-    { item:"Verify grounding/bonding installed per spec", loc:"", notes:"", status:"" },
-    { item:"Verify workmanship (no damage, no debris)", loc:"", notes:"", status:"" }
+  // Build rows (from your Excel structure, simplified)
+  // Section header rows use: {type:"section", text:"..."}
+  // Normal rows use: {type:"row", text:"..."}
+  const rows = [
+    {type:"section", text:"LV Transformer 001"},
+    {type:"row", text:"RIF Completed"},
+    {type:"row", text:"Labels installed by QCX"},
+    {type:"row", text:"Phenolic"},
+    {type:"row", text:"Arc Flash"},
+    {type:"row", text:"Torque (all lugs verified)"},
+    {type:"row", text:"Megohmmeter test complete (if applicable)"},
+    {type:"row", text:"Verification photo captured"},
+    {type:"row", text:"Clean / no debris / covers installed"},
+    {type:"row", text:"Final visual inspection complete"},
   ];
 
-  // Meta fields
-  const metaBuilding = document.getElementById("metaBuilding");
-  const metaPhase = document.getElementById("metaPhase");
-  const metaPod = document.getElementById("metaPod");
-  const metaDt = document.getElementById("metaDt");
-  const metaUser = document.getElementById("metaUser");
+  const body = document.getElementById("sheetBody");
 
-  // Pull stored equipment meta from index.html (if present)
-  function loadMetaFromEquipment(){
-    try{
-      const raw = localStorage.getItem(metaKey());
-      if (!raw) return;
-      const m = JSON.parse(raw);
-      if (m.building && !metaBuilding.value) metaBuilding.value = m.building;
-      if (m.phase && !metaPhase.value) metaPhase.value = m.phase;
-      if (m.pod && !metaPod.value) metaPod.value = m.pod;
-    }catch(e){}
+  function makeInput(className){
+    const i = document.createElement("input");
+    i.type = "text";
+    i.className = "cell-input " + (className || "");
+    return i;
   }
 
-  // Date/time default
-  function initDate(){
-    if (metaDt.value) return;
-    const d = new Date();
-    const pad = n => String(n).padStart(2,"0");
-    const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    metaDt.value = local;
-  }
-
-  // User placeholder (Firebase later)
-  metaUser.value = ""; // will be set from Firebase auth when connected
-
-  const tbody = document.getElementById("sheetBody");
-
-  function setChip(t){ statusChip.textContent = t; }
-
-  function renderRow(row, idx){
-    const tr = document.createElement("tr");
-
-    const tdItem = document.createElement("td");
-    tdItem.innerHTML = `<input type="text" value="${escapeHtml(row.item||"")}" data-k="item" data-i="${idx}">`;
-
-    const tdLoc = document.createElement("td");
-    tdLoc.innerHTML = `<input type="text" value="${escapeHtml(row.loc||"")}" data-k="loc" data-i="${idx}">`;
-
-    const tdNotes = document.createElement("td");
-    tdNotes.innerHTML = `<input type="text" value="${escapeHtml(row.notes||"")}" data-k="notes" data-i="${idx}">`;
-
-    const tdStatus = document.createElement("td");
-    const status = document.createElement("div");
-    status.className = "status";
-    status.innerHTML = `
-      <span class="pill ok ${row.status==="OK" ? "active":""}" data-s="OK" data-i="${idx}">GO</span>
-      <span class="pill ng ${row.status==="NG" ? "active":""}" data-s="NG" data-i="${idx}">NO GO</span>
-    `;
-    tdStatus.appendChild(status);
-
-    const tdAct = document.createElement("td");
-    tdAct.innerHTML = `
-      <div class="row-actions">
-        <button class="btn secondary mini" type="button" data-del="${idx}">Del</button>
-      </div>
-    `;
-
-    tr.appendChild(tdItem);
-    tr.appendChild(tdLoc);
-    tr.appendChild(tdNotes);
-    tr.appendChild(tdStatus);
-    tr.appendChild(tdAct);
-
-    return tr;
-  }
-
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  let state = { rows: [], meta:{} };
-
-  function load(){
-    loadMetaFromEquipment();
-    initDate();
-
-    try{
-      const raw = localStorage.getItem(sheetKey());
-      if (raw){
-        state = JSON.parse(raw);
-      } else {
-        state = {
-          rows: DEFAULT_ROWS.map(r => ({...r})),
-          meta: {}
-        };
+  function render(){
+    body.innerHTML = "";
+    rows.forEach((r, idx) => {
+      if (r.type === "section"){
+        const tr = document.createElement("tr");
+        tr.className = "section-row";
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = r.text;
+        tr.appendChild(td);
+        body.appendChild(tr);
+        return;
       }
-    }catch(e){
-      state = { rows: DEFAULT_ROWS.map(r => ({...r})), meta:{} };
-    }
 
-    // Apply saved meta if present
-    if (state.meta){
-      if (state.meta.building) metaBuilding.value = state.meta.building;
-      if (state.meta.phase) metaPhase.value = state.meta.phase;
-      if (state.meta.pod) metaPod.value = state.meta.pod;
-      if (state.meta.dt) metaDt.value = state.meta.dt;
-      if (state.meta.user) metaUser.value = state.meta.user;
-    }
+      const tr = document.createElement("tr");
 
-    redraw();
-    setChip("Loaded");
-  }
+      const tdItem = document.createElement("td");
+      tdItem.textContent = r.text;
+      tdItem.style.fontWeight = "900";
+      tr.appendChild(tdItem);
 
-  function redraw(){
-    tbody.innerHTML = "";
-    state.rows.forEach((r,i) => tbody.appendChild(renderRow(r,i)));
+      const tdDate = document.createElement("td");
+      const date = makeInput("");
+      date.placeholder = "MM/DD/YYYY";
+      date.dataset.k = `r${idx}_date`;
+      tdDate.appendChild(date);
+      tr.appendChild(tdDate);
+
+      const tdInit = document.createElement("td");
+      const init = makeInput("");
+      init.placeholder = "AB";
+      init.dataset.k = `r${idx}_init`;
+      tdInit.appendChild(init);
+      tr.appendChild(tdInit);
+
+      const tdNotes = document.createElement("td");
+      const notes = makeInput("cell-notes");
+      notes.placeholder = "Notes";
+      notes.dataset.k = `r${idx}_notes`;
+      tdNotes.appendChild(notes);
+      tr.appendChild(tdNotes);
+
+      body.appendChild(tr);
+    });
   }
 
   function collect(){
-    state.meta = {
-      building: metaBuilding.value.trim(),
-      phase: metaPhase.value.trim(),
-      pod: metaPod.value.trim(),
-      dt: metaDt.value,
-      user: metaUser.value.trim()
+    const out = {
+      eq,
+      building: document.getElementById("building").value || "",
+      phase: document.getElementById("phase").value || "",
+      pod: document.getElementById("pod").value || "",
+      foreman: document.getElementById("foreman").value || "",
+      fields: {},
+      updatedAt: new Date().toISOString()
     };
+    document.querySelectorAll("[data-k]").forEach(el => {
+      out.fields[el.dataset.k] = el.value || "";
+    });
+    return out;
   }
 
-  function saveLocal(){
-    collect();
-    localStorage.setItem(sheetKey(), JSON.stringify(state));
+  function apply(data){
+    if (!data) return;
+    document.getElementById("building").value = data.building || "";
+    document.getElementById("phase").value = data.phase || "";
+    document.getElementById("pod").value = data.pod || "";
+    document.getElementById("foreman").value = data.foreman || "";
+    const fields = data.fields || {};
+    document.querySelectorAll("[data-k]").forEach(el => {
+      el.value = fields[el.dataset.k] || "";
+    });
   }
 
-  // Firebase hook points (optional)
-  async function saveFirebase(){
-    // Plug-and-play later:
-    // Expect a global adapter: window.NEXUS_DB.saveConstructionSheet(eq, state)
-    if (window.NEXUS_DB && typeof window.NEXUS_DB.saveConstructionSheet === "function"){
-      await window.NEXUS_DB.saveConstructionSheet(eq, state);
-      return true;
-    }
-    return false;
+  function setStatus(txt){
+    document.getElementById("saveStatus").textContent = txt;
   }
 
-  async function saveAll(){
-    if (!eq){
-      setChip("Missing eq in URL");
-      return;
-    }
+  async function save(){
+    const data = collect();
+    localStorage.setItem(KEY, JSON.stringify(data));
+    setStatus("Saved");
+
+    // OPTIONAL Firebase hook (safe if not configured yet)
+    // If your Firebase layer exposes: window.nexusFirebase.saveSheet(eq, "construction", data)
     try{
-      saveLocal();
-      const didFb = await saveFirebase();
-      setChip(didFb ? "Saved (Firebase + Local)" : "Saved (Local)");
-    }catch(e){
-      setChip("Save failed");
-      console.error(e);
-    }
-  }
-
-  // Events
-  document.getElementById("saveBtn").addEventListener("click", saveAll);
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    if (!confirm("Reset this sheet for this equipment?")) return;
-    state = { rows: DEFAULT_ROWS.map(r => ({...r})), meta:{} };
-    saveLocal();
-    redraw();
-    setChip("Reset");
-  });
-
-  document.getElementById("addRowBtn").addEventListener("click", () => {
-    state.rows.push({ item:"", loc:"", notes:"", status:"" });
-    saveLocal();
-    redraw();
-    setChip("Row added");
-  });
-
-  tbody.addEventListener("click", (e) => {
-    const t = e.target;
-
-    // Status pills
-    if (t && t.dataset && t.dataset.s){
-      const idx = Number(t.dataset.i);
-      const s = t.dataset.s; // OK / NG
-      const cur = state.rows[idx].status;
-      state.rows[idx].status = (cur === s) ? "" : s; // toggle
-      saveLocal();
-      redraw();
-      setChip("Updated");
-      return;
-    }
-
-    // Delete row
-    if (t && t.dataset && t.dataset.del !== undefined){
-      const idx = Number(t.dataset.del);
-      state.rows.splice(idx,1);
-      saveLocal();
-      redraw();
-      setChip("Row deleted");
-    }
-  });
-
-  tbody.addEventListener("input", (e) => {
-    const t = e.target;
-    if (!t || !t.dataset) return;
-    const k = t.dataset.k;
-    const idx = Number(t.dataset.i);
-    if (!k || Number.isNaN(idx)) return;
-    state.rows[idx][k] = t.value;
-    // light auto-save
-    saveLocal();
-    setChip("Editing…");
-  });
-
-  // Export to Email (Firebase queue hook)
-  document.getElementById("exportBtn").addEventListener("click", async () => {
-    if (!eq){
-      setChip("Missing eq in URL");
-      return;
-    }
-    try{
-      saveLocal();
-      // Expect a global adapter: window.NEXUS_DB.queueExportEmail({eq, type:"construction", payload:state})
-      if (window.NEXUS_DB && typeof window.NEXUS_DB.queueExportEmail === "function"){
-        await window.NEXUS_DB.queueExportEmail({ eq, type:"construction", payload: state });
-        setChip("Export queued (Firebase)");
-      }else{
-        setChip("Export requires Firebase (hook ready)");
+      if (window.nexusFirebase && typeof window.nexusFirebase.saveSheet === "function"){
+        await window.nexusFirebase.saveSheet(eq, "construction", data);
+        setStatus("Saved (Firebase)");
       }
     }catch(e){
-      setChip("Export failed");
-      console.error(e);
+      // Keep local save as success; show firebase issue
+      setStatus("Saved (local) — Firebase not connected");
     }
-  });
+  }
 
-  // Load on start
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    try{ apply(JSON.parse(raw)); setStatus("Loaded"); }catch(e){}
+  }
+
+  document.getElementById("btnSave").addEventListener("click", save);
+  document.getElementById("btnExport").addEventListener("click", () => window.print());
+
+  render();
   load();
 
+  // Mark dirty on edits
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t && (t.matches("input") || t.matches("select"))) setStatus("Not saved");
+  });
 })();
 </script>
 </body>
