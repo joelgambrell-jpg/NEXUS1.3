@@ -1,86 +1,582 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Construction Check Sheet</title>
-  <style>
-    :root{ --bg:#b60000; --panel:rgba(255,255,255,0.22); --line:rgba(255,255,255,0.20); }
-    html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
-    body{
-      background-image:url("transformer.jpg");
-      background-repeat:no-repeat;
-      background-position:center center;
-      background-size:cover;
-      background-attachment:fixed;
-    }
-    .nx-header-wrap{ background:rgba(0,0,0,0.35); border-bottom:1px solid rgba(255,255,255,0.18); backdrop-filter:blur(8px); }
-    .nx-header{ max-width:1100px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; }
-    .nx-header img{ height:54px; width:auto; object-fit:contain; }
-    .wrap{ min-height:calc(100vh - 83px); display:flex; align-items:center; justify-content:center; padding:34px; }
-    .card{
-      width:100%; max-width:900px;
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:22px;
-      backdrop-filter:blur(10px);
-      text-align:center;
-    }
-    .btn{
-      padding:12px 16px;
-      font-weight:900;
-      border-radius:999px;
-      color:#3ecbff;
-      background:#0a0f24;
-      border:2px solid #00c2ff;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      margin:10px 6px 0;
-    }
-    .btn.secondary{ background:rgba(0,0,0,0.20); color:#fff; border:2px solid rgba(255,255,255,0.35); }
-    .hint{ margin-top:12px; opacity:0.9; }
-    code{ background:rgba(0,0,0,0.35); padding:2px 6px; border-radius:6px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Construction Check Sheet</title>
+
+<style>
+  :root{
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --panel2:rgba(0,0,0,0.30);
+    --line:rgba(255,255,255,0.20);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --accent:#00c2ff;
+    --ok:#00ff66;
+    --bad:#ff3b3b;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
+  body{
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  /* Header */
+  .nx-header-wrap{
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+  }
+  .nx-header{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .nx-header img{
+    height: 54px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .nx-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{
+    padding:12px 16px;
+    font-size:14px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+  }
+  .btn.secondary{
+    background:rgba(0,0,0,0.20);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+
+  /* Page card */
+  .wrap{ min-height:calc(100vh - 84px); display:flex; align-items:flex-start; justify-content:center; padding:26px; }
+  .card{
+    width:100%;
+    max-width:1100px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px;
+    backdrop-filter:blur(10px);
+  }
+
+  .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  h1{ margin:0; font-size:28px; font-weight:900; }
+  .sub{ margin-top:6px; opacity:0.9; font-weight:800; }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:13px;
+    border:1px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.18);
+    margin-top:6px;
+  }
+
+  /* Meta fields */
+  .meta{
+    margin-top:10px;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px;
+  }
+  .meta-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width:900px){
+    .meta-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  label{ display:block; font-weight:900; font-size:12px; letter-spacing:.06em; text-transform:uppercase; opacity:.95; margin-bottom:6px; }
+  input[type="text"], input[type="datetime-local"]{
+    width:100%;
+    padding:10px 10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.18);
+    outline:none;
+    font-size:14px;
+    background:rgba(255,255,255,0.92);
+    color:#111;
+    font-weight:800;
+  }
+  input[readonly]{ opacity:.95; }
+
+  /* Table */
+  .section-title{
+    margin:16px 0 10px;
+    font-size:16px;
+    font-weight:900;
+    letter-spacing:.02em;
+  }
+  .table-wrap{
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  th, td{
+    border-bottom:1px solid rgba(255,255,255,0.14);
+    padding:10px 10px;
+    vertical-align:top;
+  }
+  th{
+    text-align:left;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    opacity:.95;
+    background:rgba(0,0,0,0.22);
+  }
+  td input[type="text"]{
+    width:100%;
+    padding:9px 10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.92);
+    color:#111;
+    font-weight:800;
+    font-size:14px;
+  }
+  .status{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .pill{
+    border-radius:999px;
+    padding:8px 12px;
+    font-weight:900;
+    border:2px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.18);
+    cursor:pointer;
+    color:#fff;
+    user-select:none;
+  }
+  .pill.ok.active{
+    border-color:var(--ok);
+    box-shadow:0 0 12px rgba(0,255,102,.60);
+  }
+  .pill.ng.active{
+    border-color:var(--bad);
+    box-shadow:0 0 12px rgba(255,59,59,.55);
+  }
+
+  .row-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  .mini{
+    padding:8px 12px;
+    font-size:12px;
+    border-radius:999px;
+  }
+
+  .footer-actions{
+    margin-top:14px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .note{
+    opacity:.9;
+    font-weight:800;
+    font-size:13px;
+  }
+</style>
 </head>
+
 <body>
-  <div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
-
-  <div class="wrap">
-    <div class="card">
-      <h2 style="margin:0 0 8px;">Construction Check Sheet</h2>
-      <div class="hint">Redirecting to the correct page…</div>
-
-      <div style="margin-top:14px;">
+  <div class="nx-header-wrap">
+    <div class="nx-header">
+      <img src="nexus.png" alt="NEXUS" />
+      <div class="nx-actions">
         <a class="btn secondary" id="backBtn" href="index.html">← Back</a>
-        <a class="btn" id="goBtn" href="#">Open Now</a>
-      </div>
-
-      <div class="hint">
-        If redirect is blocked, click <span style="font-weight:900;">Open Now</span>.<br/>
-        (Equipment context preserved via <code>?eq=</code>)
+        <button class="btn secondary" id="resetBtn" type="button">Reset Sheet</button>
+        <button class="btn" id="saveBtn" type="button">Save</button>
       </div>
     </div>
   </div>
 
-  <script>
-    (function(){
-      const qs = new URLSearchParams(location.search);
-      const eq = (qs.get("eq") || "").trim();
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h1>Construction Check Sheet</h1>
+          <div class="sub">Reference &amp; Check Sheets (not a completion step)</div>
+          <div class="chip" id="statusChip">Ready</div>
+        </div>
+        <div style="min-width:260px;">
+          <div class="chip" id="eqChip">Equipment: —</div>
+        </div>
+      </div>
 
-      const backBtn = document.getElementById("backBtn");
-      backBtn.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
-      backBtn.textContent = eq ? "← Back to Equipment" : "← Back to Home";
+      <!-- Meta fields -->
+      <div class="meta">
+        <div class="meta-grid">
+          <div>
+            <label>Building</label>
+            <input id="metaBuilding" type="text" placeholder="Bldg #" />
+          </div>
+          <div>
+            <label>Phase</label>
+            <input id="metaPhase" type="text" placeholder="1–12" />
+          </div>
+          <div>
+            <label>Pod</label>
+            <input id="metaPod" type="text" placeholder="1–12" />
+          </div>
+          <div>
+            <label>Date / Time</label>
+            <input id="metaDt" type="datetime-local" />
+          </div>
 
-      const target = `task.html?id=construction${eq ? `&eq=${encodeURIComponent(eq)}` : ""}`;
-      const goBtn = document.getElementById("goBtn");
-      goBtn.href = target;
+          <div style="grid-column:1/-1;">
+            <label>User (Firebase email later)</label>
+            <input id="metaUser" type="text" placeholder="(auto when Firebase auth is connected)" readonly />
+          </div>
+        </div>
+      </div>
 
-      setTimeout(() => { location.replace(target); }, 400);
-    })();
-  </script>
+      <div class="section-title">Checklist (editable)</div>
+
+      <div class="table-wrap">
+        <table id="sheetTable">
+          <thead>
+            <tr>
+              <th style="width:34%;">Item</th>
+              <th style="width:22%;">Location / Tag</th>
+              <th style="width:22%;">Notes</th>
+              <th style="width:16%;">Status</th>
+              <th style="width:6%;">&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody id="sheetBody">
+            <!-- rows injected -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer-actions">
+        <div class="note">Saved per equipment. Firebase hooks are built-in but optional until enabled.</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn secondary" id="addRowBtn" type="button">+ Add Row</button>
+          <button class="btn secondary" id="exportBtn" type="button">Export to Email (Firebase)</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+
+  const backBtn = document.getElementById("backBtn");
+  backBtn.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
+  backBtn.textContent = eq ? "← Back to Equipment" : "← Back to Home";
+
+  const statusChip = document.getElementById("statusChip");
+  const eqChip = document.getElementById("eqChip");
+  eqChip.textContent = eq ? `Equipment: ${eq}` : "Equipment: —";
+
+  // Storage keys
+  function sheetKey(){ return `nexus_${eq || "NO_EQ"}_construction_sheet_v1`; }
+  function metaKey(){ return `nexus_${eq || "NO_EQ"}_meta`; }
+
+  // Default rows (editable; user can add/delete)
+  const DEFAULT_ROWS = [
+    { item:"Verify equipment ID matches label and drawings", loc:"", notes:"", status:"" },
+    { item:"Verify proper clearances and access", loc:"", notes:"", status:"" },
+    { item:"Verify terminations identified and dressed", loc:"", notes:"", status:"" },
+    { item:"Verify grounding/bonding installed per spec", loc:"", notes:"", status:"" },
+    { item:"Verify workmanship (no damage, no debris)", loc:"", notes:"", status:"" }
+  ];
+
+  // Meta fields
+  const metaBuilding = document.getElementById("metaBuilding");
+  const metaPhase = document.getElementById("metaPhase");
+  const metaPod = document.getElementById("metaPod");
+  const metaDt = document.getElementById("metaDt");
+  const metaUser = document.getElementById("metaUser");
+
+  // Pull stored equipment meta from index.html (if present)
+  function loadMetaFromEquipment(){
+    try{
+      const raw = localStorage.getItem(metaKey());
+      if (!raw) return;
+      const m = JSON.parse(raw);
+      if (m.building && !metaBuilding.value) metaBuilding.value = m.building;
+      if (m.phase && !metaPhase.value) metaPhase.value = m.phase;
+      if (m.pod && !metaPod.value) metaPod.value = m.pod;
+    }catch(e){}
+  }
+
+  // Date/time default
+  function initDate(){
+    if (metaDt.value) return;
+    const d = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    metaDt.value = local;
+  }
+
+  // User placeholder (Firebase later)
+  metaUser.value = ""; // will be set from Firebase auth when connected
+
+  const tbody = document.getElementById("sheetBody");
+
+  function setChip(t){ statusChip.textContent = t; }
+
+  function renderRow(row, idx){
+    const tr = document.createElement("tr");
+
+    const tdItem = document.createElement("td");
+    tdItem.innerHTML = `<input type="text" value="${escapeHtml(row.item||"")}" data-k="item" data-i="${idx}">`;
+
+    const tdLoc = document.createElement("td");
+    tdLoc.innerHTML = `<input type="text" value="${escapeHtml(row.loc||"")}" data-k="loc" data-i="${idx}">`;
+
+    const tdNotes = document.createElement("td");
+    tdNotes.innerHTML = `<input type="text" value="${escapeHtml(row.notes||"")}" data-k="notes" data-i="${idx}">`;
+
+    const tdStatus = document.createElement("td");
+    const status = document.createElement("div");
+    status.className = "status";
+    status.innerHTML = `
+      <span class="pill ok ${row.status==="OK" ? "active":""}" data-s="OK" data-i="${idx}">GO</span>
+      <span class="pill ng ${row.status==="NG" ? "active":""}" data-s="NG" data-i="${idx}">NO GO</span>
+    `;
+    tdStatus.appendChild(status);
+
+    const tdAct = document.createElement("td");
+    tdAct.innerHTML = `
+      <div class="row-actions">
+        <button class="btn secondary mini" type="button" data-del="${idx}">Del</button>
+      </div>
+    `;
+
+    tr.appendChild(tdItem);
+    tr.appendChild(tdLoc);
+    tr.appendChild(tdNotes);
+    tr.appendChild(tdStatus);
+    tr.appendChild(tdAct);
+
+    return tr;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  let state = { rows: [], meta:{} };
+
+  function load(){
+    loadMetaFromEquipment();
+    initDate();
+
+    try{
+      const raw = localStorage.getItem(sheetKey());
+      if (raw){
+        state = JSON.parse(raw);
+      } else {
+        state = {
+          rows: DEFAULT_ROWS.map(r => ({...r})),
+          meta: {}
+        };
+      }
+    }catch(e){
+      state = { rows: DEFAULT_ROWS.map(r => ({...r})), meta:{} };
+    }
+
+    // Apply saved meta if present
+    if (state.meta){
+      if (state.meta.building) metaBuilding.value = state.meta.building;
+      if (state.meta.phase) metaPhase.value = state.meta.phase;
+      if (state.meta.pod) metaPod.value = state.meta.pod;
+      if (state.meta.dt) metaDt.value = state.meta.dt;
+      if (state.meta.user) metaUser.value = state.meta.user;
+    }
+
+    redraw();
+    setChip("Loaded");
+  }
+
+  function redraw(){
+    tbody.innerHTML = "";
+    state.rows.forEach((r,i) => tbody.appendChild(renderRow(r,i)));
+  }
+
+  function collect(){
+    state.meta = {
+      building: metaBuilding.value.trim(),
+      phase: metaPhase.value.trim(),
+      pod: metaPod.value.trim(),
+      dt: metaDt.value,
+      user: metaUser.value.trim()
+    };
+  }
+
+  function saveLocal(){
+    collect();
+    localStorage.setItem(sheetKey(), JSON.stringify(state));
+  }
+
+  // Firebase hook points (optional)
+  async function saveFirebase(){
+    // Plug-and-play later:
+    // Expect a global adapter: window.NEXUS_DB.saveConstructionSheet(eq, state)
+    if (window.NEXUS_DB && typeof window.NEXUS_DB.saveConstructionSheet === "function"){
+      await window.NEXUS_DB.saveConstructionSheet(eq, state);
+      return true;
+    }
+    return false;
+  }
+
+  async function saveAll(){
+    if (!eq){
+      setChip("Missing eq in URL");
+      return;
+    }
+    try{
+      saveLocal();
+      const didFb = await saveFirebase();
+      setChip(didFb ? "Saved (Firebase + Local)" : "Saved (Local)");
+    }catch(e){
+      setChip("Save failed");
+      console.error(e);
+    }
+  }
+
+  // Events
+  document.getElementById("saveBtn").addEventListener("click", saveAll);
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (!confirm("Reset this sheet for this equipment?")) return;
+    state = { rows: DEFAULT_ROWS.map(r => ({...r})), meta:{} };
+    saveLocal();
+    redraw();
+    setChip("Reset");
+  });
+
+  document.getElementById("addRowBtn").addEventListener("click", () => {
+    state.rows.push({ item:"", loc:"", notes:"", status:"" });
+    saveLocal();
+    redraw();
+    setChip("Row added");
+  });
+
+  tbody.addEventListener("click", (e) => {
+    const t = e.target;
+
+    // Status pills
+    if (t && t.dataset && t.dataset.s){
+      const idx = Number(t.dataset.i);
+      const s = t.dataset.s; // OK / NG
+      const cur = state.rows[idx].status;
+      state.rows[idx].status = (cur === s) ? "" : s; // toggle
+      saveLocal();
+      redraw();
+      setChip("Updated");
+      return;
+    }
+
+    // Delete row
+    if (t && t.dataset && t.dataset.del !== undefined){
+      const idx = Number(t.dataset.del);
+      state.rows.splice(idx,1);
+      saveLocal();
+      redraw();
+      setChip("Row deleted");
+    }
+  });
+
+  tbody.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!t || !t.dataset) return;
+    const k = t.dataset.k;
+    const idx = Number(t.dataset.i);
+    if (!k || Number.isNaN(idx)) return;
+    state.rows[idx][k] = t.value;
+    // light auto-save
+    saveLocal();
+    setChip("Editing…");
+  });
+
+  // Export to Email (Firebase queue hook)
+  document.getElementById("exportBtn").addEventListener("click", async () => {
+    if (!eq){
+      setChip("Missing eq in URL");
+      return;
+    }
+    try{
+      saveLocal();
+      // Expect a global adapter: window.NEXUS_DB.queueExportEmail({eq, type:"construction", payload:state})
+      if (window.NEXUS_DB && typeof window.NEXUS_DB.queueExportEmail === "function"){
+        await window.NEXUS_DB.queueExportEmail({ eq, type:"construction", payload: state });
+        setChip("Export queued (Firebase)");
+      }else{
+        setChip("Export requires Firebase (hook ready)");
+      }
+    }catch(e){
+      setChip("Export failed");
+      console.error(e);
+    }
+  });
+
+  // Load on start
+  load();
+
+})();
+</script>
 </body>
 </html>
