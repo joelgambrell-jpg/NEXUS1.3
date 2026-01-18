@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Megohmmeter Test Log</title>
+<style>
+  :root{--bg:#b60000;--panel:rgba(255,255,255,0.20);--line:rgba(255,255,255,0.20);--accent:#00c2ff;--btn-bg:#0a0f24;--btn-txt:#3ecbff;--ok:#00ff66;}
+  *{box-sizing:border-box}
+  html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg)}
+  body{background-image:url("transformer.jpg");background-repeat:no-repeat;background-position:center center;background-size:cover;background-attachment:fixed}
+  .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
+  .nx-header{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center}
+  .nx-header img{height:54px;width:auto;max-width:100%;object-fit:contain}
+  .container{max-width:980px;margin:28px auto;padding:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  h1{margin:0 0 6px;font-size:30px;font-weight:900}
+  .sub{font-weight:900;opacity:.95;margin:0 0 12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  label{display:block;font-weight:900;margin:10px 0 6px;font-size:13px;letter-spacing:.02em}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);outline:none;font-weight:800;font-size:15px;background:rgba(255,255,255,0.92);color:#111}
+  textarea{min-height:90px;resize:vertical}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:14px;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.18)}
+  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.14);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.12em;opacity:.95;text-align:left}
+  tr:last-child td{border-bottom:none}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:12px 16px;font-size:14px;font-weight:900;border-radius:999px;color:var(--btn-txt);background:var(--btn-bg);border:2px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+  .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35)}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.18)}
+  .ok{color:var(--ok)}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+<div class="container">
+  <div class="topbar">
+    <div>
+      <h1>Megohmmeter Test Log</h1>
+      <div class="sub" id="eqLabel"></div>
+    </div>
+    <div class="chip" id="statusChip">Not saved</div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Test Date</label>
+      <input type="date" id="testDate" />
+    </div>
+    <div>
+      <label>Technician</label>
+      <input type="text" id="tech" placeholder="Name" />
+    </div>
+  </div>
+
+  <label>Notes</label>
+  <textarea id="notes" placeholder="Observations, conditions, issues..."></textarea>
+
+  <div style="height:12px"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:18%">Conductor</th>
+        <th style="width:18%">Phase</th>
+        <th style="width:18%">Voltage</th>
+        <th style="width:18%">Reading</th>
+        <th style="width:28%">Comments</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div class="btns">
+    <button class="btn" id="addRow" type="button">Add Row</button>
+    <button class="btn" id="saveBtn" type="button">Save</button>
+    <a class="btn secondary" id="backBtn" href="#">Back to Equipment</a>
+  </div>
+
+  <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
+    Firebase hook: this page saves locally now. When Firebase is enabled, replace <code>saveToFirebase()</code> with your Firestore write and use auth email as the user id.
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs=new URLSearchParams(location.search);
+  const eq=(qs.get('eq')||'').trim();
+  const eqLabel=document.getElementById('eqLabel');
+  eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Missing equipment ID (eq)';
+  document.getElementById('backBtn').href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
+
+  const statusChip=document.getElementById('statusChip');
+  const key = `nexus_${eq||'NO_EQ'}_meg_log_v1`;
+
+  const rowsEl=document.getElementById('rows');
+  const testDate=document.getElementById('testDate');
+  const tech=document.getElementById('tech');
+  const notes=document.getElementById('notes');
+
+  function rowTemplate(r={}){
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeHtml(r.conductor||'')}" placeholder="e.g. Feeder" /></td>
+      <td><select>
+        ${['A','B','C','N','G'].map(p=>`<option ${p===(r.phase||'')?'selected':''}>${p}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${escapeHtml(r.voltage||'')}" placeholder="e.g. 1000V" /></td>
+      <td><input type="text" value="${escapeHtml(r.reading||'')}" placeholder="e.g. 500 MΩ" /></td>
+      <td><input type="text" value="${escapeHtml(r.comments||'')}" placeholder="" /></td>
+    `;
+    return tr;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function load(){
+    try{
+      const raw=localStorage.getItem(key);
+      if(!raw){ addDefault(); return; }
+      const data=JSON.parse(raw);
+      testDate.value=data.testDate||'';
+      tech.value=data.tech||'';
+      notes.value=data.notes||'';
+      rowsEl.innerHTML='';
+      (data.rows||[]).forEach(r=>rowsEl.appendChild(rowTemplate(r)));
+      if(!(data.rows||[]).length) addDefault();
+      statusChip.textContent='Loaded';
+    }catch(e){
+      rowsEl.innerHTML='';
+      addDefault();
+    }
+  }
+
+  function addDefault(){
+    rowsEl.innerHTML='';
+    for(let i=0;i<5;i++) rowsEl.appendChild(rowTemplate({}));
+  }
+
+  function collect(){
+    const rows=[...rowsEl.querySelectorAll('tr')].map(tr=>{
+      const inputs=tr.querySelectorAll('input,select');
+      return {
+        conductor: inputs[0].value.trim(),
+        phase: inputs[1].value,
+        voltage: inputs[2].value.trim(),
+        reading: inputs[3].value.trim(),
+        comments: inputs[4].value.trim()
+      };
+    });
+    return {
+      eq,
+      testDate: testDate.value,
+      tech: tech.value.trim(),
+      notes: notes.value.trim(),
+      rows,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  async function saveToFirebase(_data){
+    // PLACEHOLDER: Firestore write goes here.
+    // Example shape: /equipment/{eq}/forms/meg_log
+  }
+
+  async function save(){
+    const data=collect();
+    localStorage.setItem(key, JSON.stringify(data));
+    await saveToFirebase(data);
+    statusChip.innerHTML = '<span class="ok">Saved</span>';
+  }
+
+  document.getElementById('addRow').addEventListener('click',()=>rowsEl.appendChild(rowTemplate({})));
+  document.getElementById('saveBtn').addEventListener('click',save);
+
+  load();
+})();
+</script>
+</body>
+</html>

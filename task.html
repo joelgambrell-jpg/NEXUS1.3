@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Redirecting…</title>
+  <meta http-equiv="refresh" content="0; url=form.html" />
+  <style>
+    body{ margin:0; font-family:Arial,Helvetica,sans-serif; background:#b60000; color:#fff; }
+    .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; text-align:center; }
+    a{ color:#fff; font-weight:900; }
+  
+/* ===== NEXUS Shared Header ===== */
+.nx-header-wrap{
+  background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+}
+.nx-header{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+}
+.nx-header img{
+  height: 54px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+</style>
+</head>
+<body>
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+  <div class="wrap">
+    <div>
+      <div style="font-weight:900;font-size:18px;">Redirecting to the unified form…</div>
+      <div style="opacity:0.9;margin-top:10px;">If you are not redirected, <a id="fallback" href="form.html">click here</a>.</div>
+    </div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const id = (qs.get('id') || qs.get('form') || '').trim();
+    const eq = (qs.get('eq') || '').trim();
+    const u = new URL('form.html', location.href);
+    if (id) u.searchParams.set('id', id);
+    if (eq) u.searchParams.set('eq', eq);
+    document.getElementById('fallback').href = u.pathname.split('/').pop() + u.search;
+    location.replace(document.getElementById('fallback').href);
+  </script>
+</body>
+</html>
