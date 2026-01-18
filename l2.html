@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Redirecting…</title>
+<style>
+/* ===== NEXUS Shared Header ===== */
+.nx-header-wrap{
+  background: rgba(0,0,0,0.35);
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+}
+.nx-header{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+}
+.nx-header img{
+  height: 54px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+</style>
+</head>
+<body>
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const eq = (qs.get('eq') || '').trim();
+    const u = new URL('form.html', location.href);
+    u.searchParams.set('id','l2');
+    if (eq) u.searchParams.set('eq', eq);
+    location.replace(u.pathname.split('/').pop() + u.search);
+  </script>
+</body>
+</html>

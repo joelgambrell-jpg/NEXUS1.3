@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Torque Application Log</title>
+
+<style>
+  :root{
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --panel2:rgba(0,0,0,0.25);
+    --line:rgba(255,255,255,0.20);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --accent:#00c2ff;
+    --ok:#00ff66;
+    --bad:#ff3b3b;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
+  body{
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  /* ===== NEXUS Shared Header ===== */
+  .nx-header-wrap{ background: rgba(0,0,0,0.35); border-bottom: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(8px); }
+  .nx-header{ max-width: 1100px; margin: 0 auto; padding: 14px 18px; display:flex; align-items:center; }
+  .nx-header img{ height: 54px; width:auto; max-width:100%; object-fit:contain; }
+
+  .wrap{ min-height:calc(100vh - 83px); display:flex; align-items:flex-start; justify-content:center; padding:34px; }
+  .card{
+    width:100%; max-width:1100px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    backdrop-filter:blur(10px);
+  }
+
+  header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  h1{ margin:0; font-size:30px; font-weight:900; }
+  .sub{ margin:6px 0 0; font-weight:800; opacity:0.95; }
+  .chip{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; font-weight:900; font-size:13px; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.18); }
+
+  .topbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; align-items:center; justify-content:space-between; }
+  .left-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+  }
+  .btn.secondary{ background:rgba(0,0,0,0.20); color:#fff; border:2px solid rgba(255,255,255,0.35); }
+
+  .meta{ display:grid; grid-template-columns:repeat(3,minmax(180px,1fr)); gap:12px; margin-top:14px; }
+  @media(max-width:900px){ .meta{ grid-template-columns:1fr; } }
+
+  label{ display:block; font-weight:900; margin:10px 0 8px; font-size:13px; opacity:0.95; text-align:left; }
+  input[type="text"], input[type="number"], input[type="datetime-local"], input[type="date"], select, textarea{
+    width:100%; padding:10px 12px; border-radius:12px;
+    border:1px solid rgba(255,255,255,0.18);
+    outline:none; font-size:14px; background:rgba(255,255,255,0.92); color:#111; font-weight:800;
+  }
+  textarea{ min-height:84px; resize:vertical; }
+
+  .table-wrap{ margin-top:16px; background:var(--panel2); border:1px solid var(--line); border-radius:18px; padding:14px; overflow:auto; }
+  table{ width:100%; border-collapse:separate; border-spacing:0; min-width:980px; }
+  th,td{ padding:10px; border-bottom:1px solid rgba(255,255,255,0.16); vertical-align:top; text-align:left; }
+  th{ font-size:12px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.95; }
+
+  .row-actions{ display:flex; gap:10px; align-items:center; }
+  .mini{ padding:8px 12px; font-size:13px; }
+
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:92px; height:36px;
+    border-radius:999px;
+    font-weight:900;
+    border:2px solid rgba(255,255,255,0.35);
+    background:rgba(0,0,0,0.18);
+    color:#fff;
+  }
+  .badge.ok{ border-color:var(--ok); box-shadow:0 0 14px rgba(0,255,102,.45); }
+  .badge.bad{ border-color:var(--bad); box-shadow:0 0 14px rgba(255,59,59,.35); }
+
+  .toggle{ display:flex; gap:8px; }
+  .toggle button{
+    height:36px; border-radius:999px; padding:0 12px;
+    font-weight:900; cursor:pointer;
+    border:2px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.20);
+    color:#fff;
+  }
+  .toggle button.on.ok{ border-color:var(--ok); background:rgba(0,255,102,0.25); box-shadow:0 0 12px rgba(0,255,102,.35); }
+  .toggle button.on.bad{ border-color:var(--bad); background:rgba(255,59,59,0.25); box-shadow:0 0 12px rgba(255,59,59,.25); }
+
+  .rcca{
+    margin-top:16px;
+    background:rgba(0,0,0,0.20);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:18px;
+    padding:14px;
+    display:none;
+  }
+  .rcca h2{ margin:0 0 10px; font-size:16px; letter-spacing:0.08em; text-transform:uppercase; }
+  .rcca-grid{ display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:12px; }
+  @media(max-width:900px){ .rcca-grid{ grid-template-columns:1fr; } }
+
+  .hint{ margin-top:12px; font-size:13px; line-height:1.35; opacity:0.92; }
+  code{ background:rgba(0,0,0,0.35); padding:2px 6px; border-radius:6px; }
+</style>
+</head>
+<body>
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+
+<div class="wrap">
+  <div class="card">
+    <header>
+      <div>
+        <h1>Torque Application Log</h1>
+        <div class="sub" id="eqSub">Equipment: —</div>
+      </div>
+      <div class="chip" id="statusChip">Ready</div>
+    </header>
+
+    <div class="topbar">
+      <div class="left-actions">
+        <a class="btn secondary" id="backBtn" href="#">← Back</a>
+        <button class="btn" id="addRowBtn" type="button">Add Entry</button>
+        <button class="btn" id="saveBtn" type="button">Save</button>
+        <button class="btn secondary" id="exportBtn" type="button">Export to Email</button>
+      </div>
+      <div class="chip" id="savedChip" style="display:none;">Saved</div>
+    </div>
+
+    <div class="meta">
+      <div>
+        <label for="building">Building #</label>
+        <input id="building" type="text" placeholder="e.g., 801" />
+      </div>
+      <div>
+        <label for="phase">Phase</label>
+        <select id="phase"></select>
+      </div>
+      <div>
+        <label for="pod">POD</label>
+        <select id="pod"></select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:170px;">Timestamp</th>
+            <th style="width:180px;">Location / Connection</th>
+            <th style="width:190px;">Bolt / Lug Size</th>
+            <th style="width:170px;">Target</th>
+            <th style="width:170px;">Actual</th>
+            <th style="width:170px;">Go / No-Go</th>
+            <th>Notes</th>
+            <th style="width:120px;">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="rcca" id="rccaWrap">
+      <h2>RCCA Required</h2>
+      <div class="rcca-grid">
+        <div>
+          <label for="rccaIssue">Issue / Nonconformance</label>
+          <textarea id="rccaIssue" placeholder="Describe what failed and where"></textarea>
+        </div>
+        <div>
+          <label for="rccaImmediate">Immediate Corrective Action</label>
+          <textarea id="rccaImmediate" placeholder="Immediate action taken to contain/repair"></textarea>
+        </div>
+        <div>
+          <label for="rccaRoot">Root Cause</label>
+          <textarea id="rccaRoot" placeholder="Why did it happen? (root cause)"></textarea>
+        </div>
+        <div>
+          <label for="rccaCAPA">Corrective & Preventive Action</label>
+          <textarea id="rccaCAPA" placeholder="Actions to prevent recurrence"></textarea>
+        </div>
+        <div>
+          <label for="rccaAssignee">Assignee (email)</label>
+          <input id="rccaAssignee" type="text" placeholder="name@company.com" />
+        </div>
+        <div>
+          <label for="rccaDue">Due Date</label>
+          <input id="rccaDue" type="date" />
+        </div>
+      </div>
+      <div class="hint">
+        When you move to Firebase, a Cloud Function can watch a Firestore record (e.g., <code>notifications</code>) and send an email to the assignee automatically.
+      </div>
+    </div>
+
+    <div class="hint">
+      <b>Notes:</b> Save persists per equipment (<code>?eq=</code>). Export-to-email creates a summary and (if Firebase is configured later) can be upgraded to generate/attach a PDF via Cloud Functions.
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get('eq') || '').trim();
+  const eqSafe = eq || 'NO_EQ';
+  document.getElementById('eqSub').textContent = `Equipment: ${eq || '—'}`;
+  document.title = eq ? `Torque Log - ${eq}` : 'Torque Application Log';
+
+  const backBtn = document.getElementById('backBtn');
+  backBtn.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'equipment.html';
+
+  const statusChip = document.getElementById('statusChip');
+  const savedChip = document.getElementById('savedChip');
+
+  function setStatus(t){ statusChip.textContent = t; }
+  function pulseSaved(){
+    savedChip.style.display = 'inline-flex';
+    setTimeout(()=>{ savedChip.style.display='none'; }, 1400);
+  }
+
+  // Phase / POD dropdowns 1-12
+  const phaseSel = document.getElementById('phase');
+  const podSel = document.getElementById('pod');
+  function fill12(sel, label){
+    sel.innerHTML = '<option value="">—</option>';
+    for(let i=1;i<=12;i++){
+      const o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = `${label} ${i}`;
+      sel.appendChild(o);
+    }
+  }
+  fill12(phaseSel, 'Phase');
+  fill12(podSel, 'POD');
+
+  // Storage keys
+  const key = `nexus_${eqSafe}_torque_log_v1`;
+
+  // Bolt size list (editable later)
+  const defaultBoltSizes = [
+    '1/4" slotted',
+    '1/4" hex',
+    '5/16" hex',
+    '3/8" hex',
+    '7/16" hex',
+    '1/2" hex',
+    '9/16" hex',
+    '5/8" hex',
+    '3/4" hex',
+    '7/8" hex',
+    '1" hex',
+    'M6', 'M8', 'M10', 'M12'
+  ];
+
+  function rowTemplate(data){
+    const tr = document.createElement('tr');
+
+    const ts = document.createElement('td');
+    const tsInput = document.createElement('input');
+    tsInput.type = 'datetime-local';
+    tsInput.value = data.ts || new Date().toISOString().slice(0,16);
+    ts.appendChild(tsInput);
+
+    const loc = document.createElement('td');
+    const locInput = document.createElement('input');
+    locInput.type = 'text';
+    locInput.placeholder = 'e.g., X1 lug';
+    locInput.value = data.loc || '';
+    loc.appendChild(locInput);
+
+    const bolt = document.createElement('td');
+    const boltWrap = document.createElement('div');
+    boltWrap.style.display='grid';
+    boltWrap.style.gridTemplateColumns='1fr';
+    boltWrap.style.gap='6px';
+
+    const boltSel = document.createElement('select');
+    boltSel.innerHTML = '<option value="">—</option>' + defaultBoltSizes.map(x=>`<option value="${x.replace(/\"/g,'&quot;')}">${x}</option>`).join('') + '<option value="__custom__">Custom…</option>';
+    boltSel.value = data.bolt || '';
+
+    const boltCustom = document.createElement('input');
+    boltCustom.type = 'text';
+    boltCustom.placeholder = 'Custom bolt size';
+    boltCustom.value = data.boltCustom || '';
+    boltCustom.style.display = (boltSel.value === '__custom__') ? 'block' : 'none';
+
+    boltSel.addEventListener('change', ()=>{
+      boltCustom.style.display = (boltSel.value === '__custom__') ? 'block' : 'none';
+      if (boltSel.value !== '__custom__') boltCustom.value = '';
+      updateRCCAVisibility();
+    });
+
+    boltWrap.appendChild(boltSel);
+    boltWrap.appendChild(boltCustom);
+    bolt.appendChild(boltWrap);
+
+    function torqueCell(value, unit){
+      const w = document.createElement('div');
+      w.style.display='grid';
+      w.style.gridTemplateColumns='1fr 110px';
+      w.style.gap='8px';
+
+      const num = document.createElement('input');
+      num.type='number';
+      num.step='any';
+      num.placeholder='Value';
+      num.value = (value ?? '') === '' ? '' : String(value);
+
+      const u = document.createElement('select');
+      u.innerHTML = '<option value="ft-lbs">ft-lbs</option><option value="in-lbs">in-lbs</option>';
+      u.value = unit || 'ft-lbs';
+
+      w.appendChild(num);
+      w.appendChild(u);
+
+      return { w, num, u };
+    }
+
+    const target = document.createElement('td');
+    const t = torqueCell(data.targetVal, data.targetUnit);
+    target.appendChild(t.w);
+
+    const actual = document.createElement('td');
+    const a = torqueCell(data.actualVal, data.actualUnit);
+    actual.appendChild(a.w);
+
+    const result = document.createElement('td');
+    const toggle = document.createElement('div');
+    toggle.className='toggle';
+
+    const goBtn = document.createElement('button');
+    goBtn.type='button';
+    goBtn.textContent='GO';
+
+    const nogoBtn = document.createElement('button');
+    nogoBtn.type='button';
+    nogoBtn.textContent='NO GO';
+
+    const badge = document.createElement('div');
+    badge.className='badge';
+    badge.textContent = data.pass === true ? 'GO' : (data.pass === false ? 'NO GO' : '—');
+    if (data.pass === true) badge.classList.add('ok');
+    if (data.pass === false) badge.classList.add('bad');
+
+    function setPass(val){
+      data.pass = val;
+      goBtn.classList.toggle('on', val === true);
+      goBtn.classList.toggle('ok', val === true);
+      nogoBtn.classList.toggle('on', val === false);
+      nogoBtn.classList.toggle('bad', val === false);
+      badge.textContent = val === true ? 'GO' : (val === false ? 'NO GO' : '—');
+      badge.classList.toggle('ok', val === true);
+      badge.classList.toggle('bad', val === false);
+      updateRCCAVisibility();
+    }
+
+    goBtn.addEventListener('click', ()=>setPass(true));
+    nogoBtn.addEventListener('click', ()=>setPass(false));
+
+    // init button state
+    setPass(data.pass);
+
+    toggle.appendChild(goBtn);
+    toggle.appendChild(nogoBtn);
+    result.appendChild(toggle);
+    result.appendChild(document.createElement('div')).style.height='6px';
+    result.appendChild(badge);
+
+    const notes = document.createElement('td');
+    const notesWrap = document.createElement('div');
+    notesWrap.style.display='grid';
+    notesWrap.style.gridTemplateColumns='1fr';
+    notesWrap.style.gap='8px';
+
+    const toolSetting = document.createElement('div');
+    toolSetting.style.display='grid';
+    toolSetting.style.gridTemplateColumns='1fr 110px';
+    toolSetting.style.gap='8px';
+
+    const toolVal = document.createElement('input');
+    toolVal.type='number';
+    toolVal.step='any';
+    toolVal.placeholder='Tool setting (optional)';
+    toolVal.value = (data.toolVal ?? '') === '' ? '' : String(data.toolVal);
+
+    const toolUnit = document.createElement('select');
+    toolUnit.innerHTML = '<option value="ft-lbs">ft-lbs</option><option value="in-lbs">in-lbs</option>';
+    toolUnit.value = data.toolUnit || 'ft-lbs';
+
+    toolSetting.appendChild(toolVal);
+    toolSetting.appendChild(toolUnit);
+
+    const notesTa = document.createElement('textarea');
+    notesTa.placeholder = 'Notes';
+    notesTa.value = data.notes || '';
+
+    notesWrap.appendChild(toolSetting);
+    notesWrap.appendChild(notesTa);
+    notes.appendChild(notesWrap);
+
+    const removeTd = document.createElement('td');
+    const rm = document.createElement('button');
+    rm.className='btn secondary mini';
+    rm.type='button';
+    rm.textContent='Remove';
+    rm.addEventListener('click', ()=>{
+      tr.remove();
+      updateRCCAVisibility();
+    });
+    removeTd.appendChild(rm);
+
+    // Attach getters for saving
+    tr._getData = () => ({
+      ts: tsInput.value,
+      loc: locInput.value,
+      bolt: boltSel.value,
+      boltCustom: boltCustom.value,
+      targetVal: t.num.value,
+      targetUnit: t.u.value,
+      actualVal: a.num.value,
+      actualUnit: a.u.value,
+      toolVal: toolVal.value,
+      toolUnit: toolUnit.value,
+      notes: notesTa.value,
+      pass: data.pass
+    });
+
+    // Any edit updates RCCA visibility (to show instantly on NO GO)
+    [tsInput, locInput, boltCustom, t.num, t.u, a.num, a.u, toolVal, toolUnit, notesTa].forEach(el=>{
+      el.addEventListener('input', updateRCCAVisibility);
+      el.addEventListener('change', updateRCCAVisibility);
+    });
+
+    tr.appendChild(ts);
+    tr.appendChild(loc);
+    tr.appendChild(bolt);
+    tr.appendChild(target);
+    tr.appendChild(actual);
+    tr.appendChild(result);
+    tr.appendChild(notes);
+    tr.appendChild(removeTd);
+
+    return tr;
+  }
+
+  const tbody = document.getElementById('tbody');
+  const building = document.getElementById('building');
+
+  function collect(){
+    const rows = Array.from(tbody.querySelectorAll('tr')).map(tr=>tr._getData());
+    return {
+      eq,
+      meta:{
+        building: building.value,
+        phase: phaseSel.value,
+        pod: podSel.value
+      },
+      rows,
+      rcca:{
+        issue: document.getElementById('rccaIssue').value,
+        immediate: document.getElementById('rccaImmediate').value,
+        root: document.getElementById('rccaRoot').value,
+        capa: document.getElementById('rccaCAPA').value,
+        assignee: document.getElementById('rccaAssignee').value,
+        due: document.getElementById('rccaDue').value
+      }
+    };
+  }
+
+  function loadLocal(){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  }
+
+  function writeLocal(payload){
+    localStorage.setItem(key, JSON.stringify(payload));
+  }
+
+  // Firebase hooks (optional, safe to include now)
+  async function firebaseReady(){
+    return !!(window.firebase && window.firebase.firestore && window.FIREBASE_CONFIG && window.firebase.apps && window.firebase.apps.length);
+  }
+
+  async function firebaseInitIfPossible(){
+    if (!window.FIREBASE_CONFIG || !window.firebase) return false;
+    try{
+      if (!window.firebase.apps.length){
+        window.firebase.initializeApp(window.FIREBASE_CONFIG);
+      }
+      return true;
+    }catch(e){ return false; }
+  }
+
+  async function saveFirebase(payload){
+    await firebaseInitIfPossible();
+    if (!(await firebaseReady())) return false;
+    const db = window.firebase.firestore();
+    const docId = `${eqSafe}`;
+    await db.collection('equipment').doc(docId).collection('torque_logs').doc('current').set({
+      ...payload,
+      updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge:true });
+    return true;
+  }
+
+  async function loadFirebase(){
+    await firebaseInitIfPossible();
+    if (!(await firebaseReady())) return null;
+    const db = window.firebase.firestore();
+    const docId = `${eqSafe}`;
+    const snap = await db.collection('equipment').doc(docId).collection('torque_logs').doc('current').get();
+    if (!snap.exists) return null;
+    return snap.data();
+  }
+
+  async function saveAll(){
+    const payload = collect();
+    writeLocal(payload);
+
+    // Best-effort firebase save (no errors shown if not configured yet)
+    try{ await saveFirebase(payload); }catch(e){}
+
+    // If RCCA has assignee, queue notification doc for Cloud Function later
+    const assignee = (payload.rcca.assignee || '').trim();
+    const hasRcca = !!document.getElementById('rccaWrap').style.display || assignee;
+    if (assignee && eq){
+      try{
+        await firebaseInitIfPossible();
+        if (await firebaseReady()){
+          const db = window.firebase.firestore();
+          await db.collection('notifications').add({
+            type: 'rcca_assigned',
+            eq,
+            assigneeEmail: assignee,
+            due: payload.rcca.due || null,
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+            payload
+          });
+        }
+      }catch(e){}
+    }
+
+    setStatus('Saved');
+    pulseSaved();
+  }
+
+  function render(data){
+    tbody.innerHTML='';
+    const payload = data || { meta:{}, rows:[] };
+
+    building.value = payload.meta?.building || '';
+    phaseSel.value = payload.meta?.phase || '';
+    podSel.value = payload.meta?.pod || '';
+
+    const rows = (payload.rows && payload.rows.length) ? payload.rows : [ {} ];
+    rows.forEach(r=> tbody.appendChild(rowTemplate(r || {})));
+
+    document.getElementById('rccaIssue').value = payload.rcca?.issue || '';
+    document.getElementById('rccaImmediate').value = payload.rcca?.immediate || '';
+    document.getElementById('rccaRoot').value = payload.rcca?.root || '';
+    document.getElementById('rccaCAPA').value = payload.rcca?.capa || '';
+    document.getElementById('rccaAssignee').value = payload.rcca?.assignee || '';
+    document.getElementById('rccaDue').value = payload.rcca?.due || '';
+
+    updateRCCAVisibility();
+  }
+
+  function anyNoGo(){
+    return Array.from(tbody.querySelectorAll('tr')).some(tr=>{
+      const d = tr._getData();
+      return d.pass === false;
+    });
+  }
+
+  function updateRCCAVisibility(){
+    const rccaWrap = document.getElementById('rccaWrap');
+    rccaWrap.style.display = anyNoGo() ? 'block' : 'none';
+  }
+
+  document.getElementById('addRowBtn').addEventListener('click', ()=>{
+    tbody.appendChild(rowTemplate({}));
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', async ()=>{
+    await saveAll();
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', async ()=>{
+    // Save first so export uses latest
+    await saveAll();
+
+    const payload = collect();
+    const subj = `Torque Log - ${payload.eq || 'Equipment'} - ${new Date().toLocaleString()}`;
+
+    const lines = [];
+    lines.push(`Equipment: ${payload.eq || ''}`);
+    lines.push(`Building: ${payload.meta.building || ''}`);
+    lines.push(`Phase: ${payload.meta.phase || ''}`);
+    lines.push(`POD: ${payload.meta.pod || ''}`);
+    lines.push('');
+    lines.push('Entries:');
+    payload.rows.forEach((r, idx)=>{
+      const bolt = (r.bolt === '__custom__') ? (r.boltCustom || '') : (r.bolt || '');
+      lines.push(`${idx+1}. ${r.ts || ''} | ${r.loc || ''} | ${bolt} | Target ${r.targetVal || ''} ${r.targetUnit || ''} | Actual ${r.actualVal || ''} ${r.actualUnit || ''} | ${r.pass === true ? 'GO' : (r.pass === false ? 'NO GO' : '—')}`);
+    });
+
+    if (anyNoGo()){
+      lines.push('');
+      lines.push('RCCA REQUIRED');
+      lines.push(`Issue: ${payload.rcca.issue || ''}`);
+      lines.push(`Immediate: ${payload.rcca.immediate || ''}`);
+      lines.push(`Root Cause: ${payload.rcca.root || ''}`);
+      lines.push(`CAPA: ${payload.rcca.capa || ''}`);
+      lines.push(`Assignee: ${payload.rcca.assignee || ''}`);
+      lines.push(`Due: ${payload.rcca.due || ''}`);
+    }
+
+    const body = encodeURIComponent(lines.join('\n'));
+    const mailto = `mailto:?subject=${encodeURIComponent(subj)}&body=${body}`;
+    window.location.href = mailto;
+  });
+
+  // Attempt to load firebase first (if configured), else local
+  (async ()=>{
+    let data = null;
+    try{ data = await loadFirebase(); }catch(e){ data = null; }
+    if(!data) data = loadLocal();
+    render(data);
+  })();
+
+})();
+</script>
+</body>
+</html>
