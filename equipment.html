@@ -8,6 +8,7 @@
      - Optional Firebase sync:
          * steps sync across devices (Firestore equipment/{eq}/steps/{stepId})
          * goal date + notification emails sync across devices (Firestore equipment/{eq})
+     - FIX: Construction Check Sheet opens ConstructionCheckSheet.html (full page), NOT task.html
      ========================= -->
 <!doctype html>
 <html lang="en">
@@ -343,8 +344,11 @@
   const eqLabel = document.getElementById("eqLabel");
   if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID";
 
-  function link(id){
+  function taskLink(id){
     return `task.html?id=${encodeURIComponent(id)}${eq ? `&eq=${encodeURIComponent(eq)}` : ""}`;
+  }
+  function directPage(page){
+    return `${page}${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
   }
   function stepKey(id){ return `nexus_${eq || "NO_EQ"}_step_${id}`; }
 
@@ -358,18 +362,25 @@
     {id:"fpv_photo",btn:"finishedPhotoBtn"}
   ];
 
-  // Supporting material ONLY (no completion/progress)
-  const refs=[
-    {id:"construction",btn:"constructionBtn"},
-    {id:"phenolic",btn:"phenolicBtn"},
-    {id:"transformer",btn:"transformerBtn"},
-    {id:"supporting",btn:"supportingBtn"}
-  ];
-
-  [...taskSteps, ...refs].forEach(s=>{
+  // Set TASK hrefs (still go through task.html)
+  taskSteps.forEach(s=>{
     const el = document.getElementById(s.btn);
-    if (el) el.href = link(s.id);
+    if (el) el.href = taskLink(s.id);
   });
+
+  // Supporting material ONLY (no completion/progress)
+  // FIX: construction opens the full page sheet directly
+  const constructionBtn = document.getElementById("constructionBtn");
+  if (constructionBtn) constructionBtn.href = directPage("ConstructionCheckSheet.html");
+
+  const phenolicBtn = document.getElementById("phenolicBtn");
+  if (phenolicBtn) phenolicBtn.href = taskLink("phenolic");
+
+  const transformerBtn = document.getElementById("transformerBtn");
+  if (transformerBtn) transformerBtn.href = taskLink("transformer");
+
+  const supportingBtn = document.getElementById("supportingBtn");
+  if (supportingBtn) supportingBtn.href = taskLink("supporting");
 
   const fill = document.getElementById("progressFill");
   const txt  = document.getElementById("progressText");
@@ -388,12 +399,6 @@
       const ok = localStorage.getItem(stepKey(s.id)) === "1";
       if (el) el.classList.toggle("complete", ok);
       if (ok) done++;
-    });
-
-    // Refs never show completion
-    refs.forEach(s=>{
-      const el = document.getElementById(s.btn);
-      if (el) el.classList.remove("complete");
     });
 
     const pct = taskSteps.length ? Math.round((done / taskSteps.length) * 100) : 0;
@@ -513,7 +518,7 @@
     saveGoalBtn.addEventListener("click", async () => {
       if (!eq) return;
 
-      const raw = (goalDateEl?.value || "").trim(); // "YYYY-MM-DDTHH:mm"
+      const raw = (goalDateEl?.value || "").trim();
       const emails = (notifyEmailsEl?.value || "").trim();
       const iso = raw ? new Date(raw).toISOString() : "";
 
@@ -564,7 +569,7 @@
       fbStepsUnsub = onSnapshot(stepsCol, (snap) => {
         snap.forEach(docSnap => {
           const stepId = docSnap.id;
-          if (!knownTaskIds.has(stepId)) return; // tasks only drive progress/unlock
+          if (!knownTaskIds.has(stepId)) return;
 
           const data = docSnap.data() || {};
           if (data.done) localStorage.setItem(stepKey(stepId), "1");
