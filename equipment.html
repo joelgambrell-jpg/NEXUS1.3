@@ -11,13 +11,11 @@
     --panel:rgba(255,255,255,0.25);
     --panel-dark:rgba(0,0,0,0.35);
     --line:rgba(255,255,255,0.22);
-    --btn-bg:#ffffffdd;
-    --btn-color:#000;
     --accent:#00c2ff;
     --good:#00ff66;
   }
 
-  *{ box-sizing:border-box; }
+  *{box-sizing:border-box;}
   body{
     margin:0;
     font-family:Arial,Helvetica,sans-serif;
@@ -27,9 +25,9 @@
 
   /* Header */
   .nx-header-wrap{
-    background: rgba(0,0,0,0.35);
-    border-bottom: 1px solid rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px);
+    background:rgba(0,0,0,0.35);
+    border-bottom:1px solid rgba(255,255,255,0.18);
+    backdrop-filter:blur(8px);
   }
   .nx-header{
     max-width:1100px;
@@ -38,32 +36,51 @@
     display:flex;
     align-items:center;
   }
-  .nx-header img{ height:54px; }
+  .nx-header img{height:54px;}
 
-  .wrap{ max-width:1100px; margin:20px auto 80px; padding:0 18px; }
+  .wrap{max-width:1100px;margin:20px auto 80px;padding:0 18px;}
+  .title{text-align:center;font-size:38px;font-weight:900;margin:10px 0;}
 
-  .title{
+  /* Progress */
+  .progress-wrap{
+    background:var(--panel-dark);
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:18px;
+    border:1px solid var(--line);
+  }
+  .progress-bar{
+    height:16px;
+    border-radius:999px;
+    background:rgba(255,255,255,.2);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00ffcc,#00c2ff);
+    transition:width .3s ease;
+  }
+  .progress-text{
     text-align:center;
-    font-size:36px;
     font-weight:900;
-    margin:10px 0 6px;
+    margin-top:6px;
   }
 
-  /* Progress + Energization */
+  /* Energization */
   .energization{
     text-align:center;
-    margin:20px 0;
+    margin:18px 0;
   }
-  .energization .btn{
-    padding:14px 28px;
-    border-radius:999px;
-    font-size:18px;
-    font-weight:900;
+  .energization.locked .btn{
+    opacity:.4;
+    pointer-events:none;
+  }
+  .energization.unlocked .btn{
     background:#0ff;
     color:#002;
-    border:none;
-    cursor:pointer;
-    box-shadow:0 0 30px rgba(0,255,255,.7);
+    box-shadow:0 0 30px rgba(0,255,255,.8);
   }
 
   /* Bubbles */
@@ -75,12 +92,12 @@
     margin-bottom:16px;
   }
   .bubble-title{
-    font-weight:900;
     font-size:18px;
+    font-weight:900;
     margin-bottom:12px;
   }
 
-  /* Exports */
+  /* Buttons */
   .btn{
     display:block;
     width:100%;
@@ -88,12 +105,12 @@
     border-radius:14px;
     font-weight:900;
     font-size:16px;
-    background:var(--btn-bg);
+    background:#fff;
     color:#000;
-    border:2px solid red;
     text-align:center;
     text-decoration:none;
     cursor:pointer;
+    border:none;
   }
 
   /* Main actions */
@@ -106,7 +123,7 @@
   .action{
     padding:16px;
     border-radius:14px;
-    background:#00ff66;
+    background:var(--good);
     color:#000;
     font-weight:900;
     text-align:center;
@@ -114,15 +131,15 @@
     box-shadow:0 0 18px rgba(0,255,102,.7);
   }
 
-  /* Reference section */
+  /* Reference */
   .reference-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:14px;
   }
 
-  /* Hidden Procore links (kept for logic only) */
-  .procore-hidden{ display:none!important; }
+  /* Hidden Procore */
+  .procore-hidden{display:none!important;}
 
   footer{
     margin-top:40px;
@@ -142,15 +159,32 @@
 </div>
 
 <div class="wrap">
-
   <div class="title">Equipment</div>
 
-  <!-- Energization -->
-  <div class="energization">
-    <button class="btn">Energization</button>
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-text" id="progressText">0% Complete</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
   </div>
 
-  <!-- Hidden Procore Links (logic retained) -->
+  <!-- Energization -->
+  <div class="energization locked" id="energizationBlock">
+    <div class="bubble">
+      <div class="bubble-title">Energization</div>
+      <div style="margin-bottom:10px;">
+        Goal Date:
+        <input type="date" id="energizationDate" />
+      </div>
+      <div id="countdown"></div>
+      <button class="btn" onclick="alert('Energization unlocked')">
+        Energization
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden Procore Links (logic preserved) -->
   <div class="procore-hidden">
     <a id="procoreConstruction" href="#">Procore – Construction</a>
     <a id="procoreEnergization" href="#">Procore – Energization</a>
@@ -159,7 +193,7 @@
   <!-- Exports -->
   <div class="bubble">
     <div class="bubble-title">Exports</div>
-    <button class="btn" onclick="window.location.href='package_export.html'">
+    <button class="btn" onclick="location.href='package_export.html'">
       Export Package (Print / PDF)
     </button>
   </div>
@@ -167,28 +201,63 @@
   <!-- Main Workflow -->
   <div class="action-grid">
     <a class="action" href="rif.html">RIF</a>
-    <a class="action" href="meg_log.html">Megohmmeter Testing</a>
+    <a class="action" href="meg_log.html">Megohmmeter</a>
     <a class="action" href="torque_log.html">Torque</a>
     <a class="action" href="l2_ivf.html">L2-IVF</a>
     <a class="action" href="prefod.html">Pre-FOD</a>
-    <a class="action" href="finished_photos.html">Finished Product Verification Photos</a>
+    <a class="action" href="finished_photos.html">Finished Photos</a>
   </div>
 
-  <!-- Reference & Check Sheets -->
+  <!-- Reference -->
   <div class="bubble">
-    <div class="bubble-title">Reference &amp; Check Sheets</div>
+    <div class="bubble-title">Reference & Check Sheets</div>
     <div class="reference-grid">
       <a class="btn" href="ConstructionCheckSheet.html">Construction Check Sheet</a>
-      <a class="btn" href="phenolic.html">Phenolic Display</a>
-      <a class="btn" href="diagram.html">Diagram Image</a>
-      <a class="btn" href="supporting_documents.html">Supporting Documents</a>
+      <a class="btn" href="phenolic.html">Phenolic</a>
+      <a class="btn" href="diagram.html">Diagram</a>
+      <a class="btn" href="supporting_documents.html">Supporting Docs</a>
     </div>
   </div>
 
   <footer>
     © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
   </footer>
-
 </div>
+
+<script>
+(function(){
+  const totalTasks = 5;
+  let completed = 0;
+
+  function updateProgress(){
+    const pct = Math.round((completed/totalTasks)*100);
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressText").textContent = pct + "% Complete";
+
+    const block = document.getElementById("energizationBlock");
+    if(pct === 100){
+      block.classList.remove("locked");
+      block.classList.add("unlocked");
+    }
+  }
+
+  // Demo logic – replace with real saved state
+  completed = 0;
+  updateProgress();
+
+  // Countdown
+  const dateInput = document.getElementById("energizationDate");
+  const countdown = document.getElementById("countdown");
+
+  function tick(){
+    if(!dateInput.value){ countdown.textContent=""; return; }
+    const diff = new Date(dateInput.value) - new Date();
+    if(diff <= 0){ countdown.textContent="Today"; return; }
+    const d = Math.ceil(diff / (1000*60*60*24));
+    countdown.textContent = d + " days remaining";
+  }
+  setInterval(tick, 1000);
+})();
+</script>
 </body>
 </html>
