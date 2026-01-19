@@ -30,6 +30,7 @@
   .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.18)}
   .ok{color:var(--ok)}
   .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+  .smallhint{opacity:.9;font-size:13px;line-height:1.35;margin-top:12px}
 </style>
 
 <style>
@@ -45,7 +46,7 @@
   }
 </style>
 
-  <link rel="stylesheet" href="assets/css/nexus-core.css">
+<link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
 <body>\n
 <div id="nxSessionBanner" class="nx-session-banner">
@@ -80,6 +81,7 @@
 <a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
 <div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+
 <div class="container">
   <div class="topbar">
     <div>
@@ -120,6 +122,7 @@
   </table>
   <div class="btns" style="margin-top:10px">
     <button class="btn" id="addLineRow" type="button">Add Line Row</button>
+    <button class="btn" id="saveLineBtn" type="button">Save Line</button>
   </div>
 
   <div style="height:14px"></div>
@@ -139,12 +142,14 @@
   </table>
   <div class="btns" style="margin-top:10px">
     <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
-    <button class="btn" id="saveBtn" type="button">Save</button>
+    <button class="btn" id="saveLoadBtn" type="button">Save Load</button>
+    <button class="btn secondary" id="saveAllBtn" type="button">Save All</button>
     <a class="btn secondary" id="backBtn" href="#">Back to Equipment</a>
   </div>
 
-  <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
-    Firebase hook: this page saves locally now. When Firebase is enabled, replace <code>saveToFirebase()</code> with your Firestore write and use auth email as the user id.
+  <div class="smallhint">
+    Firebase hooks: this page saves locally now.<br>
+    When Firebase is enabled, implement <code>saveToFirebase(scope, data)</code> with your Firestore write(s).
   </div>
 </div>
 
@@ -157,15 +162,25 @@
   document.getElementById('backBtn').href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
 
   const statusChip=document.getElementById('statusChip');
-  // v2 splits rows into Line/Load while keeping backward-compatibility with v1.
+
+  // Back-compat keys (existing versions)
   const keyV2 = `nexus_${eq||'NO_EQ'}_meg_log_v2`;
   const keyV1 = `nexus_${eq||'NO_EQ'}_meg_log_v1`;
+
+  // New split keys (separate saves)
+  const keyMeta = `nexus_${eq||'NO_EQ'}_meg_log_meta_v1`;
+  const keyLine = `nexus_${eq||'NO_EQ'}_meg_log_line_v1`;
+  const keyLoad = `nexus_${eq||'NO_EQ'}_meg_log_load_v1`;
 
   const lineRowsEl=document.getElementById('lineRows');
   const loadRowsEl=document.getElementById('loadRows');
   const testDate=document.getElementById('testDate');
   const tech=document.getElementById('tech');
   const notes=document.getElementById('notes');
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
 
   function rowTemplate(r={}){
     const tr=document.createElement('tr');
@@ -181,68 +196,23 @@
     return tr;
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function ensureMinimumRows(){
+    if(!lineRowsEl.querySelector('tr')) for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
+    if(!loadRowsEl.querySelector('tr')) for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
   }
 
-  function load(){
-    // Prefer v2. If only v1 exists, migrate it into Line Side rows.
-    const rawV2 = localStorage.getItem(keyV2);
-    const rawV1 = localStorage.getItem(keyV1);
-    try{
-      if(rawV2){
-        const data = JSON.parse(rawV2);
-        apply(data);
-        statusChip.textContent='Loaded';
-        return;
-      }
-      if(rawV1){
-        const data = JSON.parse(rawV1);
-        const migrated = {
-          eq,
-          testDate: data.testDate || '',
-          tech: data.tech || '',
-          notes: data.notes || '',
-          lineRows: Array.isArray(data.rows) ? data.rows : [],
-          loadRows: [],
-          migratedFrom: 'v1',
-          updatedAt: new Date().toISOString()
-        };
-        localStorage.setItem(keyV2, JSON.stringify(migrated));
-        apply(migrated);
-        statusChip.textContent='Loaded (migrated)';
-        return;
-      }
-    }catch(e){
-      // fall through to defaults
-    }
-    addDefault();
+  function collectMeta(){
+    return {
+      eq,
+      testDate: testDate.value,
+      tech: tech.value.trim(),
+      notes: notes.value.trim(),
+      updatedAt: new Date().toISOString()
+    };
   }
 
-  function apply(data){
-    testDate.value = data.testDate || '';
-    tech.value = data.tech || '';
-    notes.value = data.notes || '';
-    lineRowsEl.innerHTML = '';
-    loadRowsEl.innerHTML = '';
-    const line = Array.isArray(data.lineRows) ? data.lineRows : [];
-    const load = Array.isArray(data.loadRows) ? data.loadRows : [];
-    line.forEach(r => lineRowsEl.appendChild(rowTemplate(r)));
-    load.forEach(r => loadRowsEl.appendChild(rowTemplate(r)));
-    if(!line.length) for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
-    if(!load.length) for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
-  }
-
-  function addDefault(){
-    lineRowsEl.innerHTML='';
-    loadRowsEl.innerHTML='';
-    for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
-    for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
-    statusChip.textContent='Not saved';
-  }
-
-  function collect(){
-    const collectFrom = (tbodyEl) => [...tbodyEl.querySelectorAll('tr')].map(tr => {
+  function collectRows(tbodyEl){
+    return [...tbodyEl.querySelectorAll('tr')].map(tr => {
       const inputs=tr.querySelectorAll('input,select');
       return {
         conductor: inputs[0].value.trim(),
@@ -252,36 +222,143 @@
         comments: inputs[4].value.trim()
       };
     });
-    return {
-      eq,
-      testDate: testDate.value,
-      tech: tech.value.trim(),
-      notes: notes.value.trim(),
-      lineRows: collectFrom(lineRowsEl),
-      loadRows: collectFrom(loadRowsEl),
-      updatedAt: new Date().toISOString()
-    };
   }
 
-  async function saveToFirebase(_data){
-    // PLACEHOLDER: Firestore write goes here.
-    // Example shape: /equipment/{eq}/forms/meg_log
+  function applyMeta(meta){
+    if(!meta) return;
+    testDate.value = meta.testDate || '';
+    tech.value = meta.tech || '';
+    notes.value = meta.notes || '';
   }
 
-  async function save(){
-    const data=collect();
-    localStorage.setItem(keyV2, JSON.stringify(data));
-    await saveToFirebase(data);
-    statusChip.innerHTML = '<span class="ok">Saved</span>';
+  function applyRows(tbodyEl, rows){
+    tbodyEl.innerHTML = '';
+    const arr = Array.isArray(rows) ? rows : [];
+    arr.forEach(r => tbodyEl.appendChild(rowTemplate(r)));
+  }
+
+  function migrateIfNeeded(){
+    // If split keys already exist, nothing to do.
+    const hasSplit = !!localStorage.getItem(keyMeta) || !!localStorage.getItem(keyLine) || !!localStorage.getItem(keyLoad);
+    if(hasSplit) return;
+
+    // If v2 exists, migrate into split keys.
+    const rawV2 = localStorage.getItem(keyV2);
+    if(rawV2){
+      try{
+        const data = JSON.parse(rawV2);
+        const meta = {
+          eq,
+          testDate: data.testDate || '',
+          tech: data.tech || '',
+          notes: data.notes || '',
+          migratedFrom: 'v2',
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(keyMeta, JSON.stringify(meta));
+        localStorage.setItem(keyLine, JSON.stringify({ eq, rows: Array.isArray(data.lineRows)?data.lineRows:[], updatedAt:new Date().toISOString(), migratedFrom:'v2' }));
+        localStorage.setItem(keyLoad, JSON.stringify({ eq, rows: Array.isArray(data.loadRows)?data.loadRows:[], updatedAt:new Date().toISOString(), migratedFrom:'v2' }));
+        return;
+      }catch(e){}
+    }
+
+    // If v1 exists, migrate rows into Line only.
+    const rawV1 = localStorage.getItem(keyV1);
+    if(rawV1){
+      try{
+        const data = JSON.parse(rawV1);
+        const meta = {
+          eq,
+          testDate: data.testDate || '',
+          tech: data.tech || '',
+          notes: data.notes || '',
+          migratedFrom: 'v1',
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(keyMeta, JSON.stringify(meta));
+        localStorage.setItem(keyLine, JSON.stringify({ eq, rows: Array.isArray(data.rows)?data.rows:[], updatedAt:new Date().toISOString(), migratedFrom:'v1' }));
+        localStorage.setItem(keyLoad, JSON.stringify({ eq, rows: [], updatedAt:new Date().toISOString(), migratedFrom:'v1' }));
+        return;
+      }catch(e){}
+    }
+  }
+
+  function load(){
+    migrateIfNeeded();
+
+    let meta=null, line=null, load=null;
+
+    try{ meta = JSON.parse(localStorage.getItem(keyMeta) || 'null'); }catch(e){}
+    try{ line = JSON.parse(localStorage.getItem(keyLine) || 'null'); }catch(e){}
+    try{ load = JSON.parse(localStorage.getItem(keyLoad) || 'null'); }catch(e){}
+
+    applyMeta(meta || {});
+    applyRows(lineRowsEl, line && line.rows);
+    applyRows(loadRowsEl, load && load.rows);
+
+    ensureMinimumRows();
+
+    if(meta || line || load) statusChip.textContent = 'Loaded';
+    else statusChip.textContent = 'Not saved';
   }
 
   function markDirty(){
     statusChip.textContent = 'Not saved';
   }
 
+  function setSaved(label){
+    statusChip.innerHTML = `<span class="ok">Saved</span>${label ? ` <span style="opacity:.9">(${label})</span>` : ''}`;
+  }
+
+  async function saveToFirebase(scope, data){
+    // PLACEHOLDER: Firestore write goes here.
+    // Suggested shape:
+    // equipment/{eq}/forms/meg/meta
+    // equipment/{eq}/forms/meg/line
+    // equipment/{eq}/forms/meg/load
+    // scope: "meta" | "line" | "load" | "all"
+    void(scope); void(data);
+  }
+
+  async function saveMeta(){
+    const meta = collectMeta();
+    localStorage.setItem(keyMeta, JSON.stringify(meta));
+    await saveToFirebase('meta', meta);
+  }
+
+  async function saveLine(){
+    await saveMeta();
+    const payload = { eq, rows: collectRows(lineRowsEl), updatedAt: new Date().toISOString() };
+    localStorage.setItem(keyLine, JSON.stringify(payload));
+    await saveToFirebase('line', payload);
+    setSaved('Line');
+  }
+
+  async function saveLoad(){
+    await saveMeta();
+    const payload = { eq, rows: collectRows(loadRowsEl), updatedAt: new Date().toISOString() };
+    localStorage.setItem(keyLoad, JSON.stringify(payload));
+    await saveToFirebase('load', payload);
+    setSaved('Load');
+  }
+
+  async function saveAll(){
+    await saveMeta();
+    const linePayload = { eq, rows: collectRows(lineRowsEl), updatedAt: new Date().toISOString() };
+    const loadPayload = { eq, rows: collectRows(loadRowsEl), updatedAt: new Date().toISOString() };
+    localStorage.setItem(keyLine, JSON.stringify(linePayload));
+    localStorage.setItem(keyLoad, JSON.stringify(loadPayload));
+
+    await saveToFirebase('all', { meta: collectMeta(), line: linePayload, load: loadPayload });
+    setSaved('All');
+  }
+
   document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty(); });
   document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty(); });
-  document.getElementById('saveBtn').addEventListener('click',save);
+
+  document.getElementById('saveLineBtn').addEventListener('click', saveLine);
+  document.getElementById('saveLoadBtn').addEventListener('click', saveLoad);
+  document.getElementById('saveAllBtn').addEventListener('click', saveAll);
 
   // Dirty tracking
   document.addEventListener('input', (e) => {
@@ -311,12 +388,11 @@
 })();
 </script>
 
-
 <footer class="nx-footer">
   © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
 </footer>
 
-  <script src="assets/js/nexus-core.js"></script>
-  <script src="assets/js/nexus-firebase-bridge.js"></script>
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
