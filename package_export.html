@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NEXUS Package Export</title>
+<style>
+  :root{--bg:#b60000;--panel:rgba(255,255,255,0.20);--panel2:rgba(0,0,0,0.35);--line:rgba(255,255,255,0.20);--accent:#00c2ff;}
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#fff;
+    background:var(--bg);
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+  .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px);} 
+  .nx-header{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;}
+  .nx-header img{height:54px;width:auto;object-fit:contain;}
+  .wrap{max-width:1100px;margin:18px auto 60px;padding:0 18px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(10px);} 
+  .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .btn{padding:12px 16px;font-size:14px;font-weight:900;border-radius:999px;color:#3ecbff;background:#0a0f24;border:2px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
+  .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35);} 
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+  h1{margin:0 0 6px;font-size:28px;font-weight:900;}
+  .sub{margin:0 0 14px;font-weight:800;opacity:.95;}
+  .meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0 8px;}
+  @media (max-width:900px){.meta{grid-template-columns:1fr;}}
+  .field{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;}
+  .label{font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;opacity:.95;margin-bottom:8px;}
+  select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.18);outline:none;font-size:15px;font-weight:900;background:rgba(255,255,255,0.92);color:#111;}
+  .hint{font-size:13px;opacity:.9;line-height:1.35;}
+
+  /* Printable report area */
+  #printArea{margin-top:14px;}
+  .report{background:rgba(255,255,255,0.92);color:#111;border-radius:16px;border:1px solid rgba(0,0,0,0.08);padding:18px;}
+  .report h2{margin:0 0 6px;font-size:18px;letter-spacing:.02em;}
+  .report h3{margin:16px 0 8px;font-size:15px;letter-spacing:.02em;}
+  .kv{display:grid;grid-template-columns:220px 1fr;gap:8px 12px;margin:10px 0 0;}
+  .kv div{padding:6px 8px;border-bottom:1px solid rgba(0,0,0,0.08);}
+  .kv .k{font-weight:900;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;}
+  th,td{border:1px solid rgba(0,0,0,0.15);padding:8px 8px;vertical-align:top;font-size:13px;}
+  th{background:rgba(0,0,0,0.05);text-align:left;font-weight:900;}
+  .muted{opacity:.8;}
+  .pagebreak{page-break-after:always;}
+
+  @media print{
+    body{background:#fff !important;color:#000 !important;}
+    .nx-header-wrap,.topbar,.meta,.hint,.actions{display:none !important;}
+    .wrap{margin:0;padding:0;max-width:none;}
+    .card{background:#fff !important;border:none !important;backdrop-filter:none !important;padding:0;}
+    .report{border:none !important;border-radius:0 !important;}
+    .pagebreak{page-break-after:always;}
+  }
+</style>
+
+<style>
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+</style>
+
+  <link rel="stylesheet" href="assets/css/nexus-core.css">
+</head>
+<body>\n
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+  </div>
+</div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
+
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
+
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="topbar">
+      <div>
+        <h1>Package Export</h1>
+        <div class="sub" id="eqLabel">Equipment: (missing eq)</div>
+      </div>
+      <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+        <a class="btn secondary" id="backBtn" href="index.html">Back</a>
+        <button class="btn" id="printBtn" type="button">Export (Print/PDF)</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="field">
+        <div class="label">Procore destination</div>
+        <select id="procoreDest">
+          <option value="construction">Construction (attachments for Construction)</option>
+          <option value="energization">Energization / Commissioning (attachments for Energization)</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="label">Open Procore</div>
+        <button class="btn secondary" id="openProcoreBtn" type="button">Open selected Procore page</button>
+      </div>
+      <div class="field">
+        <div class="label">Status</div>
+        <div class="hint" id="status">Ready</div>
+      </div>
+    </div>
+
+    <div class="hint">
+      This generates a single printable package that includes: RIF (status), Megohmmeter Test Log (Line/Load), Torque Log (rows + tilt), L2 (status/link), and Pre-FOD (status/link).<br>
+      Procore upload is manual in this pre-Firebase build: export to PDF, then open the Procore page and attach the PDF.
+      Firebase migration hook is included in code as a placeholder.
+    </div>
+
+    <div id="printArea">
+      <div class="report" id="report"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs=new URLSearchParams(location.search);
+  const eq=(qs.get('eq')||'').trim();
+  const reportEl=document.getElementById('report');
+  const eqLabel=document.getElementById('eqLabel');
+  const backBtn=document.getElementById('backBtn');
+  const statusEl=document.getElementById('status');
+  const destSel=document.getElementById('procoreDest');
+
+  eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Equipment: (missing eq)';
+  backBtn.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
+
+  function eqMetaKey(){return `nexus_meta_${eq||'NO_EQ'}`;}
+  function loadEqMeta(){
+    try{
+      const raw=localStorage.getItem(eqMetaKey());
+      if(raw) return JSON.parse(raw);
+      const legacy=localStorage.getItem('nexus_meta_');
+      if(legacy) return JSON.parse(legacy);
+    }catch(e){}
+    return null;
+  }
+
+  function stepKey(stepId){return `nexus_${eq||'NO_EQ'}_step_${stepId}`;}
+  function isDone(stepId){return localStorage.getItem(stepKey(stepId))==='1';}
+
+  function safe(v){
+    const s = (v==null?'':String(v));
+    return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+
+  function readJSON(key){
+    try{const raw=localStorage.getItem(key); return raw?JSON.parse(raw):null;}catch(e){return null;}
+  }
+
+  function sectionHeader(title, subtitle){
+    return `\n<h2>${safe(title)}</h2>${subtitle?`<div class="muted">${safe(subtitle)}</div>`:''}`;
+  }
+
+  function kvRow(k,v){
+    return `<div class="k">${safe(k)}</div><div>${safe(v||'')}</div>`;
+  }
+
+  function renderMeg(data){
+    if(!data) return `<div class="muted">No saved Megohmmeter Test Log data found.</div>`;
+
+    const mkTable = (rows) => {
+      const out = (Array.isArray(rows)?rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));
+      if(!out.length) return `<div class="muted">(No rows filled)</div>`;
+      return `
+        <table>
+          <thead><tr><th>Conductor</th><th>Phase</th><th>Voltage</th><th>Reading</th><th>Comments</th></tr></thead>
+          <tbody>
+            ${out.map(r=>`<tr><td>${safe(r.conductor)}</td><td>${safe(r.phase)}</td><td>${safe(r.voltage)}</td><td>${safe(r.reading)}</td><td>${safe(r.comments)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    };
+
+    return `
+      <div class="kv">
+        ${kvRow('Test Date', data.testDate)}
+        ${kvRow('Technician', data.tech)}
+        ${kvRow('Notes', data.notes)}
+      </div>
+      <h3>Line Side</h3>
+      ${mkTable(data.lineRows)}
+      <h3>Load Side</h3>
+      ${mkTable(data.loadRows)}
+    `;
+  }
+
+  function renderTorque(data){
+    if(!data) return `<div class="muted">No saved Torque Log data found.</div>`;
+
+    const rows = (Array.isArray(data.rows)?data.rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));
+    const tilt = data.tilt || {};
+
+    const rowsTable = rows.length ? `
+      <table>
+        <thead><tr><th>Location</th><th>Description</th><th>Size</th><th>Torque</th><th>Initials</th><th>Date</th><th>Notes</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr><td>${safe(r.location)}</td><td>${safe(r.description)}</td><td>${safe(r.size)}</td><td>${safe(r.torque)}</td><td>${safe(r.initials)}</td><td>${safe(r.date)}</td><td>${safe(r.notes)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    ` : `<div class="muted">(No rows filled)</div>`;
+
+    const tiltKeys = Object.keys(tilt);
+    const tiltTable = tiltKeys.length ? `
+      <table>
+        <thead><tr><th>Phase</th><th>Result</th></tr></thead>
+        <tbody>
+          ${tiltKeys.map(k=>`<tr><td>${safe(k)}</td><td>${safe(tilt[k])}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    ` : `<div class="muted">(No tilt results saved)</div>`;
+
+    return `
+      <div class="kv">
+        ${kvRow('Units', data?.notes?.unit)}
+        ${kvRow('Torque Notes', data?.notes?.torque)}
+        ${kvRow('Updated At', data?.meta?.updatedAt)}
+      </div>
+      <h3>Torque Rows</h3>
+      ${rowsTable}
+      <h3>Tilt / Verification</h3>
+      ${tiltTable}
+    `;
+  }
+
+  function renderStatusLine(label, stepId, extra){
+    const s = isDone(stepId) ? 'COMPLETE' : 'NOT COMPLETE';
+    return `<div><b>${safe(label)}:</b> ${safe(s)}${extra?` <span class="muted">(${safe(extra)})</span>`:''}</div>`;
+  }
+
+  function buildReport(){
+    const meta = loadEqMeta() || {};
+
+    const procoreConstructionUrl = meta.procoreEquipUrl || '';
+    const procoreEnergizationUrl = meta.procoreEnergizationUrl || '';
+
+    const meg = readJSON(`nexus_${eq||'NO_EQ'}_meg_log_v2`) || readJSON(`nexus_${eq||'NO_EQ'}_meg_log_v1`);
+    const torque = readJSON(`nexus_${eq||'NO_EQ'}_torque_log_v1`);
+
+    const rifLink = eq ? `form.html?id=rif&eq=${encodeURIComponent(eq)}` : 'form.html?id=rif';
+    const megLink = eq ? `meg_log.html?eq=${encodeURIComponent(eq)}` : 'meg_log.html';
+    const torqueLink = eq ? `torque_log.html?eq=${encodeURIComponent(eq)}` : 'torque_log.html';
+
+    reportEl.innerHTML = `
+      ${sectionHeader('NEXUS Package', eq ? `Equipment: ${eq}` : '')}
+      <div class="kv">
+        ${kvRow('Generated', new Date().toLocaleString())}
+        ${kvRow('Procore (Construction)', procoreConstructionUrl)}
+        ${kvRow('Procore (Energization)', procoreEnergizationUrl)}
+      </div>
+
+      <h3>Completion Summary</h3>
+      ${renderStatusLine('RIF', 'rif', rifLink)}
+      ${renderStatusLine('Megohmmeter', 'meg', megLink)}
+      ${renderStatusLine('Torque', 'torque', torqueLink)}
+      ${renderStatusLine('L2', 'l2')}
+      ${renderStatusLine('Pre-FOD', 'prefod')}
+
+      <div class="pagebreak"></div>
+
+      ${sectionHeader('Megohmmeter Test Log', '')}
+      ${renderMeg(meg)}
+
+      <div class="pagebreak"></div>
+
+      ${sectionHeader('Torque Log', '')}
+      ${renderTorque(torque)}
+
+      <div class="pagebreak"></div>
+
+      ${sectionHeader('RIF / L2 / Pre-FOD', 'Status + reference links (forms are external in this pre-Firebase build)')}
+      <div class="kv">
+        ${kvRow('RIF Page', rifLink)}
+        ${kvRow('L2 Page', eq ? `form.html?id=l2&eq=${encodeURIComponent(eq)}` : 'form.html?id=l2')}
+        ${kvRow('Pre-FOD Page', eq ? `form.html?id=prefod&eq=${encodeURIComponent(eq)}` : 'form.html?id=prefod')}
+      </div>
+      <div style="margin-top:10px" class="muted">
+        Note: L2 and Pre-FOD content currently live in external links (SharePoint/Procore) and are not captured as fillable forms in this phase.
+      </div>
+    `;
+
+    // update open procore button enablement based on selection + availability
+    const openBtn = document.getElementById('openProcoreBtn');
+    function currentUrl(){
+      return destSel.value==='energization' ? procoreEnergizationUrl : procoreConstructionUrl;
+    }
+    function refreshOpen(){
+      const u=currentUrl();
+      openBtn.disabled = !u;
+      openBtn.textContent = u ? 'Open selected Procore page' : 'Procore URL not set on Equipment Setup';
+    }
+    destSel.addEventListener('change', refreshOpen);
+    refreshOpen();
+
+    openBtn.onclick = () => {
+      const u=currentUrl();
+      if(!u) return;
+      window.open(u, '_blank', 'noopener');
+    };
+  }
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    // Firebase hook placeholder: when enabled, use a Cloud Function to render PDF server-side and upload.
+    // window.nexusFirebase?.exportPackagePdf?.(eq, { destination: destSel.value })
+    //   .then(()=>{})
+    //   .catch(()=>{});
+    window.print();
+  });
+
+  buildReport();
+  statusEl.textContent = 'Report built from saved local data.';
+})();
+</script>
+
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+  <script src="assets/js/nexus-core.js"></script>
+  <script src="assets/js/nexus-firebase-bridge.js"></script>
+</body>
+</html>

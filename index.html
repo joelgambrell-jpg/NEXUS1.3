@@ -1,0 +1,417 @@
+<!-- =========================
+     index.html
+     ========================= -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NEXUS</title>
+
+  <style>
+    :root{
+      --bg:#b60000;
+      --panel:rgba(255,255,255,0.22);
+      --panel2:rgba(0,0,0,0.25);
+      --btn-bg:#0a0f24;
+      --btn-txt:#3ecbff;
+      --accent:#00c2ff;
+      --line:rgba(255,255,255,0.20);
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
+    body{
+      background-image:url("transformer.jpg");
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-size:cover;
+      background-attachment:fixed;
+    }
+    .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:34px; }
+    .card{
+      width:100%; max-width:980px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:26px;
+      backdrop-filter:blur(10px);
+    }
+    header{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    h1{ margin:0; font-size:34px; font-weight:900; letter-spacing:0.2px; }
+    .sub{ margin:6px 0 0; font-weight:800; opacity:0.95; }
+
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px; }
+    @media (max-width:780px){ .grid{ grid-template-columns:1fr; } }
+
+    .panel{ background:var(--panel2); border:1px solid var(--line); border-radius:18px; padding:18px; }
+    .title{ font-size:13px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; opacity:0.95; margin:0 0 12px; }
+
+    label{ display:block; font-weight:900; margin:10px 0 8px; font-size:13px; opacity:0.95; }
+    input[type="text"]{
+      width:100%; padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.18);
+      outline:none;
+      font-size:16px;
+      background:rgba(255,255,255,0.92);
+      color:#111;
+      font-weight:800;
+    }
+    .hint{ margin-top:10px; font-size:13px; line-height:1.35; opacity:0.92; }
+
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .btn{
+      padding:12px 16px;
+      font-size:15px;
+      font-weight:900;
+      border-radius:999px;
+      color:var(--btn-txt);
+      background:var(--btn-bg);
+      border:2px solid var(--accent);
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+    }
+    .btn.secondary{
+      background:rgba(0,0,0,0.20);
+      color:#fff;
+      border:2px solid rgba(255,255,255,0.35);
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+
+    /* Landing indicator (neon green) */
+    .btn.complete{
+      background:#00ff66 !important;
+      color:#002b14 !important;
+      border-color:#00ff66 !important;
+      box-shadow:0 0 14px rgba(0,255,102,.85);
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:13px;
+      border:1px solid rgba(255,255,255,0.25);
+      background:rgba(0,0,0,0.18);
+      margin-top:10px;
+    }
+
+    footer{ margin-top:14px; font-size:0.9em; opacity:0.85; text-align:center; }
+    code{ background:rgba(0,0,0,0.35); padding:2px 6px; border-radius:6px; }
+
+    /* ===== NEXUS Shared Header ===== */
+    .nx-header-wrap{
+      background: rgba(0,0,0,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(8px);
+    }
+    .nx-header{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+    }
+    .nx-header img{
+      height: 54px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
+  </style>
+
+<style>
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+</style>
+
+  <link rel="stylesheet" href="assets/css/nexus-core.css">
+</head>
+
+<body>\n
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+  </div>
+</div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
+
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
+
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
+
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>NEXUS</h1>
+          <div class="sub">Mission Critical Construction Data Centralization</div>
+        </div>
+        <div class="chip" id="statusChip">Ready</div>
+      </header>
+
+      <div class="grid">
+        <section class="panel">
+          <div class="title">Open Equipment</div>
+
+          <label for="eqInput">Equipment ID</label>
+          <input id="eqInput" type="text" placeholder="TR-001" autocomplete="off" autocapitalize="characters" />
+
+          <label for="buildingInput">Building #</label>
+          <input id="buildingInput" type="text" placeholder="Bldg-01" autocomplete="off" />
+
+          <label for="phaseSelect">Phase</label>
+          <select id="phaseSelect" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.18);font-size:16px;font-weight:800;">
+            <option value="">Select…</option>
+          </select>
+
+          <label for="podSelect">POD</label>
+          <select id="podSelect" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.18);font-size:16px;font-weight:800;">
+            <option value="">Select…</option>
+          </select>
+
+          <label for="procoreEquipUrl">Procore Equipment URL</label>
+          <input id="procoreEquipUrl" type="text" placeholder="Paste Procore equipment link" autocomplete="off" />
+
+          <label for="procoreEnergizationUrl">Procore Energization URL</label>
+          <input id="procoreEnergizationUrl" type="text" placeholder="Paste Procore energization link" autocomplete="off" />
+
+
+          <div class="actions">
+            <button class="btn" id="openBtn" type="button">Open Equipment Page</button>
+            <a class="btn secondary" id="qrBtn" href="qr.html">Generate QR</a>
+            <a class="btn secondary" id="stepsStatusBtn" href="#">Equipment Steps</a>
+          </div>
+
+          <div class="hint">
+            QR codes should encode a URL like:<br>
+            <code>equipment.html?eq=TR-001</code><br>
+            Scanning a QR should land on the equipment page and keep <code>eq</code> through every task.
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="title">Quick Links</div>
+
+          <div class="actions">
+            <a class="btn secondary" href="qr.html">QR Generator</a>
+            <a class="btn secondary" href="scan.html">Scan QR</a>
+            <a class="btn secondary" href="submit.html">Submission History</a>
+          </div>
+
+          <div class="hint">
+            If you arrived here from a QR code (with <code>?eq=</code>), you will be redirected to the correct equipment page automatically.
+          </div>
+        </section>
+      </div>
+
+      <footer>
+        © Intellectual Property of NEXUS Data Science. Created in joint venture with ACE Electric. All rights reserved.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const chip = document.getElementById('statusChip');
+    const eqInput = document.getElementById('eqInput');
+    const openBtn = document.getElementById('openBtn');
+    const qrBtn = document.getElementById('qrBtn');
+    const stepsStatusBtn = document.getElementById('stepsStatusBtn');
+
+    const buildingInput = document.getElementById("buildingInput");
+    const phaseSelect = document.getElementById("phaseSelect");
+    const podSelect = document.getElementById("podSelect");
+    const procoreEquipUrl = document.getElementById("procoreEquipUrl");
+    const procoreEnergizationUrl = document.getElementById("procoreEnergizationUrl");
+
+    function fill1to12(select){
+      for(let i=1;i<=12;i++){
+        const o=document.createElement("option");
+        o.value=String(i);
+        o.textContent=String(i);
+        select.appendChild(o);
+      }
+    }
+    if(phaseSelect) fill1to12(phaseSelect);
+    if(podSelect) fill1to12(podSelect);
+
+    // NOTE: key is per-equipment. Legacy builds stored everything under "nexus_meta_".
+    function metaKey(eq){ return `nexus_meta_${eq || "NO_EQ"}`; }
+
+    function loadMeta(eq){
+      const k = metaKey(eq);
+      try{
+        const raw = localStorage.getItem(k);
+        if (raw) return JSON.parse(raw);
+
+        // Legacy migration (one-time): if old global key exists, copy it.
+        const legacyRaw = localStorage.getItem("nexus_meta_");
+        if (legacyRaw){
+          const legacy = JSON.parse(legacyRaw);
+          localStorage.setItem(k, JSON.stringify(legacy || {}));
+          return legacy || {};
+        }
+      }catch(e){ /* ignore */ }
+      return {};
+    }
+
+    function saveMeta(eq, meta){
+      try{ localStorage.setItem(metaKey(eq), JSON.stringify(meta||{})); }catch(e){}
+    }
+
+    function setChip(text){ chip.textContent = text; }
+    function normalizeEq(s){ return (s || '').trim(); }
+    function landingKey(eq){ return `nexus_${eq}_landing_complete`; }
+
+    // If someone hits /?eq=TR-001, send them straight to the equipment page.
+    (function autoRedirect(){
+      const qs = new URLSearchParams(location.search);
+      const eq = (qs.get('eq') || '').trim();
+      if (eq){
+        location.replace(`equipment.html?eq=${encodeURIComponent(eq)}`);
+      }
+    })();
+
+    function updateLinks(){
+      const eq = normalizeEq(eqInput.value);
+      qrBtn.href = `qr.html${eq ? `?eq=${encodeURIComponent(eq)}` : ''}`;
+      stepsStatusBtn.href = `equipment.html${eq ? `?eq=${encodeURIComponent(eq)}` : ''}`;
+    }
+
+    function updateStepIndicator(){
+      const eq = normalizeEq(eqInput.value);
+      const done = !!eq && localStorage.getItem(landingKey(eq)) === '1';
+      stepsStatusBtn.classList.toggle('complete', done);
+    }
+
+    function applyMetaToFields(meta){
+      if(buildingInput) buildingInput.value = meta.building || "";
+      if(phaseSelect) phaseSelect.value = meta.phase || "";
+      if(podSelect) podSelect.value = meta.pod || "";
+      if(procoreEquipUrl) procoreEquipUrl.value = meta.procoreEquipUrl || "";
+      if(procoreEnergizationUrl) procoreEnergizationUrl.value = meta.procoreEnergizationUrl || "";
+    }
+
+    function collectMetaFromFields(){
+      return {
+        building: buildingInput ? buildingInput.value.trim() : "",
+        phase: phaseSelect ? phaseSelect.value : "",
+        pod: podSelect ? podSelect.value : "",
+        procoreEquipUrl: procoreEquipUrl ? procoreEquipUrl.value.trim() : "",
+        procoreEnergizationUrl: procoreEnergizationUrl ? procoreEnergizationUrl.value.trim() : ""
+      };
+    }
+
+    function refreshMeta(){
+      const eq = normalizeEq(eqInput.value);
+      if(!eq){ applyMetaToFields({}); return; }
+      applyMetaToFields(loadMeta(eq));
+    }
+
+    function persistMeta(){
+      const eq = normalizeEq(eqInput.value);
+      if(!eq) return;
+      saveMeta(eq, collectMetaFromFields());
+    }
+
+    [buildingInput, phaseSelect, podSelect, procoreEquipUrl, procoreEnergizationUrl].forEach(el => {
+      if(!el) return;
+      el.addEventListener("input", persistMeta);
+      el.addEventListener("change", persistMeta);
+    });
+
+
+
+    eqInput.addEventListener("blur", refreshMeta);
+
+    eqInput.addEventListener('input', () => {
+      updateLinks();
+      updateStepIndicator();
+    });
+
+    updateLinks();
+    updateStepIndicator();
+
+    openBtn.addEventListener('click', () => {
+      const eq = normalizeEq(eqInput.value);
+      if (!eq){
+        setChip('Enter an Equipment ID');
+        eqInput.focus();
+        return;
+      }
+      location.href = `equipment.html?eq=${encodeURIComponent(eq)}`;
+    });
+
+    eqInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') openBtn.click();
+    });
+
+    // If another tab updates completion, reflect it
+    window.addEventListener('storage', () => updateStepIndicator());
+    window.addEventListener('focus', () => updateStepIndicator());
+    window.addEventListener('pageshow', () => updateStepIndicator());
+  </script>
+
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+  <script src="assets/js/nexus-core.js"></script>
+  <script src="assets/js/nexus-firebase-bridge.js"></script>
+</body>
+</html>

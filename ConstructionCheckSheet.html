@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Construction Check Sheet</title>
+
+<style>
+  :root{
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --line:rgba(255,255,255,0.22);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --accent:#00c2ff;
+
+    /* Solid sheet colors */
+    --sheet-bg:#ffffff;
+    --sheet-fg:#111111;
+    --sheet-muted:#666;
+    --sheet-line:#e6e6e6;
+    --sheet-head:#f5f5f5;
+    --danger:#ff4d4d;
+    --ok:#1a7f37;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; font-family:Arial,Helvetica,sans-serif; color:#fff; background:var(--bg); }
+  body{
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  /* Header */
+  .nx-header-wrap{
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+  }
+  .nx-header{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .nx-header img{ height: 54px; width:auto; object-fit:contain; }
+
+  .wrap{ max-width:1100px; margin: 22px auto 60px; padding: 0 18px; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin: 10px 0 14px;
+  }
+  .backlink{ color:#fff; text-decoration:none; font-weight:900; opacity:.95; }
+
+  .title{
+    text-align:center;
+    margin: 8px 0 10px;
+    font-size: 38px;
+    font-weight: 900;
+    text-shadow: 0 4px 18px rgba(0,0,0,.35);
+  }
+  .sub{
+    text-align:center;
+    font-size: 20px;
+    font-weight: 900;
+    margin: 0 0 18px;
+    opacity: .98;
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(8px);
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin: 8px 0 14px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .actions-left, .actions-right{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .btn{
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+  }
+  .btn.secondary{
+    background: rgba(0,0,0,0.22);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  .btn.danger{
+    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,0,0,0.15);
+    color:#fff;
+  }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .meta-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 10px 0 12px;
+  }
+  @media (max-width:900px){ .meta-grid{ grid-template-columns:1fr; } }
+
+  .field{
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    text-align:left;
+  }
+  .label{
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .95;
+    margin-bottom: 8px;
+  }
+  input[type="text"], select{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    outline:none;
+    font-size: 16px;
+    font-weight: 900;
+    background: rgba(255,255,255,0.92);
+    color:#111;
+  }
+
+  .status{ margin: 8px 0 12px; font-weight: 900; opacity: .95; }
+
+  /* Solid sheet panel */
+  .sheet-panel{
+    background: var(--sheet-bg);
+    color: var(--sheet-fg);
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 14px;
+  }
+
+  .role-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-radius:999px;
+    font-weight:900;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  .role-badge select{
+    width:auto;
+    padding:10px 10px;
+    font-size:14px;
+  }
+
+  .records{
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+  }
+
+  .record{
+    border: 1px solid var(--sheet-line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .record-summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 12px 12px;
+    background: var(--sheet-head);
+    cursor: pointer;
+    user-select: none;
+  }
+  .record-summary .left{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--sheet-line);
+    font-weight: 900;
+    color: var(--sheet-fg);
+  }
+  .pill.muted{ color: var(--sheet-muted); }
+  .pill.ok{ border-color: rgba(26,127,55,0.25); color: var(--ok); }
+  .pill.bad{ border-color: rgba(255,77,77,0.25); color: #b00020; }
+
+  .record-body{
+    padding: 12px;
+    background: #fff;
+  }
+
+  .grid-2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  @media (max-width:900px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .sheet-field{
+    border: 1px solid var(--sheet-line);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .sheet-field .k{
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--sheet-muted);
+    margin-bottom: 6px;
+  }
+  .sheet-field input, .sheet-field select{
+    width:100%;
+    padding: 10px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--sheet-line);
+    font-weight: 900;
+    color: var(--sheet-fg);
+    background: #fff;
+  }
+
+  .table-wrap{
+    overflow-x:auto;
+    border-radius: 12px;
+    border: 1px solid var(--sheet-line);
+  }
+  table{ width:100%; border-collapse: collapse; min-width: 860px; }
+  th, td{ padding: 10px 10px; border-bottom: 1px solid var(--sheet-line); vertical-align: top; }
+  th{
+    text-align:left;
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--sheet-muted);
+    background: var(--sheet-head);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  tr.section-row td{
+    background: #fafafa;
+    font-weight: 900;
+    color: var(--sheet-fg);
+  }
+
+  .cell-input{
+    width: 100%;
+    min-width: 120px;
+    padding: 9px 9px;
+    border-radius: 10px;
+    border: 1px solid var(--sheet-line);
+    outline:none;
+    font-weight: 900;
+    background: #fff;
+    color: var(--sheet-fg);
+  }
+  .cell-notes{ min-width: 260px; }
+
+  .row-actions{
+    display:flex;
+    gap: 10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    margin: 10px 0 8px;
+  }
+
+  .hint{
+    color: var(--sheet-muted);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .lock-note{
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--sheet-line);
+    background: #fafafa;
+    color: var(--sheet-muted);
+    font-weight: 900;
+  }
+
+  @media print{
+    body{ background:#fff !important; color:#000 !important; }
+    .nx-header-wrap, .actions, .topbar{ display:none !important; }
+    .card{ background:#fff !important; border:none !important; backdrop-filter:none !important; }
+    .sheet-panel{ border:none !important; }
+    th{ color:#000 !important; background:#eee !important; }
+    .table-wrap{ border:1px solid #ccc !important; }
+    .cell-input{ border:1px solid #999 !important; background:#fff !important; color:#000 !important; }
+  }
+</style>
+
+<style>
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+</style>
+
+  <link rel="stylesheet" href="assets/css/nexus-core.css">
+</head>
+
+<body>\n
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+  </div>
+</div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
+
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
+
+<div class="nx-header-wrap">
+  <div class="nx-header">
+    <img src="nexus.png" alt="NEXUS" />
+    <div class="role-badge" title="Pre-Firebase role gate (UI only). Firebase rules will enforce this later.">
+      <span>Role</span>
+      <select id="roleSelect" aria-label="Role">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="backlink" id="backToEquipment" href="equipment.html">← Back to Equipment</a>
+    <div style="font-weight:900;opacity:.9" id="nowStamp"></div>
+  </div>
+
+  <div class="title">Construction Check Sheet</div>
+  <div class="sub" id="eqSub">Equipment: (missing eq)</div>
+
+  <div class="card">
+    <div class="actions">
+      <div class="actions-left">
+        <button class="btn secondary" id="btnSave" type="button">Save</button>
+        <button class="btn secondary" id="btnExport" type="button">Export (Print/PDF)</button>
+      </div>
+      <div class="actions-right">
+        <button class="btn" id="btnAddRecord" type="button">Add Sheet</button>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="field">
+        <div class="label">Building</div>
+        <input id="building" type="text" placeholder="Building #" />
+      </div>
+
+      <div class="field">
+        <div class="label">Phase</div>
+        <select id="phase">
+          <option value="">Select…</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="label">Pod</div>
+        <select id="pod">
+          <option value="">Select…</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+      </div>
+
+      <div class="field" style="grid-column:1 / -1;">
+        <div class="label">Foreman</div>
+        <input id="foreman" type="text" placeholder="Foreman name" />
+      </div>
+    </div>
+
+    <div class="status" id="saveStatus">Not saved</div>
+
+    <div class="sheet-panel">
+      <div class="records" id="records"></div>
+      <div class="hint" style="margin-top:10px;">
+        Access control: Add/Remove/Sign-off requires role foreman+ (UI gate now; Firebase rules later).
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+
+  // Date/time stamp
+  document.getElementById("nowStamp").textContent = new Date().toLocaleString();
+  document.getElementById("eqSub").textContent = eq ? `Equipment: ${eq}` : "Equipment: (missing eq)";
+
+  // Back link (keeps eq)
+  const back = document.getElementById("backToEquipment");
+  back.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+
+  // Versioned storage key
+  const KEY_V2 = `nexus_${eq || "NO_EQ"}_construction_check_sheet_v2`;
+  const KEY_V1 = `nexus_${eq || "NO_EQ"}_construction_check_sheet_v1`;
+
+  // Role (pre-Firebase UI gate)
+  const ROLE_KEY = "nexus_user_role";
+  const roleSelect = document.getElementById("roleSelect");
+
+  const ROLE_ORDER = ["viewer","tech","foreman","superintendent","admin"];
+  function roleAtLeast(role, minRole){
+    return ROLE_ORDER.indexOf(role) >= ROLE_ORDER.indexOf(minRole);
+  }
+
+  function getRole(){
+    const raw = (localStorage.getItem(ROLE_KEY) || "viewer").trim();
+    return ROLE_ORDER.includes(raw) ? raw : "viewer";
+  }
+
+  function setRole(role){
+    localStorage.setItem(ROLE_KEY, role);
+  }
+
+  // Template lines derived from your Google Sheet structure
+  // Each checklist item stores Date, Initials, Notes, Complete
+  const TEMPLATE = [
+    {type:"section", text:"LV Transformer 001"},
+    {type:"item", id:"rif_completed", text:"RIF Completed"},
+    {type:"item", id:"labels_installed", text:"Labels installed by QCX"},
+    {type:"item", id:"phenolic", text:"Phenolic"},
+    {type:"item", id:"arc_flash", text:"Arc Flash"},
+    {type:"item", id:"torque", text:"Torque (all lugs verified)"},
+    {type:"item", id:"meg", text:"Megohmmeter test complete (if applicable)"},
+    {type:"item", id:"photo", text:"Verification photo captured"},
+    {type:"item", id:"clean", text:"Clean / no debris / covers installed"},
+    {type:"item", id:"final_visual", text:"Final visual inspection complete"},
+
+    {type:"section", text:"Equipment Mounted / Installation Specs"},
+    {type:"item", id:"clearance_6in", text:'6" clearance from walls and panels'},
+    {type:"item", id:"cover_bag_tag", text:"Remove front cover bolts, bag & tag, leaving proper amount of bolts to hold cover in place"},
+    {type:"item", id:"shipping_assembly", text:"Shipping assembly (if required)"},
+    {type:"item", id:"apply_cover", text:"Apply proper cover for equipment protection"},
+    {type:"item", id:"anchored", text:'Anchored using 1/2" concrete wedge anchors'},
+    {type:"item", id:"square_level", text:"Housing is mounted squared and leveled"},
+    {type:"item", id:"neta_tested", text:"XFMR Neta Tested (validated by QCx)"},
+
+    {type:"section", text:"Internal Wiring and Termination Specifications"},
+    {type:"section", text:"1. Hardware Installation"},
+    {type:"item", id:"phase_lugs", text:'Install proper/correct phase lugs (with min 1" gap from nearest item)'},
+    {type:"item", id:"ground_bar", text:"Install proper ground bar (if required)"},
+
+    {type:"section", text:"2. Primary / High Side"},
+    {type:"item", id:"primary_matches", text:"Primary wire matches 1 Line Diagram: (3) AL #1/0 and 1 CU #6 Ground (A100.3)"},
+    {type:"item", id:"primary_phase_color", text:"Verify primary wire phase color: H1/A-Brown H2/B-Orange H3/C-Yellow Ground-Green"},
+    {type:"item", id:"bonding_bushing_primary", text:"Verify installation and termination of ground bonding bushing"},
+
+    {type:"section", text:"3. Secondary / Low Side"},
+    {type:"item", id:"secondary_matches", text:"Secondary wire matches 1 Line Diagram: (3) AL #1/0 and Ground 1 CU #6 (A100.3) Neutral wire AL #1/0 (A110.T)"},
+    {type:"item", id:"secondary_phase_color", text:"Verify secondary wire phase color: X1/A-Black X2/B-Red X3/C-Blue Ground-Green Neutral-White"},
+    {type:"item", id:"bonding_bushing_secondary", text:"Verify installation and termination of ground bonding bushing"},
+
+    {type:"section", text:"4. Building Steel"},
+    {type:"item", id:"ground_size", text:"Verify that ground is #8 copper or larger"},
+
+    {type:"section", text:"5. Bonding Jumper"},
+    {type:"item", id:"bonding_jumper_spec", text:"Bonding jumper must be AL #1/0 wire (or same size as biggest conductor on pri. or sec.) and all black"},
+
+    {type:"item", id:"hardware_kit", text:"Verify hardware kit matches attached inventory sheet"},
+    {type:"item", id:"front_cover", text:"Install front cover with all hardware"},
+    {type:"section", text:"Foreman in charge verify all complete and handoff to QCX"}
+  ];
+
+  function uuid(){
+    // small uuid for local usage
+    return "r_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  function freshChecklist(){
+    const out = {};
+    TEMPLATE.forEach(t => {
+      if (t.type === "item"){
+        out[t.id] = { date:"", initials:"", notes:"", complete:false };
+      }
+    });
+    return out;
+  }
+
+  function buildEmailPayload({eq, record, meta}){
+    const subject = `CCS Signed Off: ${record.equipmentName || "(unnamed)"} — ${eq || "NO_EQ"}`;
+    const lines = [];
+    lines.push(`Equipment: ${eq || "(missing)"}`);
+    lines.push(`Sheet: ${record.equipmentName || "(unnamed)"}`);
+    lines.push(`Building: ${meta.building || ""}`);
+    lines.push(`Phase: ${meta.phase || ""}`);
+    lines.push(`Pod: ${meta.pod || ""}`);
+    lines.push(`Foreman (header): ${meta.foreman || ""}`);
+    lines.push("---");
+    lines.push(`Construction Foreman: ${record.signoff.constructionForeman || ""}`);
+    lines.push(`QCX Foreman: ${record.signoff.qcxForeman || ""}`);
+    lines.push(`Sign-off Date: ${record.signoff.date || ""}`);
+    lines.push(`SignedOffAt: ${record.signedOffAt || ""}`);
+
+    return {
+      to: "", // filled during Firebase phase (job/site distribution)
+      subject,
+      body: lines.join("\n"),
+      meta: {
+        eq,
+        recordId: record.id,
+        equipmentName: record.equipmentName || "",
+        building: meta.building || "",
+        phase: meta.phase || "",
+        pod: meta.pod || ""
+      }
+    };
+  }
+
+  const state = {
+    eq,
+    meta: { building:"", phase:"", pod:"", foreman:"" },
+    records: [],
+    updatedAt: null
+  };
+
+  const recordsEl = document.getElementById("records");
+  const btnAddRecord = document.getElementById("btnAddRecord");
+
+  function setStatus(txt){
+    document.getElementById("saveStatus").textContent = txt;
+  }
+
+  function computeProgress(record){
+    const items = Object.values(record.checklist || {});
+    if (!items.length) return 0;
+    const done = items.filter(x => !!x.complete).length;
+    return Math.round((done / items.length) * 100);
+  }
+
+  function canEditRecord(role, record){
+    // After signoff: only admin can edit
+    if (record.signedOff && role !== "admin") return false;
+    // Before signoff: anyone can edit fields (unless you later want stricter)
+    return true;
+  }
+
+  function render(){
+    const role = getRole();
+    roleSelect.value = role;
+
+    const foremanPlus = roleAtLeast(role, "foreman");
+    btnAddRecord.disabled = !foremanPlus;
+
+    recordsEl.innerHTML = "";
+
+    state.records.forEach((rec, idx) => {
+      const progress = computeProgress(rec);
+      const locked = rec.signedOff && role !== "admin";
+
+      const wrap = document.createElement("div");
+      wrap.className = "record";
+
+      const summary = document.createElement("div");
+      summary.className = "record-summary";
+      summary.setAttribute("role","button");
+      summary.setAttribute("tabindex","0");
+
+      const left = document.createElement("div");
+      left.className = "left";
+
+      const title = document.createElement("span");
+      title.className = "pill";
+      title.textContent = rec.equipmentName || `Sheet ${idx+1}`;
+      left.appendChild(title);
+
+      const prog = document.createElement("span");
+      prog.className = "pill muted";
+      prog.textContent = `Progress ${progress}%`;
+      left.appendChild(prog);
+
+      const sign = document.createElement("span");
+      sign.className = rec.signedOff ? "pill ok" : "pill bad";
+      sign.textContent = rec.signedOff ? "Signed Off" : "Not Signed";
+      left.appendChild(sign);
+
+      const right = document.createElement("div");
+      right.style.display = "flex";
+      right.style.gap = "10px";
+      right.style.alignItems = "center";
+
+      const hint = document.createElement("span");
+      hint.className = "pill muted";
+      hint.textContent = rec.expanded ? "Hide" : "Open";
+      right.appendChild(hint);
+
+      summary.appendChild(left);
+      summary.appendChild(right);
+
+      function toggle(){
+        rec.expanded = !rec.expanded;
+        render();
+      }
+      summary.addEventListener("click", toggle);
+      summary.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" ") toggle(); });
+
+      wrap.appendChild(summary);
+
+      if (rec.expanded){
+        const body = document.createElement("div");
+        body.className = "record-body";
+
+        const rowActions = document.createElement("div");
+        rowActions.className = "row-actions";
+
+        const leftA = document.createElement("div");
+        leftA.style.display = "flex";
+        leftA.style.gap = "10px";
+        leftA.style.flexWrap = "wrap";
+        leftA.style.alignItems = "center";
+
+        const rightA = document.createElement("div");
+        rightA.style.display = "flex";
+        rightA.style.gap = "10px";
+        rightA.style.flexWrap = "wrap";
+        rightA.style.alignItems = "center";
+
+        const btnAddLine = document.createElement("button");
+        btnAddLine.className = "btn secondary";
+        btnAddLine.type = "button";
+        btnAddLine.textContent = "Add Custom Line";
+        btnAddLine.disabled = !foremanPlus || locked;
+        btnAddLine.addEventListener("click", ()=>{
+          const id = "custom_" + uuid();
+          rec.customLines.push({ id, text: "(custom item)" });
+          rec.checklist[id] = { date:"", initials:"", notes:"", complete:false };
+          setStatus("Not saved");
+          render();
+        });
+
+        const btnRemove = document.createElement("button");
+        btnRemove.className = "btn danger";
+        btnRemove.type = "button";
+        btnRemove.textContent = "Remove Sheet";
+        btnRemove.disabled = !foremanPlus;
+        btnRemove.addEventListener("click", ()=>{
+          if (!confirm("Remove this sheet?")) return;
+          state.records = state.records.filter(r => r.id !== rec.id);
+          setStatus("Not saved");
+          render();
+        });
+
+        leftA.appendChild(btnAddLine);
+        rightA.appendChild(btnRemove);
+
+        rowActions.appendChild(leftA);
+        rowActions.appendChild(rightA);
+        body.appendChild(rowActions);
+
+        const g = document.createElement("div");
+        g.className = "grid-2";
+
+        // Equipment Name
+        g.appendChild(makeSheetField("Equipment Name", makeTextInput(rec, "equipmentName", "e.g., LV Transformer 001", locked)));
+        // Equip ID
+        g.appendChild(makeSheetField("Equip ID", makeTextInput(rec, "equipId", "Equip ID", locked)));
+        // Date Int.
+        g.appendChild(makeSheetField("Date Int.", makeTextInput(rec, "dateInt", "MM/DD/YYYY", locked)));
+        // Notes
+        g.appendChild(makeSheetField("Notes", makeTextInput(rec, "notes", "Notes", locked)));
+
+        body.appendChild(g);
+
+        // Checklist
+        const tableWrap = document.createElement("div");
+        tableWrap.className = "table-wrap";
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
+          <tr>
+            <th style="width:44%;">Item</th>
+            <th style="width:16%;">Date</th>
+            <th style="width:12%;">Initials</th>
+            <th style="width:22%;">Notes</th>
+            <th style="width:6%;">Done</th>
+          </tr>
+        `;
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+
+        // Render template items
+        TEMPLATE.forEach(t => {
+          if (t.type === "section"){
+            const tr = document.createElement("tr");
+            tr.className = "section-row";
+            const td = document.createElement("td");
+            td.colSpan = 5;
+            td.textContent = t.text;
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+          }
+
+          if (t.type === "item"){
+            tbody.appendChild(renderChecklistRow(rec, t.id, t.text, locked, foremanPlus, false));
+          }
+        });
+
+        // Render custom lines
+        if (rec.customLines.length){
+          const tr = document.createElement("tr");
+          tr.className = "section-row";
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = "Custom Lines";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+
+          rec.customLines.forEach(cl => {
+            tbody.appendChild(renderChecklistRow(rec, cl.id, cl.text, locked, foremanPlus, true));
+          });
+        }
+
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+        body.appendChild(tableWrap);
+
+        // Sign-off
+        const signWrap = document.createElement("div");
+        signWrap.style.marginTop = "12px";
+        signWrap.style.display = "grid";
+        signWrap.style.gridTemplateColumns = "1fr 1fr 1fr";
+        signWrap.style.gap = "10px";
+
+        signWrap.appendChild(makeSheetField("Construction Foreman Name", makeTextInput(rec.signoff, "constructionForeman", "Name", locked)));
+        signWrap.appendChild(makeSheetField("QCX Foreman Name", makeTextInput(rec.signoff, "qcxForeman", "Name", locked)));
+        signWrap.appendChild(makeSheetField("Date", makeTextInput(rec.signoff, "date", "MM/DD/YYYY", locked)));
+
+        body.appendChild(signWrap);
+
+        const signActions = document.createElement("div");
+        signActions.className = "row-actions";
+
+        const leftS = document.createElement("div");
+        leftS.style.display = "flex";
+        leftS.style.gap = "10px";
+        leftS.style.flexWrap = "wrap";
+        leftS.style.alignItems = "center";
+
+        const rightS = document.createElement("div");
+        rightS.style.display = "flex";
+        rightS.style.gap = "10px";
+        rightS.style.flexWrap = "wrap";
+        rightS.style.alignItems = "center";
+
+        const btnSign = document.createElement("button");
+        btnSign.className = "btn";
+        btnSign.type = "button";
+        btnSign.textContent = rec.signedOff ? "Signed" : "Sign Off";
+        btnSign.disabled = !foremanPlus || rec.signedOff;
+        btnSign.addEventListener("click", ()=>{
+          if (!foremanPlus) return;
+          const s = rec.signoff;
+          if (!(s.constructionForeman && s.qcxForeman && s.date)){
+            alert("Fill Construction Foreman, QCX Foreman, and Date before sign-off.");
+            return;
+          }
+          rec.signedOff = true;
+          rec.signedOffAt = new Date().toISOString();
+          rec.signedOffByRole = role;
+          rec.emailPayload = buildEmailPayload({eq: state.eq, record: rec, meta: state.meta});
+          setStatus("Not saved");
+          render();
+        });
+
+        const btnUnlock = document.createElement("button");
+        btnUnlock.className = "btn secondary";
+        btnUnlock.type = "button";
+        btnUnlock.textContent = "Admin Unlock";
+        btnUnlock.disabled = role !== "admin" || !rec.signedOff;
+        btnUnlock.addEventListener("click", ()=>{
+          rec.signedOff = false;
+          rec.signedOffAt = null;
+          rec.signedOffByRole = null;
+          rec.emailPayload = null;
+          setStatus("Not saved");
+          render();
+        });
+
+        leftS.appendChild(btnSign);
+        leftS.appendChild(btnUnlock);
+
+        if (rec.signedOff){
+          const p = document.createElement("div");
+          p.className = "hint";
+          p.textContent = `Email payload generated (stored only): subject “${(rec.emailPayload && rec.emailPayload.subject) ? rec.emailPayload.subject : ""}”`;
+          rightS.appendChild(p);
+        }
+
+        signActions.appendChild(leftS);
+        signActions.appendChild(rightS);
+        body.appendChild(signActions);
+
+        if (locked){
+          const ln = document.createElement("div");
+          ln.className = "lock-note";
+          ln.textContent = "This sheet is signed off and locked. Only admin can edit.";
+          body.appendChild(ln);
+        }
+
+        wrap.appendChild(body);
+      }
+
+      recordsEl.appendChild(wrap);
+    });
+
+    // If empty: seed one record
+    if (!state.records.length){
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "No sheets yet. Foreman+ can add a sheet.";
+      recordsEl.appendChild(empty);
+    }
+  }
+
+  function makeSheetField(labelText, controlEl){
+    const box = document.createElement("div");
+    box.className = "sheet-field";
+    const k = document.createElement("div");
+    k.className = "k";
+    k.textContent = labelText;
+    box.appendChild(k);
+    box.appendChild(controlEl);
+    return box;
+  }
+
+  function makeTextInput(obj, key, placeholder, disabled){
+    const i = document.createElement("input");
+    i.type = "text";
+    i.value = obj[key] || "";
+    i.placeholder = placeholder || "";
+    i.disabled = !!disabled;
+    i.addEventListener("input", ()=>{
+      obj[key] = i.value;
+      setStatus("Not saved");
+    });
+    return i;
+  }
+
+  function renderChecklistRow(rec, itemId, text, locked, foremanPlus, isCustom){
+    const v = rec.checklist[itemId] || { date:"", initials:"", notes:"", complete:false };
+    rec.checklist[itemId] = v;
+
+    const tr = document.createElement("tr");
+
+    const tdItem = document.createElement("td");
+    if (isCustom){
+      const edit = document.createElement("input");
+      edit.className = "cell-input";
+      edit.value = text;
+      edit.disabled = locked;
+      edit.addEventListener("input", ()=>{
+        const cl = rec.customLines.find(x => x.id === itemId);
+        if (cl) cl.text = edit.value;
+        setStatus("Not saved");
+      });
+      tdItem.appendChild(edit);
+    }else{
+      tdItem.textContent = text;
+      tdItem.style.fontWeight = "900";
+    }
+    tr.appendChild(tdItem);
+
+    const tdDate = document.createElement("td");
+    const date = document.createElement("input");
+    date.type = "text";
+    date.className = "cell-input";
+    date.placeholder = "MM/DD/YYYY";
+    date.value = v.date || "";
+    date.disabled = locked;
+    date.addEventListener("input", ()=>{ v.date = date.value; setStatus("Not saved"); });
+    tdDate.appendChild(date);
+    tr.appendChild(tdDate);
+
+    const tdInit = document.createElement("td");
+    const init = document.createElement("input");
+    init.type = "text";
+    init.className = "cell-input";
+    init.placeholder = "AB";
+    init.value = v.initials || "";
+    init.disabled = locked;
+    init.addEventListener("input", ()=>{ v.initials = init.value; setStatus("Not saved"); });
+    tdInit.appendChild(init);
+    tr.appendChild(tdInit);
+
+    const tdNotes = document.createElement("td");
+    const notes = document.createElement("input");
+    notes.type = "text";
+    notes.className = "cell-input cell-notes";
+    notes.placeholder = "Notes";
+    notes.value = v.notes || "";
+    notes.disabled = locked;
+    notes.addEventListener("input", ()=>{ v.notes = notes.value; setStatus("Not saved"); });
+    tdNotes.appendChild(notes);
+    tr.appendChild(tdNotes);
+
+    const tdDone = document.createElement("td");
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = !!v.complete;
+    chk.disabled = locked;
+    chk.addEventListener("change", ()=>{ v.complete = chk.checked; setStatus("Not saved"); render(); });
+    tdDone.appendChild(chk);
+    tr.appendChild(tdDone);
+
+    // Custom line remove button (foreman+)
+    if (isCustom){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn danger";
+      btn.style.padding = "8px 10px";
+      btn.style.fontSize = "12px";
+      btn.textContent = "Remove";
+      btn.disabled = !foremanPlus || locked;
+      btn.addEventListener("click", ()=>{
+        if (!confirm("Remove this custom line?")) return;
+        rec.customLines = rec.customLines.filter(x => x.id !== itemId);
+        delete rec.checklist[itemId];
+        setStatus("Not saved");
+        render();
+      });
+      tdDone.appendChild(document.createElement("div"));
+      tdDone.appendChild(btn);
+    }
+
+    return tr;
+  }
+
+  function collectPayload(){
+    return {
+      eq: state.eq,
+      meta: {
+        building: document.getElementById("building").value || "",
+        phase: document.getElementById("phase").value || "",
+        pod: document.getElementById("pod").value || "",
+        foreman: document.getElementById("foreman").value || ""
+      },
+      records: state.records.map(r => ({
+        id: r.id,
+        equipmentName: r.equipmentName || "",
+        equipId: r.equipId || "",
+        dateInt: r.dateInt || "",
+        notes: r.notes || "",
+        checklist: r.checklist || {},
+        customLines: r.customLines || [],
+        signoff: r.signoff || { constructionForeman:"", qcxForeman:"", date:"" },
+        signedOff: !!r.signedOff,
+        signedOffAt: r.signedOffAt || null,
+        signedOffByRole: r.signedOffByRole || null,
+        emailPayload: r.emailPayload || null
+      })),
+      updatedAt: new Date().toISOString(),
+      version: 2
+    };
+  }
+
+  function applyPayload(data){
+    if (!data) return;
+
+    // header meta
+    const m = data.meta || {};
+    document.getElementById("building").value = m.building || "";
+    document.getElementById("phase").value = m.phase || "";
+    document.getElementById("pod").value = m.pod || "";
+    document.getElementById("foreman").value = m.foreman || "";
+
+    state.meta = {
+      building: m.building || "",
+      phase: m.phase || "",
+      pod: m.pod || "",
+      foreman: m.foreman || ""
+    };
+
+    // records
+    const recs = Array.isArray(data.records) ? data.records : [];
+    state.records = recs.map(r => ({
+      id: r.id || uuid(),
+      expanded: false,
+      equipmentName: r.equipmentName || "LV Transformer 001",
+      equipId: r.equipId || "",
+      dateInt: r.dateInt || "",
+      notes: r.notes || "",
+      checklist: r.checklist || freshChecklist(),
+      customLines: Array.isArray(r.customLines) ? r.customLines : [],
+      signoff: r.signoff || { constructionForeman:"", qcxForeman:"", date:"" },
+      signedOff: !!r.signedOff,
+      signedOffAt: r.signedOffAt || null,
+      signedOffByRole: r.signedOffByRole || null,
+      emailPayload: r.emailPayload || null
+    }));
+  }
+
+  function tryMigrateV1(){
+    const raw = localStorage.getItem(KEY_V1);
+    if (!raw) return false;
+    try{
+      const v1 = JSON.parse(raw);
+      // v1 schema: {eq, building, phase, pod, foreman, fields:{rX_date/init/notes}}
+      const meta = {
+        building: v1.building || "",
+        phase: v1.phase || "",
+        pod: v1.pod || "",
+        foreman: v1.foreman || ""
+      };
+
+      const rec = {
+        id: uuid(),
+        expanded: true,
+        equipmentName: "LV Transformer 001",
+        equipId: "",
+        dateInt: "",
+        notes: "",
+        checklist: freshChecklist(),
+        customLines: [],
+        signoff: { constructionForeman:"", qcxForeman:"", date:"" },
+        signedOff: false,
+        signedOffAt: null,
+        signedOffByRole: null,
+        emailPayload: null
+      };
+
+      // Best-effort: map the first 10 old rows onto early items
+      const orderedIds = TEMPLATE.filter(t=>t.type==="item").map(t=>t.id);
+      const fields = v1.fields || {};
+      for (let i=0;i<orderedIds.length;i++){
+        const id = orderedIds[i];
+        const date = fields[`r${i+1}_date`] || "";
+        const init = fields[`r${i+1}_init`] || "";
+        const notes = fields[`r${i+1}_notes`] || "";
+        if (rec.checklist[id]){
+          rec.checklist[id].date = date;
+          rec.checklist[id].initials = init;
+          rec.checklist[id].notes = notes;
+          rec.checklist[id].complete = false;
+        }
+      }
+
+      applyPayload({ meta, records:[rec], updatedAt: new Date().toISOString(), version:2 });
+      localStorage.setItem(KEY_V2, JSON.stringify(collectPayload()));
+      setStatus("Migrated from v1 (local)");
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function save(){
+    const payload = collectPayload();
+    state.meta = payload.meta;
+    localStorage.setItem(KEY_V2, JSON.stringify(payload));
+    setStatus("Saved");
+
+    // OPTIONAL Firebase hook (safe if not configured yet)
+    try{
+      if (window.nexusFirebase && typeof window.nexusFirebase.saveSheet === "function"){
+        await window.nexusFirebase.saveSheet(eq, "construction", payload);
+        setStatus("Saved (Firebase)");
+      }
+    }catch(e){
+      setStatus("Saved (local) — Firebase not connected");
+    }
+  }
+
+  function load(){
+    const raw = localStorage.getItem(KEY_V2);
+    if (raw){
+      try{
+        const data = JSON.parse(raw);
+        applyPayload(data);
+        setStatus("Loaded");
+        return;
+      }catch(e){}
+    }
+
+    // Try v1 migration
+    if (tryMigrateV1()){
+      render();
+      return;
+    }
+
+    // Seed default record
+    state.records = [{
+      id: uuid(),
+      expanded: true,
+      equipmentName: "LV Transformer 001",
+      equipId: "",
+      dateInt: "",
+      notes: "",
+      checklist: freshChecklist(),
+      customLines: [],
+      signoff: { constructionForeman:"", qcxForeman:"", date:"" },
+      signedOff: false,
+      signedOffAt: null,
+      signedOffByRole: null,
+      emailPayload: null
+    }];
+    setStatus("New");
+  }
+
+  // Wire header inputs to status
+  ["building","phase","pod","foreman"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", ()=> setStatus("Not saved"));
+    el.addEventListener("change", ()=> setStatus("Not saved"));
+  });
+
+  document.getElementById("btnSave").addEventListener("click", save);
+  document.getElementById("btnExport").addEventListener("click", () => window.print());
+
+  btnAddRecord.addEventListener("click", ()=>{
+    const role = getRole();
+    if (!roleAtLeast(role, "foreman")) return;
+    state.records.unshift({
+      id: uuid(),
+      expanded: true,
+      equipmentName: "LV Transformer 001",
+      equipId: "",
+      dateInt: "",
+      notes: "",
+      checklist: freshChecklist(),
+      customLines: [],
+      signoff: { constructionForeman:"", qcxForeman:"", date:"" },
+      signedOff: false,
+      signedOffAt: null,
+      signedOffByRole: null,
+      emailPayload: null
+    });
+    setStatus("Not saved");
+    render();
+  });
+
+  roleSelect.addEventListener("change", ()=>{
+    setRole(roleSelect.value);
+    render();
+  });
+
+  load();
+  // initial role
+  roleSelect.value = getRole();
+  render();
+})();
+</script>
+
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+  <script src="assets/js/nexus-core.js"></script>
+  <script src="assets/js/nexus-firebase-bridge.js"></script>
+</body>
+</html>
