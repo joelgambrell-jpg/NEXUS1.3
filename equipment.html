@@ -8,219 +8,736 @@
 <style>
   :root{
     --bg:#b60000;
-    --panel:rgba(255,255,255,0.25);
-    --panel-dark:rgba(0,0,0,0.35);
+    --panel:rgba(255,255,255,0.20);
+    --panel2:rgba(0,0,0,0.35);
     --line:rgba(255,255,255,0.22);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
     --accent:#00c2ff;
-    --good:#00ff66;
+    --ok:#2dff9b;
   }
   *{box-sizing:border-box;}
+  html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg);}
   body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    color:#fff;
-    background:var(--bg) url("transformer.jpg") center/cover fixed no-repeat;
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
   }
 
+  /* Header */
   .nx-header-wrap{
-    background:rgba(0,0,0,0.35);
-    border-bottom:1px solid rgba(255,255,255,0.18);
-    backdrop-filter:blur(8px);
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
   }
   .nx-header{
-    max-width:1100px;
-    margin:0 auto;
-    padding:14px 18px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+  }
+  .nx-header img{ height: 54px; width:auto; object-fit:contain; }
+
+  .page-wrap{ max-width:1100px; margin: 22px auto 60px; padding: 0 18px; }
+  h1{ margin: 0 0 8px; font-size: 34px; font-weight: 900; text-shadow: 0 4px 18px rgba(0,0,0,.35); }
+  .eq{ font-weight: 900; opacity: .95; margin-bottom: 14px; }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+
+  .btn{
+    padding:12px 14px;
+    font-size:15px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    gap:10px;
+  }
+  .btn.secondary{
+    background: rgba(0,0,0,0.22);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  .btn.locked{ opacity:.6; pointer-events:none; }
+  .btn.complete{
+    border-color: rgba(45,255,155,0.8);
+    box-shadow: 0 0 0 2px rgba(45,255,155,0.15) inset;
+  }
+
+  /* Progress */
+  .progress-wrap{
+    margin: 12px 0 18px;
+    padding: 14px 14px 12px;
+    border-radius: 18px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.20);
+  }
+  .progress-label{
     display:flex;
     align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    font-weight:900;
+    margin-bottom:10px;
   }
-  .nx-header img{height:54px;}
-
-  .wrap{max-width:1100px;margin:20px auto 80px;padding:0 18px;}
-  .title{text-align:center;font-size:38px;font-weight:900;margin:10px 0;}
-
-  .progress-wrap{
-    background:var(--panel-dark);
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:18px;
-    border:1px solid var(--line);
-  }
-  .progress-bar{
-    height:16px;
+  .progress-track{
+    width:100%;
+    height:14px;
     border-radius:999px;
-    background:rgba(255,255,255,.2);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
     overflow:hidden;
-    margin-top:10px;
   }
   .progress-fill{
     height:100%;
     width:0%;
-    background:linear-gradient(90deg,#00ffcc,#00c2ff);
-    transition:width .3s ease;
+    background: linear-gradient(90deg, rgba(0,194,255,0.95), rgba(45,255,155,0.85));
+    border-radius:999px;
+    transition: width .25s ease;
   }
-  .progress-text{text-align:center;font-weight:900;margin-top:6px;}
-
-  .energization{text-align:center;margin:18px 0;}
-  .energization.locked .btn{opacity:.4;pointer-events:none;}
-  .energization.unlocked .btn{
-    background:#0ff;color:#002;
-    box-shadow:0 0 30px rgba(0,255,255,.8);
-  }
-
-  .bubble{
-    background:var(--panel-dark);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:16px;
-  }
-  .bubble-title{font-size:18px;font-weight:900;margin-bottom:12px;}
-
-  .btn{
-    display:block;width:100%;
-    padding:14px;border-radius:14px;
-    font-weight:900;font-size:16px;
-    background:#fff;color:#000;
-    text-align:center;text-decoration:none;
-    border:none;cursor:pointer;
-  }
-
-  .action-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:14px;margin:18px 0;
-  }
-  .action{
-    padding:16px;border-radius:14px;
-    background:var(--good);color:#000;
-    font-weight:900;text-align:center;
-    text-decoration:none;
-    box-shadow:0 0 18px rgba(0,255,102,.7);
-  }
-
-  .reference-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:14px;
-  }
-
-  .procore-hidden{display:none!important;}
-
-  footer{
-    margin-top:40px;
-    padding:14px;
-    text-align:center;
-    font-size:13px;
+  .progress-hint{
+    margin-top:10px;
+    font-size:12px;
+    font-weight:800;
     opacity:.9;
   }
+
+  /* Energization */
+  #energizationWrap{
+    position: relative;
+    margin: 14px 0 6px;
+    display:flex;
+    justify-content:center;
+  }
+  #energizationBtn{
+    width:min(520px, 100%);
+    font-size:18px;
+    padding:14px 16px;
+  }
+  #energizationBtn.unlocked{
+    color:#001018;
+    background: #00c2ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 22px rgba(0,194,255,0.35);
+  }
+  .radiate{
+    position:absolute;
+    inset:auto;
+    width:0; height:0;
+    pointer-events:none;
+  }
+  .bolt{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:10px;
+    height:10px;
+    transform: translate(-50%,-50%);
+    border-radius: 999px;
+    background: rgba(0,194,255,0.0);
+    box-shadow: 0 0 18px rgba(0,194,255,0.0);
+    opacity:0;
+  }
+  @keyframes radiateOut{
+    0%{ transform: translate(-50%,-50%) rotate(var(--a)) translateX(0); opacity:0; }
+    20%{ opacity:1; }
+    100%{ transform: translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)); opacity:0; }
+  }
+  #energizationBtn.unlocked ~ .radiate .bolt{
+    background: rgba(0,194,255,0.95);
+    box-shadow: 0 0 18px rgba(0,194,255,0.75);
+  }
+  .b1{--a:0deg;--d:28px;animation:radiateOut 1.1s infinite;}
+  .b2{--a:45deg;--d:26px;animation:radiateOut 1.25s infinite .1s;}
+  .b3{--a:90deg;--d:28px;animation:radiateOut 1.05s infinite .2s;}
+  .b4{--a:135deg;--d:26px;animation:radiateOut 1.2s infinite .16s;}
+  .b5{--a:180deg;--d:28px;animation:radiateOut 1.1s infinite .22s;}
+  .b6{--a:225deg;--d:28px;animation:radiateOut 1.3s infinite .28s;}
+  .b7{--a:270deg;--d:26px;animation:radiateOut 1.05s infinite .14s;}
+  .b8{--a:315deg;--d:28px;animation:radiateOut 1.2s infinite .24s;}
+
+  /* Goal + Countdown */
+  .goal-card{
+    margin: 10px 0 18px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.20);
+    text-align:left;
+  }
+  .goal-title{ font-weight:900; margin:0 0 10px; letter-spacing:0.02em; }
+  .goal-row{ margin:10px 0; }
+  .goal-label{
+    display:block;
+    font-weight:900;
+    margin:0 0 6px;
+    font-size:13px;
+    opacity:.95;
+  }
+  .goal-input{
+    width:100%;
+    padding:12px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.18);
+    outline:none;
+    font-size:15px;
+    background: rgba(255,255,255,0.92);
+    color:#111;
+    font-weight:800;
+  }
+  .goal-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .goal-btn{
+    padding:10px 14px;
+    border-radius:999px;
+    font-weight:900;
+    cursor:pointer;
+    border:2px solid rgba(255,255,255,0.35);
+    background: rgba(0,0,0,0.20);
+    color:#fff;
+  }
+  .goal-btn.secondary{ opacity:.9; }
+  .countdown{
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px solid rgba(255,255,255,0.18);
+  }
+  .countdown-big{ font-weight:900; font-size:18px; }
+  .countdown-sub{ margin-top:4px; font-weight:800; opacity:.9; font-size:13px; }
+
+  /* Bubbles */
+  .section-grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+  .bubble{
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.20);
+  }
+  .bubble-title{ font-weight:900; margin-bottom:10px; }
+  .bubble-grid{ display:flex; gap:10px; flex-wrap:wrap; }
+  .exports-full .bubble-grid a{ flex: 1; min-width: 260px; }
+
+  /* Procore hidden but kept for hooks */
+  .procore-hidden{ display:none!important; }
+
+  @media print{
+    .nx-session-banner, .nx-back-btn, .goal-card, #energizationWrap, .bubble, .grid { display:none !important; }
+    body{ background:#fff !important; color:#000 !important; }
+    .card{ background:#fff !important; border:none !important; backdrop-filter:none !important; }
+  }
 </style>
+
+<style>
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+</style>
+
+<link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
 
 <body>
-<div class="nx-header-wrap">
-  <div class="nx-header">
-    <img src="nexus.png" alt="NEXUS" />
+
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
   </div>
 </div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
 
-<div class="wrap">
-  <div class="title">Equipment</div>
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
-  <!-- Progress -->
-  <div class="progress-wrap">
-    <div class="progress-text" id="progressText">0% Complete</div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-  </div>
+<div class="nx-header-wrap">
+  <div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div>
+</div>
 
-  <!-- Energization -->
-  <div class="energization locked" id="energizationBlock">
-    <div class="bubble">
-      <div class="bubble-title">Energization</div>
-      <div style="margin-bottom:10px;">
-        Goal Date:
-        <input type="date" id="energizationDate" />
+<div class="page-wrap">
+  <div class="card">
+    <h1>Equipment Page</h1>
+    <div class="eq" id="eqLabel"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <div id="progressText">Progress: 0%</div>
+        <div id="progressCount">0/0</div>
       </div>
-      <div id="countdown"></div>
-      <button class="btn" onclick="location.href='task.html?id=energization'">
-        Energization
-      </button>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-hint">
+        Progress updates when each form is marked complete (use the “Complete” toggle on each task page).
+      </div>
+    </div>
+
+    <div class="goal-card" id="goalCard">
+      <div class="goal-title">Energization Goal</div>
+
+      <div class="goal-row">
+        <label class="goal-label" for="goalDate">Goal Date &amp; Time</label>
+        <input class="goal-input" id="goalDate" type="datetime-local" />
+      </div>
+
+      <div class="goal-row">
+        <label class="goal-label" for="notifyEmails">Notify Emails (comma-separated)</label>
+        <input class="goal-input" id="notifyEmails" type="text" placeholder="foreman@company.com, pm@company.com" />
+      </div>
+
+      <div class="goal-actions">
+        <button class="goal-btn" id="saveGoalBtn" type="button">Save Goal</button>
+        <button class="goal-btn secondary" id="clearGoalBtn" type="button">Clear</button>
+      </div>
+
+      <div class="countdown">
+        <div class="countdown-big" id="countdownBig">No goal set</div>
+        <div class="countdown-sub" id="countdownSub"></div>
+      </div>
+    </div>
+
+    <div id="energizationWrap">
+      <a class="btn locked" id="energizationBtn" href="#" aria-disabled="true">Energization</a>
+      <div class="radiate">
+        <span class="bolt b1"></span><span class="bolt b2"></span>
+        <span class="bolt b3"></span><span class="bolt b4"></span>
+        <span class="bolt b5"></span><span class="bolt b6"></span>
+        <span class="bolt b7"></span><span class="bolt b8"></span>
+      </div>
+    </div>
+
+    <div class="section-grid">
+      <!-- Procore links embedded (hidden) for hooks + later Firebase -->
+      <div class="procore-hidden" aria-hidden="true">
+        <a class="btn secondary locked" id="procoreConstructionBtn" href="#" aria-disabled="true" target="_blank" rel="noopener">Procore - Construction</a>
+        <a class="btn secondary locked" id="procoreEnergizationBtn" href="#" aria-disabled="true" target="_blank" rel="noopener">Procore - Energization</a>
+      </div>
+
+      <div class="bubble exports-full">
+        <div class="bubble-title">Exports</div>
+        <div class="bubble-grid">
+          <a class="btn secondary" id="packageExportBtn" href="#">Export Package (Print/PDF)</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <a class="btn" id="rifBtn">RIF</a>
+      <a class="btn" id="lvtBtn">Megohmmeter Testing</a>
+      <a class="btn" id="torqueBtn">Torque</a>
+      <a class="btn" id="l2Btn">L2-IVF</a>
+      <a class="btn" id="prefodBtn">Pre-FOD</a>
+      <a class="btn" id="finishedPhotoBtn">Finished Product Verification Photo</a>
+    </div>
+
+    <div class="bubble">
+      <div class="bubble-title">Reference &amp; Check Sheets</div>
+      <div class="bubble-grid">
+        <a class="btn" id="constructionBtn">Construction Check Sheet</a>
+        <a class="btn" id="phenolicBtn">Phenolic Display</a>
+        <a class="btn" id="transformerBtn">Diagram Image</a>
+        <a class="btn" id="supportingBtn">Supporting Documents</a>
+      </div>
     </div>
   </div>
-
-  <!-- Hidden Procore Links -->
-  <div class="procore-hidden">
-    <a id="procoreConstruction" href="#">Procore – Construction</a>
-    <a id="procoreEnergization" href="#">Procore – Energization</a>
-  </div>
-
-  <!-- Exports -->
-  <div class="bubble">
-    <div class="bubble-title">Exports</div>
-    <button class="btn" onclick="location.href='package_export.html'">
-      Export Package (Print / PDF)
-    </button>
-  </div>
-
-  <!-- Main Workflow (ROUTED — NO 404s) -->
-  <div class="action-grid">
-    <a class="action" href="task.html?id=rif">RIF</a>
-    <a class="action" href="task.html?id=meg">Megohmmeter</a>
-    <a class="action" href="task.html?id=torque">Torque</a>
-    <a class="action" href="task.html?id=l2">L2-IVF</a>
-    <a class="action" href="task.html?id=prefod">Pre-FOD</a>
-    <a class="action" href="task.html?id=fpv_photo">Finished Photos</a>
-  </div>
-
-  <!-- Reference -->
-  <div class="bubble">
-    <div class="bubble-title">Reference & Check Sheets</div>
-    <div class="reference-grid">
-      <a class="btn" href="ConstructionCheckSheet.html">Construction Check Sheet</a>
-      <a class="btn" href="phenolic.html">Phenolic</a>
-      <a class="btn" href="diagram.html">Diagram</a>
-      <a class="btn" href="supporting_documents.html">Supporting Docs</a>
-    </div>
-  </div>
-
-  <footer>
-    © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
-  </footer>
 </div>
 
 <script>
-(function(){
-  const totalTasks = 5;
-  let completed = 0;
+(function () {
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
 
-  function updateProgress(){
-    const pct = Math.round((completed/totalTasks)*100);
-    document.getElementById("progressFill").style.width = pct + "%";
-    document.getElementById("progressText").textContent = pct + "% Complete";
+  function metaKey(){ return `nexus_meta_${eq || "NO_EQ"}`; }
+  function loadMeta(){
+    try{
+      const raw = localStorage.getItem(metaKey());
+      if (raw) return JSON.parse(raw);
+      const legacyRaw = localStorage.getItem("nexus_meta_");
+      if (legacyRaw) return JSON.parse(legacyRaw);
+    }catch(e){}
+    return {};
+  }
 
-    const block = document.getElementById("energizationBlock");
-    if(pct === 100){
-      block.classList.remove("locked");
-      block.classList.add("unlocked");
+  function setLinkButton(el, url){
+    if (!el) return;
+    const clean = (url || "").trim();
+    if (clean){
+      el.href = clean;
+      el.classList.remove("locked");
+      el.style.pointerEvents = "auto";
+      el.removeAttribute("aria-disabled");
+    } else {
+      el.href = "#";
+      el.classList.add("locked");
+      el.style.pointerEvents = "none";
+      el.setAttribute("aria-disabled", "true");
     }
   }
 
-  updateProgress();
+  const eqLabel = document.getElementById("eqLabel");
+  if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID";
 
-  const dateInput = document.getElementById("energizationDate");
-  const countdown = document.getElementById("countdown");
+  // Embedded Procore links (hidden UI, still wired)
+  const meta = loadMeta();
+  setLinkButton(document.getElementById("procoreConstructionBtn"), meta.procoreEquipUrl);
+  setLinkButton(document.getElementById("procoreEnergizationBtn"), meta.procoreEnergizationUrl);
 
-  function tick(){
-    if(!dateInput.value){ countdown.textContent=""; return; }
-    const diff = new Date(dateInput.value) - new Date();
-    if(diff <= 0){ countdown.textContent="Today"; return; }
-    const d = Math.ceil(diff / (1000*60*60*24));
-    countdown.textContent = d + " days remaining";
+  function taskLink(id){
+    return `task.html?id=${encodeURIComponent(id)}${eq ? `&eq=${encodeURIComponent(eq)}` : ""}`;
   }
-  setInterval(tick, 1000);
+  function directPage(page){
+    return `${page}${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
+  }
+  function stepKey(id){ return `nexus_${eq || "NO_EQ"}_step_${id}`; }
+
+  const taskSteps=[
+    {id:"rif",btn:"rifBtn"},
+    {id:"meg",btn:"lvtBtn"},
+    {id:"torque",btn:"torqueBtn"},
+    {id:"l2",btn:"l2Btn"},
+    {id:"prefod",btn:"prefodBtn"},
+    {id:"fpv_photo",btn:"finishedPhotoBtn"}
+  ];
+
+  taskSteps.forEach(s=>{
+    const el = document.getElementById(s.btn);
+    if (el) el.href = taskLink(s.id);
+  });
+
+  const packageExportBtn = document.getElementById("packageExportBtn");
+  if (packageExportBtn) packageExportBtn.href = directPage("package_export.html");
+
+  const constructionBtn = document.getElementById("constructionBtn");
+  if (constructionBtn) constructionBtn.href = directPage("ConstructionCheckSheet.html");
+
+  const phenolicBtn = document.getElementById("phenolicBtn");
+  if (phenolicBtn) phenolicBtn.href = taskLink("phenolic");
+
+  const transformerBtn = document.getElementById("transformerBtn");
+  if (transformerBtn) transformerBtn.href = taskLink("transformer");
+
+  const supportingBtn = document.getElementById("supportingBtn");
+  if (supportingBtn) supportingBtn.href = taskLink("supporting");
+
+  const fill = document.getElementById("progressFill");
+  const txt  = document.getElementById("progressText");
+  const cnt  = document.getElementById("progressCount");
+  const eBtn = document.getElementById("energizationBtn");
+
+  function energizationHref(){
+    return `energization.html${eq ? `?eq=${encodeURIComponent(eq)}` : ""}`;
+  }
+
+  function refresh(){
+    let done = 0;
+
+    taskSteps.forEach(s=>{
+      const el = document.getElementById(s.btn);
+      const ok = localStorage.getItem(stepKey(s.id)) === "1";
+      if (el) el.classList.toggle("complete", ok);
+      if (ok) done++;
+    });
+
+    const pct = taskSteps.length ? Math.round((done / taskSteps.length) * 100) : 0;
+
+    if (fill) fill.style.width = `${pct}%`;
+    if (txt)  txt.textContent = `Progress: ${pct}%`;
+    if (cnt)  cnt.textContent = `${done}/${taskSteps.length}`;
+
+    if (eBtn){
+      if (pct >= 100){
+        eBtn.classList.remove("locked");
+        eBtn.classList.add("unlocked");
+        eBtn.href = energizationHref();
+        eBtn.style.pointerEvents = "auto";
+        eBtn.removeAttribute("aria-disabled");
+      } else {
+        eBtn.classList.add("locked");
+        eBtn.classList.remove("unlocked");
+        eBtn.href = "#";
+        eBtn.style.pointerEvents = "none";
+        eBtn.setAttribute("aria-disabled","true");
+      }
+    }
+
+    // Embedded-only: energization procore should only be relevant once unlocked
+    const pE = document.getElementById("procoreEnergizationBtn");
+    if (pE){
+      pE.style.display = (pct >= 100) ? "inline-flex" : "none";
+    }
+  }
+
+  // ===== Goal + Countdown (local + optional Firestore) =====
+  const goalDateEl = document.getElementById("goalDate");
+  const notifyEmailsEl = document.getElementById("notifyEmails");
+  const saveGoalBtn = document.getElementById("saveGoalBtn");
+  const clearGoalBtn = document.getElementById("clearGoalBtn");
+  const countdownBig = document.getElementById("countdownBig");
+  const countdownSub = document.getElementById("countdownSub");
+
+  function goalKey(){ return `nexus_${eq || "NO_EQ"}_energ_goal_iso`; }
+  function emailsKey(){ return `nexus_${eq || "NO_EQ"}_energ_goal_emails`; }
+
+  function loadGoalFromLocal(){
+    const iso = localStorage.getItem(goalKey()) || "";
+    const emails = localStorage.getItem(emailsKey()) || "";
+    if (goalDateEl) goalDateEl.value = iso ? iso.slice(0,16) : "";
+    if (notifyEmailsEl) notifyEmailsEl.value = emails;
+  }
+
+  function setGoalLocal(iso, emails){
+    if (iso) localStorage.setItem(goalKey(), iso);
+    else localStorage.removeItem(goalKey());
+    if (emails) localStorage.setItem(emailsKey(), emails);
+    else localStorage.removeItem(emailsKey());
+  }
+
+  async function setGoalFirestore(iso, emails){
+    try{
+      if (!window.NEXUS_FB?.db || !eq) return;
+      const { db, auth } = window.NEXUS_FB;
+
+      const { doc, setDoc, serverTimestamp, Timestamp } =
+        await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+
+      const ref = doc(db, "equipment", eq);
+
+      const dt = iso ? new Date(iso) : null;
+      const notifyEmails = (emails || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      await setDoc(ref, {
+        energizationGoalAt: dt ? Timestamp.fromDate(dt) : null,
+        energizationNotifyEmails: notifyEmails,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth?.currentUser?.uid || null
+      }, { merge:true });
+    }catch(e){
+      console.warn("Firestore goal save failed:", e);
+    }
+  }
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function renderCountdown(){
+    if (!countdownBig || !countdownSub) return;
+
+    const iso = localStorage.getItem(goalKey());
+    if (!iso){
+      countdownBig.textContent = "No goal set";
+      countdownSub.textContent = "";
+      return;
+    }
+
+    const target = new Date(iso).getTime();
+    const now = Date.now();
+    let diff = target - now;
+
+    const past = diff < 0;
+    diff = Math.abs(diff);
+
+    const days = Math.floor(diff / (24*3600*1000));
+    const hrs  = Math.floor((diff % (24*3600*1000)) / (3600*1000));
+    const mins = Math.floor((diff % (3600*1000)) / (60*1000));
+    const secs = Math.floor((diff % (60*1000)) / 1000);
+
+    countdownBig.textContent =
+      (past ? "Past due by: " : "Time remaining: ") +
+      `${days}d ${pad2(hrs)}h ${pad2(mins)}m ${pad2(secs)}s`;
+
+    countdownSub.textContent = `Goal: ${new Date(iso).toLocaleString()}`;
+  }
+
+  let countdownTimer = null;
+  function startCountdown(){
+    if (countdownTimer) clearInterval(countdownTimer);
+    renderCountdown();
+    countdownTimer = setInterval(renderCountdown, 1000);
+  }
+
+  if (saveGoalBtn){
+    saveGoalBtn.addEventListener("click", async () => {
+      if (!eq) return;
+      const raw = (goalDateEl?.value || "").trim();
+      const emails = (notifyEmailsEl?.value || "").trim();
+      const iso = raw ? new Date(raw).toISOString() : "";
+      setGoalLocal(iso, emails);
+      await setGoalFirestore(iso, emails);
+      startCountdown();
+    });
+  }
+
+  if (clearGoalBtn){
+    clearGoalBtn.addEventListener("click", async () => {
+      setGoalLocal("", "");
+      if (goalDateEl) goalDateEl.value = "";
+      if (notifyEmailsEl) notifyEmailsEl.value = "";
+      await setGoalFirestore("", "");
+      startCountdown();
+    });
+  }
+
+  // Initial UI
+  refresh();
+  loadGoalFromLocal();
+  startCountdown();
+
+  window.addEventListener("focus", () => { refresh(); renderCountdown(); });
+  window.addEventListener("pageshow", () => { refresh(); renderCountdown(); });
+  window.addEventListener("storage", () => { refresh(); renderCountdown(); });
+
+  // =========================
+  // FIREBASE REAL-TIME SYNC (optional)
+  // - Steps: equipment/{eq}/steps/{stepId} => mirrors into localStorage
+  // - Goal: equipment/{eq} doc fields => mirrors into localStorage
+  // =========================
+  let fbStepsUnsub = null;
+
+  async function startFirestoreStepsListener(){
+    try{
+      if (!eq || !window.NEXUS_FB?.db) return;
+      const { db } = window.NEXUS_FB;
+
+      const { collection, onSnapshot } =
+        await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+
+      const stepsCol = collection(db, "equipment", eq, "steps");
+      const knownTaskIds = new Set(taskSteps.map(s => s.id));
+
+      fbStepsUnsub = onSnapshot(stepsCol, (snap) => {
+        snap.forEach(docSnap => {
+          const stepId = docSnap.id;
+          if (!knownTaskIds.has(stepId)) return;
+
+          const data = docSnap.data() || {};
+          if (data.done) localStorage.setItem(stepKey(stepId), "1");
+          else localStorage.removeItem(stepKey(stepId));
+        });
+
+        refresh();
+      });
+    }catch(e){
+      console.warn("Firestore steps listener failed:", e);
+    }
+  }
+
+  async function startFirestoreGoalListener(){
+    try{
+      if (!eq || !window.NEXUS_FB?.db) return;
+      const { db } = window.NEXUS_FB;
+
+      const { doc, onSnapshot } =
+        await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+
+      const ref = doc(db, "equipment", eq);
+
+      onSnapshot(ref, (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+
+        const ts = data.energizationGoalAt;
+        const iso = ts?.toDate ? ts.toDate().toISOString() : "";
+
+        const emailsArr = Array.isArray(data.energizationNotifyEmails) ? data.energizationNotifyEmails : [];
+        const emails = emailsArr.join(", ");
+
+        setGoalLocal(iso, emails);
+        loadGoalFromLocal();
+        startCountdown();
+      });
+    }catch(e){
+      console.warn("Firestore goal listener failed:", e);
+    }
+  }
+
+  startFirestoreStepsListener();
+  startFirestoreGoalListener();
+
+  window.addEventListener("beforeunload", () => {
+    try{ if (fbStepsUnsub) fbStepsUnsub(); }catch(e){}
+  });
 })();
 </script>
+
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
