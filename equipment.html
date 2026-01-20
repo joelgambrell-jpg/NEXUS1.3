@@ -715,6 +715,157 @@
   });
 })();
 </script>
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+  if(!eq) return;
+
+  const KEY = `nexus_${eq}_equipment_links_v1`;
+
+  function canEdit(){
+    // Foreman+ only (uses your nexus-core role system)
+    try{
+      if(window.NEXUS && typeof window.NEXUS.getRole === "function"){
+        const r = window.NEXUS.getRole();
+        const order = ["viewer","tech","foreman","superintendent","admin"];
+        return order.indexOf(r) >= order.indexOf("foreman");
+      }
+    }catch(e){}
+    return false;
+  }
+
+  function setDisabled(disabled){
+    const form = document.getElementById("eqLinksForm");
+    const hint = document.getElementById("eqLinksLockHint");
+    const saveBtn = document.getElementById("btnSaveEqLinks");
+    const clearBtn = document.getElementById("btnClearEqLinks");
+    if(!form) return;
+
+    form.querySelectorAll("input").forEach(i => i.disabled = disabled);
+    if(saveBtn) saveBtn.disabled = disabled;
+    if(clearBtn) clearBtn.disabled = disabled;
+    if(hint) hint.style.display = disabled ? "block" : "none";
+  }
+
+  function readLinksFromUI(){
+    return {
+      rif: (document.getElementById("link_rif")?.value || "").trim(),
+      l2: (document.getElementById("link_l2")?.value || "").trim(),
+      photos: (document.getElementById("link_photos")?.value || "").trim(),
+      torque: (document.getElementById("link_torque")?.value || "").trim(),
+      meg: (document.getElementById("link_meg")?.value || "").trim(),
+      prefab: (document.getElementById("link_prefab")?.value || "").trim(),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function writeLinksToUI(links){
+    document.getElementById("link_rif").value = links.rif || "";
+    document.getElementById("link_l2").value = links.l2 || "";
+    document.getElementById("link_photos").value = links.photos || "";
+    document.getElementById("link_torque").value = links.torque || "";
+    document.getElementById("link_meg").value = links.meg || "";
+    document.getElementById("link_prefab").value = links.prefab || "";
+  }
+
+  function loadLinks(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){
+      return null;
+    }
+  }
+
+  function setStatus(t){
+    const el = document.getElementById("eqLinksStatus");
+    if(el) el.textContent = t;
+  }
+
+  async function saveLinks(){
+    const links = readLinksFromUI();
+    localStorage.setItem(KEY, JSON.stringify(links));
+    setStatus("Saved");
+
+    // Firebase hook placeholder (no backend logic now)
+    try{
+      if(window.nexusFirebase && typeof window.nexusFirebase.saveEquipmentLinks === "function"){
+        await window.nexusFirebase.saveEquipmentLinks(eq, links);
+        setStatus("Saved (Firebase)");
+      }
+    }catch(e){
+      setStatus("Saved (local) — Firebase not connected");
+    }
+
+    applyOverrides(links);
+  }
+
+  function clearLinks(){
+    localStorage.removeItem(KEY);
+    writeLinksToUI({rif:"",l2:"",photos:"",torque:"",meg:"",prefab:""});
+    setStatus("Cleared");
+    applyOverrides(null);
+  }
+
+  // Map override keys -> equipment page button ids (adjust ids to match your equipment.html)
+  const BUTTON_MAP = {
+    rif: "btnRIF",
+    l2: "btnL2IVF",
+    photos: "btnFinishedPhotos",
+    torque: "btnTorque",
+    meg: "btnMeg",
+    prefab: "btnPrefab"
+  };
+
+  function isValidUrl(s){
+    if(!s) return false;
+    try{ new URL(s); return true; }catch(e){ return false; }
+  }
+
+  function applyOverrides(links){
+    // If you want these links to open in new tab, set target=_blank here
+    Object.entries(BUTTON_MAP).forEach(([k, id])=>{
+      const btn = document.getElementById(id);
+      if(!btn) return;
+
+      const url = links && isValidUrl(links[k]) ? links[k] : "";
+      if(url){
+        btn.dataset.overrideHref = url;
+        btn.addEventListener("click", overrideClickOnce, { once:false });
+        btn.classList.add("secondary");
+      }else{
+        btn.dataset.overrideHref = "";
+      }
+    });
+  }
+
+  function overrideClickOnce(e){
+    const t = e.currentTarget;
+    const url = t?.dataset?.overrideHref;
+    if(url){
+      e.preventDefault();
+      window.open(url, "_blank");
+    }
+  }
+
+  // Init
+  const links = loadLinks();
+  if(links) writeLinksToUI(links);
+  applyOverrides(links);
+
+  setDisabled(!canEdit());
+
+  document.getElementById("btnSaveEqLinks")?.addEventListener("click", saveLinks);
+  document.getElementById("btnClearEqLinks")?.addEventListener("click", clearLinks);
+
+  document.querySelectorAll("#eqLinksForm input").forEach(i=>{
+    i.addEventListener("input", ()=> setStatus("Not saved"));
+  });
+
+})();
+</script>
 
 <script>
 (function(){
