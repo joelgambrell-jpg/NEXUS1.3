@@ -249,67 +249,12 @@
   /* Procore hidden but kept for hooks */
   .procore-hidden{ display:none!important; }
 
-  /* Equipment setup fields */
-  .setup-grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 10px;
-  }
-  @media (max-width:900px){ .setup-grid{ grid-template-columns:1fr; } }
-  .setup-field{
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 14px;
-    padding: 12px;
-    text-align:left;
-  }
-  .setup-label{
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    opacity: .95;
-    margin-bottom: 8px;
-  }
-  .setup-input{
-    width:100%;
-    padding: 12px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.18);
-    outline:none;
-    font-size: 14px;
-    font-weight: 900;
-    background: rgba(255,255,255,0.92);
-    color:#111;
-  }
-  .setup-actions{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:12px;
-    align-items:center;
-  }
-  .setup-status{
-    margin-left:auto;
-    font-weight:900;
-    opacity:.9;
-  }
-  .setup-lockhint{
-    margin-top:10px;
-    font-size:12px;
-    font-weight:800;
-    opacity:.9;
-  }
-
   @media print{
     .nx-session-banner, .nx-back-btn, .goal-card, #energizationWrap, .bubble, .grid { display:none !important; }
     body{ background:#fff !important; color:#000 !important; }
     .card{ background:#fff !important; border:none !important; backdrop-filter:none !important; }
   }
-</style>
 
-<style>
   .nx-footer{
     margin-top: 40px;
     padding: 18px 12px;
@@ -345,6 +290,7 @@
     </label>
   </div>
 </div>
+
 <script>
   (function(){
     try{
@@ -425,43 +371,6 @@
         <div class="bubble-title">Exports</div>
         <div class="bubble-grid">
           <a class="btn secondary" id="packageExportBtn" href="#">Export Package (Print/PDF)</a>
-        </div>
-      </div>
-
-      <!-- NEW: Equipment Setup (Link Overrides) -->
-      <div class="bubble" id="eqSetupBubble">
-        <div class="bubble-title">Equipment Setup: Link Overrides (Foreman+)</div>
-
-        <div id="eqLinksLockHint" class="setup-lockhint" style="display:none;">
-          View only. Foreman+ role required to edit these equipment-specific links.
-        </div>
-
-        <div id="eqLinksForm" class="setup-grid">
-          <div class="setup-field">
-            <div class="setup-label">RIF-Procore (Not Updated)</div>
-            <input class="setup-input" id="link_rifProcoreNotUpdated" type="text" placeholder="https://..." />
-          </div>
-
-          <div class="setup-field">
-            <div class="setup-label">Megohmmeter SOP Link</div>
-            <input class="setup-input" id="link_megSop" type="text" placeholder="https://..." />
-          </div>
-
-          <div class="setup-field">
-            <div class="setup-label">Torque Application SOP Link</div>
-            <input class="setup-input" id="link_torqueSop" type="text" placeholder="https://..." />
-          </div>
-
-          <div class="setup-field">
-            <div class="setup-label">Reserved (Future)</div>
-            <input class="setup-input" id="link_reserved1" type="text" placeholder="(optional)" />
-          </div>
-        </div>
-
-        <div class="setup-actions">
-          <button class="goal-btn" id="btnSaveEqLinks" type="button">Save Link Overrides</button>
-          <button class="goal-btn secondary" id="btnClearEqLinks" type="button">Clear</button>
-          <div class="setup-status" id="eqLinksStatus">Not saved</div>
         </div>
       </div>
     </div>
@@ -803,120 +712,6 @@
   window.addEventListener("beforeunload", () => {
     try{ if (fbStepsUnsub) fbStepsUnsub(); }catch(e){}
   });
-
-})();
-</script>
-
-<!-- Equipment Setup: Link Overrides logic (loads/saves here) -->
-<script>
-(function(){
-  const qs = new URLSearchParams(location.search);
-  const eq = (qs.get("eq") || "").trim();
-  if(!eq) return;
-
-  const KEY = `nexus_${eq}_equipment_links_v1`;
-
-  function role(){
-    try{
-      if(window.NEXUS && typeof window.NEXUS.getRole === "function"){
-        return window.NEXUS.getRole() || "viewer";
-      }
-    }catch(e){}
-    return "viewer";
-  }
-  function canEdit(){
-    const order = ["viewer","tech","foreman","superintendent","admin"];
-    return order.indexOf(role()) >= order.indexOf("foreman");
-  }
-
-  function setStatus(t){
-    const el = document.getElementById("eqLinksStatus");
-    if(el) el.textContent = t;
-  }
-
-  function setDisabled(disabled){
-    const form = document.getElementById("eqLinksForm");
-    const hint = document.getElementById("eqLinksLockHint");
-    const saveBtn = document.getElementById("btnSaveEqLinks");
-    const clearBtn = document.getElementById("btnClearEqLinks");
-    if(!form) return;
-
-    form.querySelectorAll("input").forEach(i => i.disabled = disabled);
-    if(saveBtn) saveBtn.disabled = disabled;
-    if(clearBtn) clearBtn.disabled = disabled;
-    if(hint) hint.style.display = disabled ? "block" : "none";
-  }
-
-  function readLinksFromUI(){
-    return {
-      rifProcoreNotUpdated: (document.getElementById("link_rifProcoreNotUpdated")?.value || "").trim(),
-      megSop: (document.getElementById("link_megSop")?.value || "").trim(),
-      torqueSop: (document.getElementById("link_torqueSop")?.value || "").trim(),
-      reserved1: (document.getElementById("link_reserved1")?.value || "").trim(),
-      updatedAt: new Date().toISOString()
-    };
-  }
-
-  function writeLinksToUI(links){
-    document.getElementById("link_rifProcoreNotUpdated").value = links.rifProcoreNotUpdated || "";
-    document.getElementById("link_megSop").value = links.megSop || "";
-    document.getElementById("link_torqueSop").value = links.torqueSop || "";
-    document.getElementById("link_reserved1").value = links.reserved1 || "";
-  }
-
-  function loadLinks(){
-    try{
-      const raw = localStorage.getItem(KEY);
-      return raw ? JSON.parse(raw) : null;
-    }catch(e){
-      return null;
-    }
-  }
-
-  async function saveLinks(){
-    const links = readLinksFromUI();
-    localStorage.setItem(KEY, JSON.stringify(links));
-    setStatus("Saved");
-
-    // Firebase hook placeholder
-    try{
-      if(window.nexusFirebase && typeof window.nexusFirebase.saveEquipmentLinks === "function"){
-        await window.nexusFirebase.saveEquipmentLinks(eq, links);
-        setStatus("Saved (Firebase)");
-      }
-    }catch(e){
-      setStatus("Saved (local) — Firebase not connected");
-    }
-  }
-
-  async function clearLinks(){
-    localStorage.removeItem(KEY);
-    writeLinksToUI({rifProcoreNotUpdated:"",megSop:"",torqueSop:"",reserved1:""});
-    setStatus("Cleared");
-
-    // Firebase hook placeholder
-    try{
-      if(window.nexusFirebase && typeof window.nexusFirebase.saveEquipmentLinks === "function"){
-        await window.nexusFirebase.saveEquipmentLinks(eq, null);
-      }
-    }catch(e){}
-  }
-
-  const existing = loadLinks();
-  if(existing) writeLinksToUI(existing);
-
-  // Lock/Unlock based on role
-  setDisabled(!canEdit());
-
-  document.getElementById("btnSaveEqLinks")?.addEventListener("click", saveLinks);
-  document.getElementById("btnClearEqLinks")?.addEventListener("click", clearLinks);
-
-  document.querySelectorAll("#eqLinksForm input").forEach(i=>{
-    i.addEventListener("input", ()=> setStatus("Not saved"));
-  });
-
-  // If role changes using the banner dropdown, re-evaluate lock
-  window.addEventListener("focus", ()=> setDisabled(!canEdit()));
 })();
 </script>
 
