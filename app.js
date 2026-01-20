@@ -3,6 +3,10 @@
   const id = (params.get("id") || "").trim();
   const eq = (params.get("eq") || "").trim();
 
+  // =========================
+  // Helpers: meta + per-equipment links
+  // =========================
+
   // Pre-Firebase equipment metadata (stored on index.html as localStorage).
   // Firebase migration note: replace this with Firestore equipment/{eq} document fetch.
   function loadEqMeta(){
@@ -19,6 +23,35 @@
       // ignore
     }
     return null;
+  }
+
+  // Equipment-specific links (set on equipment.html)
+  function linksKey(){ return `nexus_${eq || "NO_EQ"}_equipment_links_v1`; }
+  function loadEqLinks(){
+    try{
+      const raw = localStorage.getItem(linksKey());
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){
+      return {};
+    }
+  }
+  function getEqLink(k){
+    const links = loadEqLinks();
+    const v = (links && links[k]) ? String(links[k]).trim() : "";
+    return v;
+  }
+
+  function role(){
+    try{
+      if(window.NEXUS && typeof window.NEXUS.getRole === "function"){
+        return window.NEXUS.getRole() || "viewer";
+      }
+    }catch(e){}
+    return "viewer";
+  }
+  function canEditForemanPlus(){
+    const order = ["viewer","tech","foreman","superintendent","admin"];
+    return order.indexOf(role()) >= order.indexOf("foreman");
   }
 
   if (!id || !window.FORMS || !window.FORMS[id]) {
@@ -104,9 +137,8 @@
   const stepBtn = document.getElementById("stepCompleteBtn");
 
   // Steps that should NOT have completion toggles (support/reference only)
-  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"])
+  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"]);
   const hideToggle = NON_COMPLETABLE.has(id);
-
 
   function usable(){ return !!(eq && id); }
   function done(){ return !!(eq && id && localStorage.getItem(stepKey(id)) === "1"); }
@@ -185,7 +217,147 @@
     return u.pathname + u.search + u.hash;
   }
 
+  // =========================
+  // SPECIAL: Diagram Image page (id=transformer)
+  // - Upload OR Link
+  // - Saved per equipment
+  // - Foreman+ can edit; everyone can view/open
+  // =========================
+  if (id === "transformer") {
+    const DIAG_KEY = `nexus_${eq || "NO_EQ"}_diagram_v1`;
+
+    buttonsWrap.style.display = "none";
+    mediaEl.style.display = "block";
+
+    const editable = canEditForemanPlus();
+
+    mediaEl.innerHTML = `
+      <div style="text-align:left;margin-top:10px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:14px;">
+        <div style="font-weight:900;font-size:18px;margin-bottom:8px;">Diagram Image (Upload or Link)</div>
+        <div style="font-weight:800;opacity:.9;margin-bottom:10px;">
+          ${editable ? "Foreman+ can upload/set link." : "View only (Foreman+ required to upload/set link)."}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label style="font-weight:900;">
+            Upload Image
+            <input id="nxDiagFile" type="file" accept="image/*" ${editable ? "" : "disabled"} />
+          </label>
+
+          <label style="font-weight:900;">
+            Or File Link (SharePoint/Drive/Procore/etc.)
+            <input id="nxDiagLink" type="text" placeholder="https://..." ${editable ? "" : "disabled"} />
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;">
+          <a id="nxDiagOpen" class="btn" href="#" target="_blank" rel="noopener" style="display:none;">Open Diagram Link</a>
+          <button id="nxDiagClear" class="btn secondary" type="button" ${editable ? "" : "disabled"}>Clear</button>
+          <div id="nxDiagStatus" style="margin-left:auto;font-weight:900;opacity:.9;">Not saved</div>
+        </div>
+
+        <div id="nxDiagPreviewWrap" style="margin-top:14px;display:none;">
+          <img id="nxDiagPreview" src="" alt="Diagram preview" style="max-width:100%;border-radius:14px;border:1px solid rgba(255,255,255,0.18);" />
+        </div>
+      </div>
+    `;
+
+    function setStatus(t){
+      const s = document.getElementById("nxDiagStatus");
+      if (s) s.textContent = t;
+    }
+
+    function loadDiagram(){
+      try{
+        const raw = localStorage.getItem(DIAG_KEY);
+        if(!raw) return { link:"", dataUrl:"" };
+        const d = JSON.parse(raw) || {};
+        return { link: d.link || "", dataUrl: d.dataUrl || "" };
+      }catch(e){
+        return { link:"", dataUrl:"" };
+      }
+    }
+
+    function saveDiagram(next){
+      localStorage.setItem(DIAG_KEY, JSON.stringify({
+        link: next.link || "",
+        dataUrl: next.dataUrl || "",
+        updatedAt: new Date().toISOString()
+      }));
+      setStatus("Saved");
+
+      // Firebase hook placeholder:
+      // window.nexusFirebase?.saveSheet?.(eq, "diagram", next);
+    }
+
+    function applyToUI(d){
+      const linkEl = document.getElementById("nxDiagLink");
+      const openEl = document.getElementById("nxDiagOpen");
+      const prevWrap = document.getElementById("nxDiagPreviewWrap");
+      const prevImg = document.getElementById("nxDiagPreview");
+
+      if(linkEl) linkEl.value = d.link || "";
+
+      if(openEl && d.link){
+        openEl.href = d.link;
+        openEl.style.display = "inline-flex";
+      }else if(openEl){
+        openEl.style.display = "none";
+      }
+
+      if(prevWrap && prevImg && d.dataUrl){
+        prevImg.src = d.dataUrl;
+        prevWrap.style.display = "block";
+      }else if(prevWrap){
+        prevWrap.style.display = "none";
+      }
+    }
+
+    const initial = loadDiagram();
+    applyToUI(initial);
+
+    const linkEl = document.getElementById("nxDiagLink");
+    const fileEl = document.getElementById("nxDiagFile");
+    const clearBtn = document.getElementById("nxDiagClear");
+
+    if(linkEl && editable){
+      linkEl.addEventListener("input", () => {
+        const d = loadDiagram();
+        d.link = (linkEl.value || "").trim();
+        saveDiagram(d);
+        applyToUI(d);
+      });
+    }
+
+    if(fileEl && editable){
+      fileEl.addEventListener("change", () => {
+        const f = fileEl.files && fileEl.files[0];
+        if(!f) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const d = loadDiagram();
+          d.dataUrl = String(reader.result || "");
+          saveDiagram(d);
+          applyToUI(d);
+        };
+        reader.readAsDataURL(f);
+      });
+    }
+
+    if(clearBtn && editable){
+      clearBtn.addEventListener("click", () => {
+        localStorage.removeItem(DIAG_KEY);
+        setStatus("Cleared");
+        applyToUI({ link:"", dataUrl:"" });
+      });
+    }
+
+    return;
+  }
+
+  // =========================
   // EMBED MODE
+  // =========================
   if (cfg.embedUrl) {
     buttonsWrap.style.display = "none";
     mediaEl.style.display = "block";
@@ -193,7 +365,9 @@
     return;
   }
 
+  // =========================
   // IMAGE MODE (+ magnifier unchanged)
+  // =========================
   if (cfg.imageUrl) {
     buttonsWrap.style.display = "none";
     mediaEl.style.display = "block";
@@ -307,7 +481,9 @@
     return;
   }
 
+  // =========================
   // BUTTON MODE
+  // =========================
   buttonsWrap.style.display = "inline-block";
   mediaEl.style.display = "none";
   buttonsEl.innerHTML = "";
@@ -315,15 +491,46 @@
   // Button list (allow dynamic injection based on equipment metadata)
   const btnList = Array.isArray(cfg.buttons) ? [...cfg.buttons] : [];
 
-  // RIF: restore quick links (while keeping the existing Megohmmeter button).
-  // - Uses equipment-level Procore URLs from index.html.
-  // - Safe pre-Firebase: if blank, link is not shown.
+  // RIF: add Procore links
   if (id === "rif") {
     const meta = loadEqMeta() || {};
+
+    // Existing: construction procore (if set in meta)
     if (meta.procoreEquipUrl) {
       btnList.unshift({
         text: "RIF – Procore (Construction)",
         href: meta.procoreEquipUrl
+      });
+    }
+
+    // NEW: RIF-Procore (Not Updated) (equipment-specific override field)
+    const rifPU = getEqLink("rifProcoreNotUpdated");
+    if (rifPU) {
+      btnList.unshift({
+        text: "RIF-Procore (Not Updated)",
+        href: rifPU
+      });
+    }
+  }
+
+  // NEW: Meg SOP
+  if (id === "meg") {
+    const sop = getEqLink("megSop");
+    if (sop) {
+      btnList.unshift({
+        text: "Megohmmeter SOP",
+        href: sop
+      });
+    }
+  }
+
+  // NEW: Torque SOP
+  if (id === "torque") {
+    const sop = getEqLink("torqueSop");
+    if (sop) {
+      btnList.unshift({
+        text: "Torque Application SOP",
+        href: sop
       });
     }
   }
@@ -341,4 +548,5 @@
 
     buttonsEl.appendChild(a);
   });
+
 })();
