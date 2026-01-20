@@ -249,6 +249,59 @@
   /* Procore hidden but kept for hooks */
   .procore-hidden{ display:none!important; }
 
+  /* Equipment setup fields */
+  .setup-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  @media (max-width:900px){ .setup-grid{ grid-template-columns:1fr; } }
+  .setup-field{
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 12px;
+    text-align:left;
+  }
+  .setup-label{
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .95;
+    margin-bottom: 8px;
+  }
+  .setup-input{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    outline:none;
+    font-size: 14px;
+    font-weight: 900;
+    background: rgba(255,255,255,0.92);
+    color:#111;
+  }
+  .setup-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+    align-items:center;
+  }
+  .setup-status{
+    margin-left:auto;
+    font-weight:900;
+    opacity:.9;
+  }
+  .setup-lockhint{
+    margin-top:10px;
+    font-size:12px;
+    font-weight:800;
+    opacity:.9;
+  }
+
   @media print{
     .nx-session-banner, .nx-back-btn, .goal-card, #energizationWrap, .bubble, .grid { display:none !important; }
     body{ background:#fff !important; color:#000 !important; }
@@ -375,64 +428,40 @@
         </div>
       </div>
 
-      <!-- NEW: Equipment-specific link options (foreman+ can edit) -->
-      <div class="bubble" id="eqLinksBubble">
-        <div class="bubble-title">Equipment-Specific Links (Overrides)</div>
+      <!-- NEW: Equipment Setup (Link Overrides) -->
+      <div class="bubble" id="eqSetupBubble">
+        <div class="bubble-title">Equipment Setup: Link Overrides (Foreman+)</div>
 
-        <div id="eqLinksLockHint" style="display:none;font-weight:900;opacity:.9;margin-bottom:10px;">
-          Locked: Foreman+ role required to edit.
+        <div id="eqLinksLockHint" class="setup-lockhint" style="display:none;">
+          View only. Foreman+ role required to edit these equipment-specific links.
         </div>
 
-        <div id="eqLinksForm" style="display:grid;grid-template-columns:1fr;gap:10px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <label style="font-weight:900;">RIF Override Link (optional)
-              <input class="goal-input" id="link_rif" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">L2-IVF Override Link (optional)
-              <input class="goal-input" id="link_l2" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Finished Photos Override Link (optional)
-              <input class="goal-input" id="link_photos" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Torque Override Link (optional)
-              <input class="goal-input" id="link_torque" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Megohmmeter Override Link (optional)
-              <input class="goal-input" id="link_meg" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Pre-FOD Override Link (optional)
-              <input class="goal-input" id="link_prefab" type="text" placeholder="https://..." />
-            </label>
+        <div id="eqLinksForm" class="setup-grid">
+          <div class="setup-field">
+            <div class="setup-label">RIF-Procore (Not Updated)</div>
+            <input class="setup-input" id="link_rifProcoreNotUpdated" type="text" placeholder="https://..." />
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <label style="font-weight:900;">RIF-Procore (Not Updated)
-              <input class="goal-input" id="link_rifProcoreNotUpdated" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Megohmmeter SOP Document Link
-              <input class="goal-input" id="link_megSop" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Torque Application SOP Document Link
-              <input class="goal-input" id="link_torqueSop" type="text" placeholder="https://..." />
-            </label>
-
-            <label style="font-weight:900;">Diagram Link (optional if not uploading)
-              <input class="goal-input" id="link_diagram" type="text" placeholder="https://..." />
-            </label>
+          <div class="setup-field">
+            <div class="setup-label">Megohmmeter SOP Link</div>
+            <input class="setup-input" id="link_megSop" type="text" placeholder="https://..." />
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <button class="goal-btn" id="btnSaveEqLinks" type="button">Save Links</button>
-            <button class="goal-btn secondary" id="btnClearEqLinks" type="button">Clear</button>
-            <div id="eqLinksStatus" style="font-weight:900;opacity:.9;margin-left:auto;">Not saved</div>
+          <div class="setup-field">
+            <div class="setup-label">Torque Application SOP Link</div>
+            <input class="setup-input" id="link_torqueSop" type="text" placeholder="https://..." />
           </div>
+
+          <div class="setup-field">
+            <div class="setup-label">Reserved (Future)</div>
+            <input class="setup-input" id="link_reserved1" type="text" placeholder="(optional)" />
+          </div>
+        </div>
+
+        <div class="setup-actions">
+          <button class="goal-btn" id="btnSaveEqLinks" type="button">Save Link Overrides</button>
+          <button class="goal-btn secondary" id="btnClearEqLinks" type="button">Clear</button>
+          <div class="setup-status" id="eqLinksStatus">Not saved</div>
         </div>
       </div>
     </div>
@@ -704,7 +733,11 @@
   window.addEventListener("pageshow", () => { refresh(); renderCountdown(); });
   window.addEventListener("storage", () => { refresh(); renderCountdown(); });
 
+  // =========================
   // FIREBASE REAL-TIME SYNC (optional)
+  // - Steps: equipment/{eq}/steps/{stepId} => mirrors into localStorage
+  // - Goal: equipment/{eq} doc fields => mirrors into localStorage
+  // =========================
   let fbStepsUnsub = null;
 
   async function startFirestoreStepsListener(){
@@ -774,7 +807,7 @@
 })();
 </script>
 
-<!-- Equipment links UI logic (role-gated) -->
+<!-- Equipment Setup: Link Overrides logic (loads/saves here) -->
 <script>
 (function(){
   const qs = new URLSearchParams(location.search);
@@ -783,15 +816,22 @@
 
   const KEY = `nexus_${eq}_equipment_links_v1`;
 
-  function canEdit(){
+  function role(){
     try{
       if(window.NEXUS && typeof window.NEXUS.getRole === "function"){
-        const r = window.NEXUS.getRole();
-        const order = ["viewer","tech","foreman","superintendent","admin"];
-        return order.indexOf(r) >= order.indexOf("foreman");
+        return window.NEXUS.getRole() || "viewer";
       }
     }catch(e){}
-    return false;
+    return "viewer";
+  }
+  function canEdit(){
+    const order = ["viewer","tech","foreman","superintendent","admin"];
+    return order.indexOf(role()) >= order.indexOf("foreman");
+  }
+
+  function setStatus(t){
+    const el = document.getElementById("eqLinksStatus");
+    if(el) el.textContent = t;
   }
 
   function setDisabled(disabled){
@@ -809,49 +849,28 @@
 
   function readLinksFromUI(){
     return {
-      rif: (document.getElementById("link_rif")?.value || "").trim(),
-      l2: (document.getElementById("link_l2")?.value || "").trim(),
-      photos: (document.getElementById("link_photos")?.value || "").trim(),
-      torque: (document.getElementById("link_torque")?.value || "").trim(),
-      meg: (document.getElementById("link_meg")?.value || "").trim(),
-      prefab: (document.getElementById("link_prefab")?.value || "").trim(),
-
       rifProcoreNotUpdated: (document.getElementById("link_rifProcoreNotUpdated")?.value || "").trim(),
       megSop: (document.getElementById("link_megSop")?.value || "").trim(),
       torqueSop: (document.getElementById("link_torqueSop")?.value || "").trim(),
-      diagramLink: (document.getElementById("link_diagram")?.value || "").trim(),
-
+      reserved1: (document.getElementById("link_reserved1")?.value || "").trim(),
       updatedAt: new Date().toISOString()
     };
   }
 
   function writeLinksToUI(links){
-    document.getElementById("link_rif").value = links.rif || "";
-    document.getElementById("link_l2").value = links.l2 || "";
-    document.getElementById("link_photos").value = links.photos || "";
-    document.getElementById("link_torque").value = links.torque || "";
-    document.getElementById("link_meg").value = links.meg || "";
-    document.getElementById("link_prefab").value = links.prefab || "";
-
     document.getElementById("link_rifProcoreNotUpdated").value = links.rifProcoreNotUpdated || "";
     document.getElementById("link_megSop").value = links.megSop || "";
     document.getElementById("link_torqueSop").value = links.torqueSop || "";
-    document.getElementById("link_diagram").value = links.diagramLink || "";
+    document.getElementById("link_reserved1").value = links.reserved1 || "";
   }
 
   function loadLinks(){
     try{
       const raw = localStorage.getItem(KEY);
-      if(!raw) return null;
-      return JSON.parse(raw);
+      return raw ? JSON.parse(raw) : null;
     }catch(e){
       return null;
     }
-  }
-
-  function setStatus(t){
-    const el = document.getElementById("eqLinksStatus");
-    if(el) el.textContent = t;
   }
 
   async function saveLinks(){
@@ -859,7 +878,7 @@
     localStorage.setItem(KEY, JSON.stringify(links));
     setStatus("Saved");
 
-    // Firebase hook placeholder (no backend logic now)
+    // Firebase hook placeholder
     try{
       if(window.nexusFirebase && typeof window.nexusFirebase.saveEquipmentLinks === "function"){
         await window.nexusFirebase.saveEquipmentLinks(eq, links);
@@ -868,59 +887,25 @@
     }catch(e){
       setStatus("Saved (local) — Firebase not connected");
     }
-
-    applyOverrides(links);
   }
 
-  function clearLinks(){
+  async function clearLinks(){
     localStorage.removeItem(KEY);
-    writeLinksToUI({rif:"",l2:"",photos:"",torque:"",meg:"",prefab:"",rifProcoreNotUpdated:"",megSop:"",torqueSop:"",diagramLink:""});
+    writeLinksToUI({rifProcoreNotUpdated:"",megSop:"",torqueSop:"",reserved1:""});
     setStatus("Cleared");
-    applyOverrides(null);
-  }
 
-  // Map override keys -> equipment page button ids
-  const BUTTON_MAP = {
-    rif: "rifBtn",
-    l2: "l2Btn",
-    photos: "finishedPhotoBtn",
-    torque: "torqueBtn",
-    meg: "lvtBtn",
-    prefab: "prefodBtn"
-  };
-
-  function isValidUrl(s){
-    if(!s) return false;
-    try{ new URL(s); return true; }catch(e){ return false; }
-  }
-
-  function applyOverrides(links){
-    Object.entries(BUTTON_MAP).forEach(([k, id])=>{
-      const btn = document.getElementById(id);
-      if(!btn) return;
-
-      const url = links && isValidUrl(links[k]) ? links[k] : "";
-      btn.dataset.overrideHref = url;
-
-      // Bind once
-      if(!btn.dataset.overrideBound){
-        btn.addEventListener("click", function(e){
-          const u = this.dataset.overrideHref || "";
-          if(u){
-            e.preventDefault();
-            location.href = u;
-          }
-        });
-        btn.dataset.overrideBound = "1";
+    // Firebase hook placeholder
+    try{
+      if(window.nexusFirebase && typeof window.nexusFirebase.saveEquipmentLinks === "function"){
+        await window.nexusFirebase.saveEquipmentLinks(eq, null);
       }
-    });
+    }catch(e){}
   }
 
-  // Init
-  const links = loadLinks();
-  if(links) writeLinksToUI(links);
-  applyOverrides(links);
+  const existing = loadLinks();
+  if(existing) writeLinksToUI(existing);
 
+  // Lock/Unlock based on role
   setDisabled(!canEdit());
 
   document.getElementById("btnSaveEqLinks")?.addEventListener("click", saveLinks);
@@ -930,7 +915,7 @@
     i.addEventListener("input", ()=> setStatus("Not saved"));
   });
 
-  // If role changes via banner dropdown, refresh lock state
+  // If role changes using the banner dropdown, re-evaluate lock
   window.addEventListener("focus", ()=> setDisabled(!canEdit()));
 })();
 </script>
