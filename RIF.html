@@ -91,8 +91,13 @@
     <label style="font-weight:900;">Upload Image
       <input id="rifDiagramFile" type="file" accept="image/*" />
     </label>
+buttons.push({
+  label: "RIF-Procore (Not Updated)",
+  href: getEqLink("rifProcore") || "#",
+  external: true
+});
 
-    <label style="font-weight:900;">Or File Link (SharePoint/Drive/Procore/etc.)
+   <label style="font-weight:900;">Or File Link (SharePoint/Drive/Procore/etc.)
       <input id="rifDiagramLink" type="text" placeholder="https://..." />
     </label>
   </div>
