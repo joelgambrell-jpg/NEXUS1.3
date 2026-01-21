@@ -128,7 +128,6 @@
   function refreshStepBtn(){
     if (!stepBtn) return;
 
-    // RIF ONLY
     if (hideToggle || !SHOW_STEP_COMPLETE_ON.has(id)){
       stepBtn.style.display = "none";
       return;
@@ -176,6 +175,21 @@
     }
 
     return u.pathname + u.search + u.hash;
+  }
+
+  // ===== RIF Equipment Meg link should be separate (mode=equipment) =====
+  function applyRifEquipmentMegOverride(anchorEl){
+    if (!anchorEl) return;
+    const label = (anchorEl.textContent || "").trim().toLowerCase();
+    if (!label) return;
+
+    // Match the exact button text (case-insensitive)
+    if (label === "equipment megohmmeter test (if applicable)".toLowerCase()){
+      // Force to separate mode, still same meg_log.html page
+      anchorEl.href = withEq("meg_log.html?mode=equipment");
+      anchorEl.target = "_blank";
+      anchorEl.rel = "noopener noreferrer";
+    }
   }
 
   // EMBED MODE
@@ -227,20 +241,6 @@
     });
   }
 
-  // IMPORTANT: Force the RIF "Equipment Megohmmeter Test (If Applicable)" button
-  // to go to its OWN single-test page, not the line/load meg test.
-  // Create this page later as: form.html?id=meg_equipment (or a dedicated html),
-  // but this link keeps it completely separate right now.
-  function rewriteRifEquipmentMegBtn(aEl){
-    if (!aEl) return;
-    const txt = (aEl.textContent || "").trim().toLowerCase();
-    if (txt.includes("equipment megohmmeter test")) {
-      aEl.href = withEq("form.html?id=meg_equipment");
-      aEl.target = "_blank";
-      aEl.rel = "noopener noreferrer";
-    }
-  }
-
   btnList.forEach((b) => {
     const a = document.createElement("a");
     a.className = "btn";
@@ -254,10 +254,9 @@
 
     buttonsEl.appendChild(a);
 
-    // Apply RIF rewrite after insert
-    if (id === "rif") rewriteRifEquipmentMegBtn(a);
+    // Enforce separate Equipment Meg on RIF
+    if (id === "rif") applyRifEquipmentMegOverride(a);
   });
 
-  // Ensure button visibility after buttons render
   refreshStepBtn();
 })();
