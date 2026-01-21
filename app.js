@@ -177,15 +177,11 @@
     return u.pathname + u.search + u.hash;
   }
 
-  // ===== RIF Equipment Meg link should be separate (mode=equipment) =====
+  // Override RIF Equipment Meg button to use meg_log.html?mode=equipment
   function applyRifEquipmentMegOverride(anchorEl){
     if (!anchorEl) return;
     const label = (anchorEl.textContent || "").trim().toLowerCase();
-    if (!label) return;
-
-    // Match the exact button text (case-insensitive)
     if (label === "equipment megohmmeter test (if applicable)".toLowerCase()){
-      // Force to separate mode, still same meg_log.html page
       anchorEl.href = withEq("meg_log.html?mode=equipment");
       anchorEl.target = "_blank";
       anchorEl.rel = "noopener noreferrer";
@@ -254,7 +250,6 @@
 
     buttonsEl.appendChild(a);
 
-    // Enforce separate Equipment Meg on RIF
     if (id === "rif") applyRifEquipmentMegOverride(a);
   });
 
