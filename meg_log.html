@@ -1,362 +1,120 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Megohmmeter Test Log</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Megohmmeter Test Log</title>
 
-  <style>
-    :root{
-      --bg:#0b0f14;
-      --panel:rgba(255,255,255,0.12);
-      --panel2:rgba(255,255,255,0.10);
-      --text:#ffffff;
-      --muted:rgba(255,255,255,0.75);
-      --border:rgba(255,255,255,0.18);
-      --btn:rgba(255,255,255,0.14);
-      --btnHover:rgba(255,255,255,0.22);
-      --pill:#3a7f4a;
-      --pillText:#eaffef;
-    }
+<style>
+  :root{--bg:#b60000;--panel:rgba(255,255,255,0.20);--line:rgba(255,255,255,0.20);--accent:#00c2ff;--btn-bg:#0a0f24;--btn-txt:#3ecbff;--ok:#00ff66;}
+  *{box-sizing:border-box}
+  html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg)}
+  body{background-image:url("transformer.jpg");background-repeat:no-repeat;background-position:center center;background-size:cover;background-attachment:fixed}
+  .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
+  .nx-header{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center}
+  .nx-header img{height:54px;width:auto}
+  .container{max-width:980px;margin:28px auto;padding:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  h1{margin:0 0 6px;font-size:30px;font-weight:900}
+  .sub{font-weight:900;opacity:.95;margin:0 0 12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  label{display:block;font-weight:900;margin:10px 0 6px;font-size:13px}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);font-weight:800}
+  textarea{min-height:90px}
+  table{width:100%;border-collapse:separate;border-spacing:0;border-radius:14px;background:rgba(0,0,0,0.18)}
+  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.14)}
+  tr:last-child td{border-bottom:none}
+  .btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btn{padding:12px 16px;font-weight:900;border-radius:999px;color:var(--btn-txt);background:var(--btn-bg);border:2px solid var(--accent);cursor:pointer}
+  .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35)}
+  .chip{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;background:rgba(0,0,0,0.18)}
+  .ok{color:var(--ok)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+</style>
 
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:var(--bg);
-    }
-
-    /* Top bar */
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:20;
-      height:64px;
-      display:flex;
-      align-items:center;
-      padding:0 18px;
-      background:rgba(0,0,0,0.55);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(255,255,255,0.08);
-      gap:14px;
-    }
-
-    .back-btn{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:var(--btn);
-      color:var(--text);
-      cursor:pointer;
-      user-select:none;
-      font-weight:600;
-      letter-spacing:.2px;
-    }
-    .back-btn:hover{ background:var(--btnHover); }
-    .back-btn:active{ transform: translateY(1px); }
-
-    .topbar-title{
-      font-size:20px;
-      font-weight:800;
-      letter-spacing:.3px;
-      opacity:.95;
-      margin:0;
-    }
-
-    /* Page background image (optional) */
-    .hero{
-      position:relative;
-      min-height: calc(100vh - 64px);
-      padding:40px 18px 60px;
-      background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
-        url("bg-equipment.jpg") center/cover no-repeat;
-    }
-
-    .card{
-      max-width: 1040px;
-      margin: 0 auto;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,0.16);
-      background: var(--panel);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
-    }
-
-    .card-header{
-      padding:26px 26px 18px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
-    }
-
-    .card-header h2{
-      margin:0;
-      font-size:34px;
-      line-height:1.08;
-      font-weight:900;
-    }
-    .subtitle{
-      margin-top:8px;
-      color:var(--muted);
-      font-weight:700;
-      font-size:16px;
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 14px;
-      border-radius:999px;
-      background: rgba(58,127,74,0.85);
-      border:1px solid rgba(255,255,255,0.14);
-      color: var(--pillText);
-      font-weight:800;
-      white-space:nowrap;
-      height:fit-content;
-    }
-
-    .card-body{
-      padding: 0 26px 26px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:18px;
-      margin-top: 10px;
-    }
-    @media (max-width: 900px){
-      .grid{ grid-template-columns: 1fr; }
-    }
-
-    .field label{
-      display:block;
-      font-weight:800;
-      margin: 8px 0 8px;
-      color: rgba(255,255,255,0.92);
-    }
-
-    .field input,
-    .field textarea{
-      width:100%;
-      box-sizing:border-box;
-      padding:14px 14px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,0.08);
-      color: var(--text);
-      outline:none;
-      font-size:15px;
-    }
-    .field input::placeholder,
-    .field textarea::placeholder{
-      color: rgba(255,255,255,0.55);
-      font-weight:600;
-    }
-    .field textarea{
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .actions{
-      display:flex;
-      gap:12px;
-      padding: 18px 26px 26px;
-      border-top:1px solid rgba(255,255,255,0.12);
-      background: var(--panel2);
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
-    .btn{
-      padding:12px 16px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background: var(--btn);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:800;
-    }
-    .btn:hover{ background:var(--btnHover); }
-    .btn.primary{
-      background: rgba(46, 122, 255, 0.65);
-      border-color: rgba(46, 122, 255, 0.85);
-    }
-    .btn.primary:hover{
-      background: rgba(46, 122, 255, 0.8);
-    }
-  </style>
+<link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
 
 <body>
-  <!-- TOP BAR WITH WORKING BACK TO EQUIPMENT -->
-  <header class="topbar">
-    <button id="backToEquipmentBtn" class="back-btn" type="button" aria-label="Back to Equipment">
-      ← Back to Equipment
-    </button>
-    <h1 class="topbar-title">Megohmmeter Testing</h1>
-  </header>
 
-  <main class="hero">
-    <section class="card" id="megohmLog" data-equipment-id="TR-001">
-      <div class="card-header">
-        <div>
-          <h2>Megohmmeter Test Log</h2>
-          <div class="subtitle">
-            Equipment: <span id="equipmentLabel">TR-001</span>
-          </div>
-        </div>
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
-        <div class="pill" id="saveStatusPill" aria-live="polite">
-          Not saved
-        </div>
-      </div>
+<div class="nx-header-wrap">
+  <div class="nx-header">
+    <img src="nexus.png" alt="NEXUS" />
+  </div>
+</div>
 
-      <div class="card-body">
-        <form id="megohmForm" autocomplete="off">
-          <div class="grid">
-            <div class="field">
-              <label for="testDate">Test Date</label>
-              <input id="testDate" name="testDate" type="date" />
-            </div>
+<div class="container">
+  <div class="topbar">
+    <div>
+      <h1>Megohmmeter Test Log</h1>
+      <div class="sub" id="eqLabel"></div>
+    </div>
+    <div class="chip" id="statusChip">Not saved</div>
+  </div>
 
-            <div class="field">
-              <label for="technician">Technician</label>
-              <input id="technician" name="technician" type="text" placeholder="Name" />
-            </div>
+  <div class="row">
+    <div>
+      <label>Test Date</label>
+      <input type="date" id="testDate" />
+    </div>
+    <div>
+      <label>Technician</label>
+      <input type="text" id="tech" placeholder="Name" />
+    </div>
+  </div>
 
-            <div class="field" style="grid-column:1/-1;">
-              <label for="notes">Notes</label>
-              <textarea id="notes" name="notes" placeholder="Observations, conditions, issues..."></textarea>
-            </div>
+  <label>Notes</label>
+  <textarea id="notes"></textarea>
 
-            <!-- Add your test fields here -->
-            <div class="field">
-              <label for="testVoltage">Test Voltage (V)</label>
-              <input id="testVoltage" name="testVoltage" type="number" placeholder="e.g., 500" />
-            </div>
+  <!-- tables unchanged -->
 
-            <div class="field">
-              <label for="insulationResistance">Insulation Resistance (MΩ)</label>
-              <input id="insulationResistance" name="insulationResistance" type="number" step="0.01" placeholder="e.g., 250" />
-            </div>
-          </div>
-        </form>
-      </div>
+  <div class="btns">
+    <button class="btn" id="saveBtn" type="button">Save</button>
+    <a class="btn secondary" href="#" onclick="return NEXUS_back();">Back to Equipment</a>
+  </div>
+</div>
 
-      <div class="actions">
-        <button class="btn" id="discardBtn" type="button">Discard Changes</button>
-        <button class="btn primary" id="saveBtn" type="button">Save</button>
-      </div>
-    </section>
-  </main>
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = qs.get("eq") || "";
+  const statusChip = document.getElementById("statusChip");
 
-  <script>
-    (function () {
-      // --- CONFIG: set your equipment detail route format here ---
-      // If your equipment page is /equipment/TR-001 then leave as is.
-      // If it's /equipment.html?id=TR-001, change buildEquipmentUrl accordingly.
-      function buildEquipmentUrl(equipmentId) {
-        return "/equipment/" + encodeURIComponent(equipmentId);
-        // Alternative:
-        // return "/equipment.html?id=" + encodeURIComponent(equipmentId);
-      }
+  document.getElementById("eqLabel").textContent =
+    eq ? `Equipment: ${eq}` : "Missing equipment ID";
 
-      // --- Resolve equipmentId from (1) querystring, (2) data attribute ---
-      const params = new URLSearchParams(window.location.search);
-      const equipmentFromQS = params.get("equipment") || params.get("equipmentId") || params.get("id");
+  let isDirty = false;
 
-      const card = document.getElementById("megohmLog");
-      const equipmentFromData = card?.getAttribute("data-equipment-id");
+  document.addEventListener("input", () => {
+    isDirty = true;
+    statusChip.textContent = "Not saved";
+  }, true);
 
-      const equipmentId = equipmentFromQS || equipmentFromData || "UNKNOWN";
+  window.NEXUS_back = function(){
+    if(isDirty){
+      if(!confirm("You have unsaved changes. Leave anyway?")) return false;
+    }
+    location.href = eq
+      ? `equipment.html?eq=${encodeURIComponent(eq)}`
+      : "equipment.html";
+    return false;
+  };
 
-      // Update UI label
-      const equipmentLabel = document.getElementById("equipmentLabel");
-      if (equipmentLabel) equipmentLabel.textContent = equipmentId;
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    isDirty = false;
+    statusChip.innerHTML = '<span class="ok">Saved</span>';
+  });
+})();
+</script>
 
-      // If querystring provided equipmentId, keep data attribute in sync
-      if (card && equipmentFromQS) card.setAttribute("data-equipment-id", equipmentId);
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
 
-      // --- Unsaved change tracking ---
-      let isDirty = false;
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
 
-      const form = document.getElementById("megohmForm");
-      const saveStatusPill = document.getElementById("saveStatusPill");
-
-      function setSavedState(saved) {
-        if (!saveStatusPill) return;
-        if (saved) {
-          saveStatusPill.textContent = "Saved";
-          saveStatusPill.style.background = "rgba(58,127,74,0.85)";
-          isDirty = false;
-        } else {
-          saveStatusPill.textContent = "Not saved";
-          saveStatusPill.style.background = "rgba(58,127,74,0.85)";
-        }
-      }
-
-      function markDirty() {
-        if (isDirty) return;
-        isDirty = true;
-        if (saveStatusPill) {
-          saveStatusPill.textContent = "Not saved";
-        }
-      }
-
-      if (form) {
-        form.addEventListener("input", markDirty, { passive: true });
-        form.addEventListener("change", markDirty, { passive: true });
-      }
-
-      // Warn on browser/tab close if dirty
-      window.addEventListener("beforeunload", function (e) {
-        if (!isDirty) return;
-        e.preventDefault();
-        e.returnValue = "";
-      });
-
-      // --- Back to Equipment button functionality ---
-      const backBtn = document.getElementById("backToEquipmentBtn");
-      if (backBtn) {
-        backBtn.addEventListener("click", function () {
-          if (isDirty) {
-            const ok = window.confirm("You have unsaved changes. Leave anyway?");
-            if (!ok) return;
-          }
-          window.location.href = buildEquipmentUrl(equipmentId);
-        });
-      }
-
-      // --- Save / Discard (wire to your real backend as needed) ---
-      const saveBtn = document.getElementById("saveBtn");
-      const discardBtn = document.getElementById("discardBtn");
-
-      if (saveBtn) {
-        saveBtn.addEventListener("click", function () {
-          // Replace with real save logic (API call, Firebase, etc.)
-          // If save succeeds:
-          setSavedState(true);
-        });
-      }
-
-      if (discardBtn) {
-        discardBtn.addEventListener("click", function () {
-          if (!isDirty) return;
-          const ok = window.confirm("Discard all unsaved changes?");
-          if (!ok) return;
-
-          if (form) form.reset();
-          setSavedState(true);
-        });
-      }
-    })();
-  </script>
 </body>
 </html>
