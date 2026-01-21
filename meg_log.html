@@ -24,13 +24,13 @@
   th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.14);vertical-align:top}
   th{font-size:12px;text-transform:uppercase;letter-spacing:.12em;opacity:.95;text-align:left}
   tr:last-child td{border-bottom:none}
-  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;justify-content:flex-start}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   .btn{padding:12px 16px;font-size:14px;font-weight:900;border-radius:999px;color:var(--btn-txt);background:var(--btn-bg);border:2px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
   .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35)}
-  .btn.complete{background:var(--ok)!important;color:#002b14!important;border-color:var(--ok)!important;box-shadow:0 0 14px rgba(0,255,102,.85)}
   .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.18)}
   .ok{color:var(--ok)}
   .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+  .muted{opacity:.9;font-size:13px;line-height:1.35}
 </style>
 
 <style>
@@ -68,6 +68,7 @@
     </label>
   </div>
 </div>
+
 <script>
   (function(){
     try{
@@ -86,13 +87,10 @@
 <div class="container">
   <div class="topbar">
     <div>
-      <h1>Megohmmeter Test Log</h1>
+      <h1 id="pageTitle">Megohmmeter Test Log</h1>
       <div class="sub" id="eqLabel"></div>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-      <a class="btn secondary" id="backBtnTop" href="#">Back to Equipment</a>
-      <div class="chip" id="statusChip">Not saved</div>
-    </div>
+    <div class="chip" id="statusChip">Not saved</div>
   </div>
 
   <div class="row">
@@ -111,8 +109,8 @@
 
   <div style="height:12px"></div>
 
-  <div style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:10px 0 8px">Line Side</div>
-  <table aria-label="Megohmmeter Test Log - Line Side">
+  <div id="lineLabel" style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:10px 0 8px">Line Side</div>
+  <table aria-label="Megohmmeter Test Log - Line Side" id="lineTable">
     <thead>
       <tr>
         <th style="width:18%">Conductor</th>
@@ -126,33 +124,37 @@
   </table>
   <div class="btns" style="margin-top:10px">
     <button class="btn" id="addLineRow" type="button">Add Line Row</button>
-    <button class="btn" id="saveLineBtn" type="button">Line Save</button>
-    <button class="btn" id="lineCompleteBtn" type="button">LINE SIDE COMPLETE</button>
   </div>
 
-  <div style="height:14px"></div>
+  <div id="loadBlock">
+    <div style="height:14px"></div>
 
-  <div style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:6px 0 8px">Load Side</div>
-  <table aria-label="Megohmmeter Test Log - Load Side">
-    <thead>
-      <tr>
-        <th style="width:18%">Conductor</th>
-        <th style="width:18%">Phase</th>
-        <th style="width:18%">Voltage</th>
-        <th style="width:18%">Reading</th>
-        <th style="width:28%">Comments</th>
-      </tr>
-    </thead>
-    <tbody id="loadRows"></tbody>
-  </table>
-  <div class="btns" style="margin-top:10px">
-    <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
-    <button class="btn" id="saveLoadBtn" type="button">Load Save</button>
-    <button class="btn" id="loadCompleteBtn" type="button">LOAD SIDE COMPLETE</button>
-    <a class="btn secondary" id="backBtnBottom" href="#">Back to Equipment</a>
+    <div style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:6px 0 8px">Load Side</div>
+    <table aria-label="Megohmmeter Test Log - Load Side">
+      <thead>
+        <tr>
+          <th style="width:18%">Conductor</th>
+          <th style="width:18%">Phase</th>
+          <th style="width:18%">Voltage</th>
+          <th style="width:18%">Reading</th>
+          <th style="width:28%">Comments</th>
+        </tr>
+      </thead>
+      <tbody id="loadRows"></tbody>
+    </table>
+    <div class="btns" style="margin-top:10px">
+      <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
+      <button class="btn" id="saveBtn" type="button">Save</button>
+      <a class="btn secondary" id="backBtn" href="#">Back to Equipment</a>
+    </div>
   </div>
 
-  <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
+  <div class="btns" id="equipOnlyBtns" style="margin-top:10px; display:none;">
+    <button class="btn" id="saveBtnEquip" type="button">Save</button>
+    <a class="btn secondary" id="backBtnEquip" href="#">Back to Equipment</a>
+  </div>
+
+  <div class="muted" style="margin-top:12px;">
     Firebase hook: this page saves locally now. When Firebase is enabled, replace <code>saveToFirebase()</code> with your Firestore write and use auth email as the user id.
   </div>
 </div>
@@ -161,25 +163,24 @@
 (function(){
   const qs=new URLSearchParams(location.search);
   const eq=(qs.get('eq')||'').trim();
+  const mode=(qs.get('mode')||'').trim().toLowerCase(); // "" = normal (line/load), "equipment" = separate single test
 
+  const pageTitleEl = document.getElementById('pageTitle');
   const eqLabel=document.getElementById('eqLabel');
   eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Missing equipment ID (eq)';
 
   const backHref = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
-  document.getElementById('backBtnTop').href = backHref;
-  document.getElementById('backBtnBottom').href = backHref;
+  document.getElementById('backBtn').href = backHref;
+  document.getElementById('backBtnEquip').href = backHref;
 
   const statusChip=document.getElementById('statusChip');
 
-  // Storage keys for log data (v2 is Line+Load; v1 is legacy single list)
-  const keyV2 = `nexus_${eq||'NO_EQ'}_meg_log_v2`;
-  const keyV1 = `nexus_${eq||'NO_EQ'}_meg_log_v1`;
+  // v2 splits rows into Line/Load while keeping backward-compatibility with v1 (NORMAL mode only).
+  const keyV2_normal = `nexus_${eq||'NO_EQ'}_meg_log_v2`;
+  const keyV1_normal = `nexus_${eq||'NO_EQ'}_meg_log_v1`;
 
-  // Completion step keys (used by equipment dashboard)
-  const stepKey = (stepId) => `nexus_${eq||"NO_EQ"}_step_${stepId}`;
-  const landingKey = () => `nexus_${eq||"NO_EQ"}_landing_complete`;
-  const LINE_STEP = "megohmmeter_line";
-  const LOAD_STEP = "megohmmeter_load";
+  // Equipment-only (SEPARATE) storage keys (completely independent)
+  const keyV2_equipment = `nexus_${eq||'NO_EQ'}_equip_meg_log_v2`;
 
   const lineRowsEl=document.getElementById('lineRows');
   const loadRowsEl=document.getElementById('loadRows');
@@ -187,14 +188,21 @@
   const tech=document.getElementById('tech');
   const notes=document.getElementById('notes');
 
-  const lineCompleteBtn = document.getElementById('lineCompleteBtn');
-  const loadCompleteBtn = document.getElementById('loadCompleteBtn');
+  const loadBlock = document.getElementById('loadBlock');
+  const equipOnlyBtns = document.getElementById('equipOnlyBtns');
+  const lineLabel = document.getElementById('lineLabel');
 
-  let lineDirty=false;
-  let loadDirty=false;
+  function isEquipmentMode(){
+    return mode === 'equipment';
+  }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // UI adjustments for equipment mode: single table only, separate title/labels/buttons
+  if (isEquipmentMode()){
+    if (pageTitleEl) pageTitleEl.textContent = "Equipment Megohmmeter Test";
+    document.title = "Equipment Megohmmeter Test";
+    if (lineLabel) lineLabel.textContent = "Equipment Test";
+    if (loadBlock) loadBlock.style.display = "none";
+    if (equipOnlyBtns) equipOnlyBtns.style.display = "flex";
   }
 
   function rowTemplate(r={}){
@@ -211,42 +219,21 @@
     return tr;
   }
 
-  function statusText(){
-    if (lineDirty && loadDirty) return "Line + Load not saved";
-    if (lineDirty) return "Line not saved";
-    if (loadDirty) return "Load not saved";
-    return "Saved";
-  }
-
-  function setStatusSaved(){
-    statusChip.innerHTML = '<span class="ok">Saved</span>';
-  }
-
-  function markDirty(which){
-    if(which==="line") lineDirty=true;
-    if(which==="load") loadDirty=true;
-    if(which==="both"){ lineDirty=true; loadDirty=true; }
-    statusChip.textContent = statusText();
-  }
-
-  function clearDirty(which){
-    if(which==="line") lineDirty=false;
-    if(which==="load") loadDirty=false;
-    if(which==="both"){ lineDirty=false; loadDirty=false; }
-    if(lineDirty || loadDirty) statusChip.textContent = statusText();
-    else setStatusSaved();
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
 
   function addDefault(){
     lineRowsEl.innerHTML='';
-    loadRowsEl.innerHTML='';
+    if (loadRowsEl) loadRowsEl.innerHTML='';
     for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
-    for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
+    if (!isEquipmentMode()){
+      for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
+    }
     statusChip.textContent='Not saved';
-    lineDirty=false; loadDirty=false;
   }
 
-  function apply(data){
+  function applyNormal(data){
     testDate.value = data.testDate || '';
     tech.value = data.tech || '';
     notes.value = data.notes || '';
@@ -260,13 +247,39 @@
     if(!load.length) for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
   }
 
-  function loadStored(){
-    const rawV2 = localStorage.getItem(keyV2);
-    const rawV1 = localStorage.getItem(keyV1);
+  function applyEquipment(data){
+    testDate.value = data.testDate || '';
+    tech.value = data.tech || '';
+    notes.value = data.notes || '';
+    lineRowsEl.innerHTML = '';
+    const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data.lineRows) ? data.lineRows : []);
+    rows.forEach(r => lineRowsEl.appendChild(rowTemplate(r)));
+    if(!rows.length) for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
+  }
 
+  function load(){
     try{
-      if(rawV2) return JSON.parse(rawV2);
+      if (isEquipmentMode()){
+        const raw = localStorage.getItem(keyV2_equipment);
+        if (raw){
+          const data = JSON.parse(raw);
+          applyEquipment(data);
+          statusChip.textContent='Loaded';
+          return;
+        }
+        addDefault();
+        return;
+      }
 
+      // NORMAL mode (existing behavior + v1 migration)
+      const rawV2 = localStorage.getItem(keyV2_normal);
+      const rawV1 = localStorage.getItem(keyV1_normal);
+      if(rawV2){
+        const data = JSON.parse(rawV2);
+        applyNormal(data);
+        statusChip.textContent='Loaded';
+        return;
+      }
       if(rawV1){
         const data = JSON.parse(rawV1);
         const migrated = {
@@ -279,13 +292,15 @@
           migratedFrom: 'v1',
           updatedAt: new Date().toISOString()
         };
-        localStorage.setItem(keyV2, JSON.stringify(migrated));
-        return migrated;
+        localStorage.setItem(keyV2_normal, JSON.stringify(migrated));
+        applyNormal(migrated);
+        statusChip.textContent='Loaded (migrated)';
+        return;
       }
     }catch(e){
       // fall through
     }
-    return null;
+    addDefault();
   }
 
   function collectFrom(tbodyEl){
@@ -301,134 +316,71 @@
     });
   }
 
-  function collectHeader(){
-    return {
+  function collect(){
+    const base = {
       eq,
       testDate: testDate.value,
       tech: tech.value.trim(),
-      notes: notes.value.trim()
+      notes: notes.value.trim(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (isEquipmentMode()){
+      return {
+        ...base,
+        rows: collectFrom(lineRowsEl),
+        mode: "equipment"
+      };
+    }
+
+    return {
+      ...base,
+      lineRows: collectFrom(lineRowsEl),
+      loadRows: collectFrom(loadRowsEl)
     };
   }
 
   async function saveToFirebase(_data){
     // PLACEHOLDER: Firestore write goes here.
-    // Example shape: /equipment/{eq}/forms/meg_log
+    // Example shape:
+    // - Normal:   /equipment/{eq}/forms/meg_log_conductors
+    // - Equipment:/equipment/{eq}/forms/meg_log_equipment
   }
 
-  async function saveLine(){
-    const existing = loadStored() || { eq, testDate:'', tech:'', notes:'', lineRows:[], loadRows:[] };
-    const merged = {
-      ...existing,
-      ...collectHeader(),
-      lineRows: collectFrom(lineRowsEl),
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem(keyV2, JSON.stringify(merged));
-    await saveToFirebase(merged);
-    clearDirty("line");
-  }
+  async function save(){
+    const data=collect();
 
-  async function saveLoad(){
-    const existing = loadStored() || { eq, testDate:'', tech:'', notes:'', lineRows:[], loadRows:[] };
-    const merged = {
-      ...existing,
-      ...collectHeader(),
-      loadRows: collectFrom(loadRowsEl),
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem(keyV2, JSON.stringify(merged));
-    await saveToFirebase(merged);
-    clearDirty("load");
-  }
-
-  function sectionHasData(tbodyEl){
-    const rows=[...tbodyEl.querySelectorAll('tr')];
-    return rows.some(tr => {
-      const inputs=[...tr.querySelectorAll('input,select')];
-      return inputs.some(el => (el.value||"").trim() !== "");
-    });
-  }
-
-  function isDone(stepId){
-    return localStorage.getItem(stepKey(stepId)) === "1";
-  }
-
-  function refreshCompleteBtns(){
-    if(lineCompleteBtn) lineCompleteBtn.classList.toggle("complete", isDone(LINE_STEP));
-    if(loadCompleteBtn) loadCompleteBtn.classList.toggle("complete", isDone(LOAD_STEP));
-  }
-
-  function setDone(stepId, nextDone){
-    if(!eq) return;
-    if(nextDone) localStorage.setItem(stepKey(stepId), "1");
-    else localStorage.removeItem(stepKey(stepId));
-
-    if(isDone(LINE_STEP) && isDone(LOAD_STEP)){
-      localStorage.setItem(landingKey(), "1");
+    if (isEquipmentMode()){
+      localStorage.setItem(keyV2_equipment, JSON.stringify(data));
+    } else {
+      localStorage.setItem(keyV2_normal, JSON.stringify(data));
     }
+
+    await saveToFirebase(data);
+    statusChip.innerHTML = '<span class="ok">Saved</span>';
   }
 
-  // Wiring: row adders
-  document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty("line"); });
-  document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty("load"); });
+  function markDirty(){
+    statusChip.textContent = 'Not saved';
+  }
 
-  // Wiring: saves
-  document.getElementById('saveLineBtn').addEventListener('click', saveLine);
-  document.getElementById('saveLoadBtn').addEventListener('click', saveLoad);
+  document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty(); });
 
-  // Wiring: completion buttons
-  lineCompleteBtn.addEventListener('click', () => {
-    if(!eq) return alert("Missing equipment id (eq).");
-    if(!sectionHasData(lineRowsEl)) return alert("Line Side is empty. Enter data before marking complete.");
-    setDone(LINE_STEP, !isDone(LINE_STEP));
-    refreshCompleteBtns();
-  });
+  if (!isEquipmentMode()){
+    document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty(); });
+    document.getElementById('saveBtn').addEventListener('click',save);
+  } else {
+    document.getElementById('saveBtnEquip').addEventListener('click',save);
+  }
 
-  loadCompleteBtn.addEventListener('click', () => {
-    if(!eq) return alert("Missing equipment id (eq).");
-    if(!sectionHasData(loadRowsEl)) return alert("Load Side is empty. Enter data before marking complete.");
-    setDone(LOAD_STEP, !isDone(LOAD_STEP));
-    refreshCompleteBtns();
-  });
-
-  // Dirty tracking: detect which side was edited
+  // Dirty tracking
   document.addEventListener('input', (e) => {
     const t = e.target;
     if(!t) return;
-    if(!(t.matches('input') || t.matches('select') || t.matches('textarea'))) return;
-
-    // Header fields affect both
-    if(t === testDate || t === tech || t === notes){
-      markDirty("both");
-      return;
-    }
-
-    if(lineRowsEl.contains(t)) markDirty("line");
-    if(loadRowsEl.contains(t)) markDirty("load");
+    if(t.matches('input') || t.matches('select') || t.matches('textarea')) markDirty();
   });
 
-  // Warn before leaving if unsaved
-  function confirmLeave(e){
-    if(lineDirty || loadDirty){
-      e.preventDefault();
-      e.returnValue = "";
-      return "";
-    }
-  }
-  window.addEventListener("beforeunload", confirmLeave);
-
-  // Initial load
-  const stored = loadStored();
-  if(stored){
-    apply(stored);
-    statusChip.textContent = "Loaded";
-  }else{
-    addDefault();
-  }
-
-  refreshCompleteBtns();
-  window.addEventListener("storage", refreshCompleteBtns);
-  window.addEventListener("focus", refreshCompleteBtns);
+  load();
 })();
 </script>
 
