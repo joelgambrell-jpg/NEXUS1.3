@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Torque SOP</title>
+
+<style>
+  :root{
+    --hdr:#D9D9D9;      /* Word light gray header */
+    --border:#000;
+
+    /* Word-style highlight colors (solid) */
+    --hl-red:#ff0000;   /* Potential Safety Hazard */
+    --hl-ylw:#ffff00;   /* Physical movement / location change */
+    --hl-cyn:#00e5ff;   /* Informational sections */
+    --hl-grn:#00ff00;   /* Important Note (kept for consistency) */
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#fff; color:#000; font-family: Arial, Helvetica, sans-serif; }
+
+  .page{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px 18px 40px;
+  }
+
+  .top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin: 10px 0 6px;
+  }
+  .brand-left{
+    font-weight:700;
+  }
+  .brand-right{
+    text-align:right;
+    font-weight:700;
+  }
+
+  h1{ margin:0; font-size:22px; font-weight:700; }
+  .subtitle{ margin-top:6px; font-size:14px; font-weight:700; }
+
+  .btn{
+    appearance:none;
+    border:1px solid #000;
+    background:#fff;
+    color:#000;
+    font-weight:700;
+    padding:8px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    height: fit-content;
+  }
+
+  /* Sections */
+  .section{
+    margin-top: 14px;
+    border:1px solid var(--border);
+    background:#fff;
+  }
+  .section .hdr{
+    background: var(--hdr);
+    border-bottom:1px solid var(--border);
+    padding: 6px 8px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .section .body{ padding: 0; }
+
+  /* Legend */
+  .legend{
+    font-weight:700;
+    font-size: 12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* SOP table layout (Word-like) */
+  table.sop{
+    width:100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.sop td{
+    border-top: 1px solid #c9c9c9;
+    border-right: 1px solid #c9c9c9;
+    padding: 10px 10px;
+    vertical-align: top;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  table.sop tr:first-child td{ border-top:none; }
+  table.sop td.num{ width:60px; text-align:left; font-weight:400; }
+  table.sop td.txt{ width:auto; }
+  table.sop td.status{ width: 170px; text-align:left; }
+
+  /* Ensure text WRAPS */
+  .cellwrap{
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Word-style highlight behind TEXT ONLY */
+  .hl{ display:inline; padding: 2px 3px; }
+  .hl.red{ background: var(--hl-red); color:#000; }
+  .hl.yellow{ background: var(--hl-ylw); color:#000; }
+  .hl.cyan{ background: var(--hl-cyn); color:#000; }
+  .hl.green{ background: var(--hl-grn); color:#000; }
+
+  a{ color:#000; }
+
+  /* Status controls: "Complete" or "Problem" */
+  .status-wrap{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size: 13px;
+    font-weight: 700;
+    user-select:none;
+    cursor:pointer;
+  }
+  .pill input{
+    width:16px;
+    height:16px;
+    margin:0;
+    accent-color:#000;
+  }
+  .pill.problem input{ accent-color:#b60000; }
+
+  /* Comments lines */
+  .lines{
+    width:100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .lines td{
+    border-top: 1px solid #000;
+    height: 24px;
+  }
+
+  /* Approvals table */
+  table.appr{
+    width:100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.appr td{
+    border:1px solid #000;
+    padding: 6px 8px;
+    vertical-align: middle;
+    font-weight:700;
+  }
+  table.appr tr:first-child td{ background: var(--hdr); }
+
+  /* ===== PROBLEM MODE SAFETY VIEW =====
+     When any "Problem" is selected anywhere:
+     - Dim/transparent everything EXCEPT Backout section
+     - Disable interaction on dimmed sections
+  */
+  body.problem-mode .section{
+    opacity: 0.15;
+    transition: opacity .15s ease;
+  }
+  body.problem-mode .section:not(#backoutSection){
+    pointer-events:none;
+    user-select:none;
+  }
+  body.problem-mode #backoutSection{
+    opacity: 1 !important;
+    pointer-events:auto !important;
+    user-select:auto !important;
+    box-shadow: 0 0 0 3px rgba(255,0,0,0.25);
+  }
+
+  @media print{
+    .btn{ display:none !important; }
+    .page{ max-width:none; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="top">
+    <div>
+      <h1>Threaded Fastener Torque Application SOP</h1>
+      <div class="subtitle">Mission Critical Program</div>
+    </div>
+    <button class="btn" type="button" id="resetSelectionsBtn">Reset Selections</button>
+  </div>
+
+  <div class="section">
+    <div class="hdr">
+      <span>Color Key</span>
+      <span class="legend">
+        <span><span class="hl red">Potential Safety Hazard:</span></span>
+        <span><span class="hl yellow">Physical movement or location change:</span></span>
+        <span><span class="hl cyan">Informational sections:</span></span>
+      </span>
+    </div>
+    <div class="body" style="padding:10px 10px;">
+      <!-- left blank intentionally to match the simple key block shown -->
+    </div>
+  </div>
+
+  <!-- =========================
+       Section 1
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Section 1: Pre-Work / Initial Conditions</div>
+    <div class="body">
+      <table class="sop" aria-label="Section 1 checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Follow LOTO procedure to ensure equipment is de-energized using a Live Dead Live method.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Identify fasteners to be torqued by <u>clicking this link</u>. (Hyperlink to torque layout page)
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_4_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_4_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl cyan">Remove 3/8” drive Torque wrench from storage box on cart of gang box and verify calibration date is not past due.</span> If date has passed move to backout procedure immediately.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_5_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_5_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">6.</td>
+          <td class="txt"><div class="cellwrap">Select 6-point socket that corresponds to the fastener head size to be torqued from tool cart or gang box. <span class="hl cyan">Thread stick-out should be accounted for in this selection.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_6_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_6_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">7.</td>
+          <td class="txt"><div class="cellwrap">Select boxed end wrench from tool cart or gang box preferably a double offset 6-point that corresponds to the fastener head that torque is going to be applied to.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s1_7_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s1_7_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Section 2
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Section 2: Verification of Torque Specification and Tool Functionality</div>
+    <div class="body">
+      <table class="sop" aria-label="Section 2 checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Determine appropriate torque spec per manufacturer documentation. If torque value is not provided in submittal, apply torque value according to
+              <span class="hl cyan">ANSI/NETA ATS-2025 criteria found in tables 100.12.</span>
+              <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span>
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s2_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s2_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Use hand to place selected socket on to nut side of fastener assembly to verify correct fitment.
+              <span class="hl cyan">At this time ensure thread stick-out will not interfere with socket internally while torquing.</span>
+              Verify appropriate size with selected boxed end wrench as well as clearance for the handle of the tool.
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s2_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s2_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap">Move the selector switch to the “ON” position on the ratcheting head of the torque wrench. If not marked, the selector bar should point away from you and to the right.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s2_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s2_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap">Apply the socket to the corresponding 3/8” square drive of the torque wrench and apply rotational force clockwise while listening for “clicks” to test the ratchet mechanism. Reverse rotational force to verify the stop works correctly and does not slip.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s2_4_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s2_4_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt"><div class="cellwrap">Use the dial or digital torque setting function on the torque wrench handle to set the appropriate torque value.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s2_5_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s2_5_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Section 3
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Section 3: Apply Tools and Begin Torque Procedure</div>
+    <div class="body">
+      <table class="sop" aria-label="Section 3 checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap">Tighten the fastener assembly to the point at which all components are touching by hand.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap">Apply the socket on the torque wrench to the nut side of a pass-through bolt assembly, apply to the bolt head of a blind hole or captive nut fastener.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap">Place selected boxed end wrench on the opposite end of the fastener in the most mechanically advantageous position possible if applicable.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              <span class="hl red">Use the ratcheting head of the wrench to gain mechanical advantage</span>
+              when available for smooth application of force at a 90-degree angle to the fastener.
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_4_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_4_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              <span class="hl red">Place hand on knurled or rubber section of the torque wrench and place opposite hand on boxed end wrench or use as a force balancer if applicable.</span>
+              If fastener breaks, moves improperly while torquing, has a thread deformation or any other failure move to Backout procedure immediately.
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_5_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_5_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">6.</td>
+          <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s3_6_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s3_6_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Section 4
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Section 4: Verify Torque Application and Apply Tamper Seal</div>
+    <div class="body">
+      <table class="sop" aria-label="Section 4 checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque was applied the first time.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s4_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s4_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap">Remove the boxed end wrench and torque wrench from fastener. Set boxed end wrench in a safe location.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s4_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s4_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              <span class="hl yellow">Visually check the torque wrench setting to ensure it matches the prescribed value, set in Section 2 Step 5.</span>
+              If the torque setting has changed move to backout procedure immediately.
+            </div>
+          </td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="s4_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="s4_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Validation
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Validation</div>
+    <div class="body">
+      <table class="sop" aria-label="Validation checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Inspect mated surfaces for gaps, cracks, or deformations using a flashlight, mirror, or direct vision to ensure assembly integrity.</span> If any of these or any other failures are noted move to backout procedure immediately.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Notify Foreman, Engineer or Manager that torque sequence has taken place and is complete.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Engineer or Manager perform 10 percent of total fastener in panel spot check with minimum of 2 torque verifications starting at Section 3 Step 2 through Section 4 Step 3.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Manager or Engineer apply a different color torque tamper paint to signify the completion of the spot check process.</span> Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_4_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_4_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt"><div class="cellwrap">Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator. Application recommendation can be found in <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_5_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_5_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">6.</td>
+          <td class="txt"><div class="cellwrap">Replace all covers and clean up any out of place torque paint utilizing the prescribed method.</div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="v_6_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="v_6_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Backout (SAFETY VIEW)
+       Mapping locked per your instruction:
+       1-2 RED, 3-4 YELLOW
+       ========================= -->
+  <div class="section" id="backoutSection">
+    <div class="hdr">Backout</div>
+    <div class="body">
+      <table class="sop" aria-label="Backout checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">STOP WORK</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="b_1_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="b_1_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">PLACE equipment in SAFE condition</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="b_2_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="b_2_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="b_3_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="b_3_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work.</span></div></td>
+          <td class="status">
+            <div class="status-wrap">
+              <label class="pill"><input type="radio" name="b_4_status" value="complete">Complete</label>
+              <label class="pill problem"><input type="radio" name="b_4_status" value="problem">Problem</label>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Comments
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Comments</div>
+    <div class="body" style="padding:10px 10px;">
+      <div style="margin-bottom:10px;">
+        Color Key<br>
+        <span class="hl red">Potential Safety Hazard</span><br>
+        <span class="hl yellow">Physical movement or location change</span><br>
+        <span class="hl cyan">Informational sections</span>
+      </div>
+
+      <table class="lines" aria-label="Comment lines">
+        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================
+       Approvals
+       ========================= -->
+  <div class="section">
+    <div class="hdr">Approvals</div>
+    <div class="body" style="padding:10px 10px;">
+      <table class="appr" aria-label="Approvals">
+        <tr>
+          <td>Version</td>
+          <td>Date</td>
+          <td>Author(s)</td>
+          <td>Approved By</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>09/11/2025</td>
+          <td>Joel Gambrell</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const resetBtn = document.getElementById("resetSelectionsBtn");
+
+  function anyProblemSelected(){
+    return !!document.querySelector('input[type="radio"][value="problem"]:checked');
+  }
+
+  function applyProblemMode(){
+    const on = anyProblemSelected();
+    document.body.classList.toggle("problem-mode", on);
+
+    if (on){
+      const backout = document.getElementById("backoutSection");
+      if (backout) backout.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+  }
+
+  document.querySelectorAll('input[type="radio"]').forEach(r => {
+    r.addEventListener("change", applyProblemMode);
+  });
+
+  if (resetBtn){
+    resetBtn.addEventListener("click", () => {
+      const ok = confirm("Reset all Complete/Problem selections?");
+      if (!ok) return;
+      document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+      document.body.classList.remove("problem-mode");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  applyProblemMode();
+})();
+</script>
+
+</body>
+</html>
