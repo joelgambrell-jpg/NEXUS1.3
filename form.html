@@ -1,4 +1,3 @@
-<!-- form.html (FULL drop-in) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +6,6 @@
 <title>Form</title>
 
 <style>
-/* ===== BASE PAGE ===== */
 body{
   margin:0;
   padding:0;
@@ -36,37 +34,23 @@ body{
   display:inline-block;
   margin-bottom:20px;
 }
-h1{
-  font-size:32px;
-  font-weight:700;
-  margin-top:0;
-}
+h1{font-size:32px;font-weight:700;margin-top:0;}
 .section-title{
-  font-size:22px;
-  font-weight:bold;
-  margin:20px 0 8px;
-  border-bottom:2px solid #fff;
-  padding-bottom:6px;
+  font-size:22px;font-weight:bold;margin:20px 0 8px;
+  border-bottom:2px solid #fff;padding-bottom:6px;
 }
+.eq-label{font-weight:900;margin:10px 0 18px;font-size:18px;}
 
-/* ===== EQUIPMENT LABEL ===== */
-.eq-label{
-  font-weight:900;
-  margin:10px 0 18px;
-  font-size:18px;
-}
-
-/* ===== BUTTON PANEL ===== */
 .button-panel{
   display:inline-block;
   background: rgba(80, 80, 80, 0.65);
-  padding: 40px 60px;
+  padding: 34px 54px;
   border-radius: 24px;
   backdrop-filter: blur(4px);
 }
 .btn{
   display:block;
-  margin:20px auto;
+  margin:18px auto;
   padding:16px 50px;
   font-size:22px;
   font-weight:700;
@@ -77,107 +61,31 @@ h1{
   border:2px solid #00c2ff;
   cursor:pointer;
 }
-.btn:hover{
-  transform:translateY(-2px);
-}
-.btn:disabled{
-  opacity:0.6;
-  cursor:not-allowed;
-  transform:none;
-}
-
-/* ===== COMPLETE (NEON GREEN) ===== */
+.btn:hover{transform:translateY(-2px);}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 .btn.complete{
   background:#00ff66 !important;
   color:#002b14 !important;
   border-color:#00ff66 !important;
   box-shadow:0 0 14px rgba(0,255,102,.85);
 }
+.media{margin-top:20px;}
+.embed{width:100%;height:75vh;border:none;border-radius:12px;background:#111;}
 
-/* ===== MEDIA ===== */
-.media{
-  margin-top:20px;
-}
-.media img{
-  max-width:100%;
-  border-radius:18px;
-  cursor:zoom-in;
-}
-.embed{
-  width:100%;
-  height:75vh;
-  border:none;
-  border-radius:12px;
-  background:#111;
-}
+.nx-header-wrap{background: rgba(0,0,0,0.35);border-bottom: 1px solid rgba(255,255,255,0.18);backdrop-filter: blur(8px);}
+.nx-header{max-width: 1100px;margin: 0 auto;padding: 14px 18px;display: flex;align-items: center;}
+.nx-header img{height: 54px;width: auto;max-width: 100%;object-fit: contain;}
 
-/* ===== MODAL ===== */
-.nx-modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  z-index:9999;
-  justify-content:center;
-  align-items:center;
-}
-.nx-modal-content{
-  position:relative;
-  max-width:90vw;
-  max-height:90vh;
-}
-.nx-modal-content img{
-  max-width:100%;
-  max-height:100%;
-}
-.nx-close{
-  position:absolute;
-  top:8px;
-  right:48px;
-  color:#fff;
-  font-size:24px;
-  font-weight:bold;
-  cursor:pointer;
-  background:rgba(0,0,0,0.5);
-  border-radius:50%;
-  width:32px;
-  height:32px;
-  line-height:32px;
-  text-align:center;
-}
-
-/* ===== NEXUS Shared Header ===== */
-.nx-header-wrap{
+.nx-footer{
+  margin-top: 40px;
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
   background: rgba(0,0,0,0.35);
-  border-bottom: 1px solid rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255,255,255,0.18);
 }
-.nx-header{
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-}
-.nx-header img{
-  height: 54px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-}
-</style>
-
-<style>
-  .nx-footer{
-    margin-top: 40px;
-    padding: 18px 12px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.35);
-    border-top: 1px solid rgba(255,255,255,0.18);
-  }
 </style>
 
 <link rel="stylesheet" href="assets/css/nexus-core.css">
@@ -205,14 +113,14 @@ h1{
 </div>
 
 <script>
-  (function(){
-    try{
-      var sel=document.getElementById("nxRoleSelect");
-      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
-        sel.value = window.NEXUS.getRole();
-      }
-    }catch(e){}
-  })();
+(function(){
+  try{
+    var sel=document.getElementById("nxRoleSelect");
+    if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+      sel.value = window.NEXUS.getRole();
+    }
+  }catch(e){}
+})();
 </script>
 
 <a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
@@ -227,26 +135,23 @@ h1{
   <a class="back" id="backLink" href="index.html">← Back</a>
 
   <h1 id="page-title">Loading…</h1>
-
   <div id="eqLabel" class="eq-label"></div>
-
   <div class="section-title" id="section-title"></div>
 
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
 
-    <!-- STEP COMPLETE (RIF ONLY - controlled by app.js) -->
-    <button id="stepCompleteBtn" class="btn" type="button" style="display:none;">Step Complete</button>
+    <!-- THIS MUST EXIST so app.js can show it on RIF -->
+    <button class="btn" id="stepCompleteBtn" type="button">Step Complete</button>
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- App logic -->
-<script src="config.js"></script>
+<!-- Load FORMS first, then app logic -->
+<script src="forms.js"></script>
 <script src="app.js"></script>
 
-<!-- Equipment context + link propagation -->
 <script>
 (function () {
   const qs = new URLSearchParams(location.search);
@@ -277,10 +182,7 @@ h1{
   patchLinks();
 
   const observer = new MutationObserver(patchLinks);
-  observer.observe(document.getElementById("buttons") || document.body, {
-    childList:true,
-    subtree:true
-  });
+  observer.observe(document.getElementById("buttons") || document.body, { childList:true, subtree:true });
 })();
 </script>
 
