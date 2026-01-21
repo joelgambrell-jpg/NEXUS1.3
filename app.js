@@ -1,3 +1,4 @@
+/* app.js (drop-in replacement) */
 (function () {
   const params = new URLSearchParams(location.search);
   const id = (params.get("id") || "").trim();
@@ -49,13 +50,35 @@
 
   // Keys used by equipment.html / index.html
   function stepKey(stepId){ return `nexus_${eq || "NO_EQ"}_step_${stepId}`; }
+  function landingKey(){ return `nexus_${eq || "NO_EQ"}_landing_complete`; }
 
   // =========================
   // Firebase sync (optional)
   // - expects window.NEXUS_FB = { db, auth } from your firebase init script
   // - mirrors Firestore <-> localStorage
   // =========================
-  async function fbListenStep(eqId, stepId, onChange){
+  async function fbSetStep(eqId, stepId, isDone){
+    try{
+      if (!window.NEXUS_FB?.db || !eqId || !stepId) return;
+      const { db, auth } = window.NEXUS_FB;
+
+      const { doc, setDoc, serverTimestamp } =
+        await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+
+      const ref = doc(db, "equipment", eqId, "steps", stepId);
+      await setDoc(ref, {
+        done: !!isDone,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth?.currentUser?.uid || null
+      }, { merge:true });
+    }catch(e){
+      // silent fail: localStorage still works offline
+      console.warn("Firebase step sync failed:", e);
+    }
+  }
+
+  let fbUnsub = null;
+  async function fbListenStep(eqId, stepId){
     try{
       if (!window.NEXUS_FB?.db || !eqId || !stepId) return;
       const { db } = window.NEXUS_FB;
@@ -65,26 +88,77 @@
 
       const ref = doc(db, "equipment", eqId, "steps", stepId);
 
-      return onSnapshot(ref, (snap) => {
+      // Listen for remote changes and mirror into localStorage
+      fbUnsub = onSnapshot(ref, (snap) => {
         if (!snap.exists()) return;
         const data = snap.data() || {};
         if (data.done) localStorage.setItem(stepKey(stepId), "1");
         else localStorage.removeItem(stepKey(stepId));
-        try{ onChange && onChange(); }catch(e){}
+        refreshStepBtn();
       });
     }catch(e){
       console.warn("Firebase listener failed:", e);
-      return null;
     }
   }
 
-  // Start Firebase listener for this form step ONLY if you later re-enable completion on this page.
-  // (Currently: completion is handled on the actual data-entry pages, not here.)
-  let fbUnsub = null;
-  if (eq && id){
-    // leaving this disabled by default to avoid assumptions:
-    // fbUnsub = await fbListenStep(eq, id, () => {});
+  // Toggle button (legacy; form.html currently removed it, so this stays harmless)
+  const stepBtn = document.getElementById("stepCompleteBtn");
+
+  // Steps that should NOT have completion toggles (support/reference only)
+  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"])
+  const hideToggle = NON_COMPLETABLE.has(id);
+
+  function usable(){ return !!(eq && id); }
+  function done(){ return !!(eq && id && localStorage.getItem(stepKey(id)) === "1"); }
+
+  async function setDoneState(nextDone){
+    if (!usable()) return;
+
+    // Keep existing cfg.completedKey behavior (optional/legacy)
+    if (cfg.completedKey){
+      if (nextDone) localStorage.setItem(cfg.completedKey, "true");
+      else localStorage.removeItem(cfg.completedKey);
+    }
+
+    // Local-first write (offline-friendly)
+    if (nextDone){
+      localStorage.setItem(stepKey(id), "1");
+      localStorage.setItem(landingKey(), "1");
+    } else {
+      localStorage.removeItem(stepKey(id));
+      // Do not clear landing flag here; equipment.html recomputes it accurately.
+    }
+
+    // Firebase mirror (best-effort)
+    await fbSetStep(eq, id, nextDone);
   }
+
+  function refreshStepBtn(){
+    if (!stepBtn) return;
+    if (hideToggle){ stepBtn.style.display = "none"; return; }
+
+    stepBtn.style.display = "block";
+    stepBtn.disabled = !usable();
+    stepBtn.title = usable() ? "" : "Missing eq or id in URL";
+    stepBtn.classList.toggle("complete", done());
+  }
+
+  if (stepBtn){
+    stepBtn.addEventListener("click", async () => {
+      if (!usable()) return;
+      const next = !done();
+      await setDoneState(next);
+      refreshStepBtn();
+    });
+  }
+
+  refreshStepBtn();
+  window.addEventListener("storage", refreshStepBtn);
+  window.addEventListener("focus", refreshStepBtn);
+  window.addEventListener("pageshow", refreshStepBtn);
+
+  // Start Firebase listener (if configured) for cross-device updates
+  if (usable()) fbListenStep(eq, id);
 
   window.addEventListener("beforeunload", () => {
     try{ if (fbUnsub) fbUnsub(); }catch(e){}
@@ -240,16 +314,25 @@
   const btnList = Array.isArray(cfg.buttons) ? [...cfg.buttons] : [];
 
   // RIF: restore quick links (while keeping the existing Megohmmeter button).
-  // - Uses equipment-level Procore URLs from index.html.
-  // - Safe pre-Firebase: if blank, link is not shown.
   if (id === "rif") {
     const meta = loadEqMeta() || {};
     if (meta.procoreEquipUrl) {
       btnList.unshift({
         text: "RIF – Procore (Construction)",
-        href: meta.procoreEquipUrl
+        href: meta.procoreEquipUrl,
+        newTab: true
       });
     }
+  }
+
+  // TORQUE: insert SOP button directly under "Torque Application Log"
+  if (id === "torque") {
+    // Put it right after the first button (matches your layout screenshot)
+    btnList.splice(1, 0, {
+      text: "Torque SOP",
+      href: "torque_sop.html",
+      newTab: true
+    });
   }
 
   btnList.forEach((b) => {
@@ -258,7 +341,8 @@
     a.textContent = b.text || "Open";
     a.href = withEq(b.href || "#");
 
-    if (/^https?:\/\//i.test(a.href)) {
+    // Open in new tab if explicitly requested OR if external http(s)
+    if (b.newTab || /^https?:\/\//i.test(a.href)) {
       a.target = "_blank";
       a.rel = "noopener noreferrer";
     }
