@@ -76,8 +76,9 @@
     }
   }
 
-  let fbUnsub = null;
-  async function fbListenStep(eqId, stepId){
+  // Allow multiple listeners (Megohmmeter has 2)
+  let fbUnsubs = [];
+  async function fbListenStep(eqId, stepId, onChange){
     try{
       if (!window.NEXUS_FB?.db || !eqId || !stepId) return;
       const { db } = window.NEXUS_FB;
@@ -87,29 +88,45 @@
 
       const ref = doc(db, "equipment", eqId, "steps", stepId);
 
-      // Listen for remote changes and mirror into localStorage
-      fbUnsub = onSnapshot(ref, (snap) => {
+      const unsub = onSnapshot(ref, (snap) => {
         if (!snap.exists()) return;
         const data = snap.data() || {};
         if (data.done) localStorage.setItem(stepKey(stepId), "1");
         else localStorage.removeItem(stepKey(stepId));
-        refreshStepBtn();
-        refreshMegBtns(); // PATCH: keep meg buttons in sync too
+        try{ onChange && onChange(); }catch(e){}
       });
+
+      fbUnsubs.push(unsub);
     }catch(e){
       console.warn("Firebase listener failed:", e);
     }
   }
 
-  // Toggle button (legacy single-step)
-  const stepBtn = document.getElementById("stepCompleteBtn");
+  // =========================
+  // Completion buttons
+  // =========================
+  const stepBtn = document.getElementById("stepCompleteBtn");      // legacy single button
+  const lineBtn = document.getElementById("lineCompleteBtn");      // new (Megohmmeter)
+  const loadBtn = document.getElementById("loadCompleteBtn");      // new (Megohmmeter)
 
   // Steps that should NOT have completion toggles (support/reference only)
-  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"])
+  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"]);
   const hideToggle = NON_COMPLETABLE.has(id);
 
+  const IS_MEGOHMMETER = (id === "megohmmeter");
+  const MEG_LINE_STEP = "megohmmeter_line";
+  const MEG_LOAD_STEP = "megohmmeter_load";
+
   function usable(){ return !!(eq && id); }
+
+  // Standard (single-step) done state
   function done(){ return !!(eq && id && localStorage.getItem(stepKey(id)) === "1"); }
+
+  // Megohmmeter (two-step) done state
+  function megDone(stepId){ return !!(eq && localStorage.getItem(stepKey(stepId)) === "1"); }
+  function megAllDone(){
+    return megDone(MEG_LINE_STEP) && megDone(MEG_LOAD_STEP);
+  }
 
   async function setDoneState(nextDone){
     if (!usable()) return;
@@ -133,13 +150,25 @@
     await fbSetStep(eq, id, nextDone);
   }
 
+  async function setMegDoneState(stepId, nextDone){
+    if (!usable()) return;
+
+    if (nextDone) localStorage.setItem(stepKey(stepId), "1");
+    else localStorage.removeItem(stepKey(stepId));
+
+    // Landing is "complete" only when BOTH line + load are complete
+    if (megAllDone()){
+      localStorage.setItem(landingKey(), "1");
+    }
+
+    // Firebase mirror for the specific step
+    await fbSetStep(eq, stepId, nextDone);
+  }
+
   function refreshStepBtn(){
+    // STANDARD SINGLE STEP
     if (!stepBtn) return;
-
-    // PATCH: hide legacy single-step button when in megohmmeter mode
-    if (id === "megohmmeter"){ stepBtn.style.display = "none"; return; }
-
-    if (hideToggle){ stepBtn.style.display = "none"; return; }
+    if (hideToggle || IS_MEGOHMMETER){ stepBtn.style.display = "none"; return; }
 
     // Always visible; disable if missing eq/id to prevent bad writes
     stepBtn.style.display = "block";
@@ -149,29 +178,84 @@
     stepBtn.classList.toggle("complete", done());
   }
 
+  function refreshMegBtns(){
+    // MEGOHMMETER TWO STEP
+    if (!IS_MEGOHMMETER) return;
+
+    // For non-completable, hide these too
+    if (hideToggle){
+      if (lineBtn) lineBtn.style.display = "none";
+      if (loadBtn) loadBtn.style.display = "none";
+      return;
+    }
+
+    if (lineBtn){
+      lineBtn.style.display = "block";
+      lineBtn.disabled = !usable();
+      lineBtn.title = usable() ? "" : "Missing eq or id in URL";
+      lineBtn.classList.toggle("complete", megDone(MEG_LINE_STEP));
+    }
+    if (loadBtn){
+      loadBtn.style.display = "block";
+      loadBtn.disabled = !usable();
+      loadBtn.title = usable() ? "" : "Missing eq or id in URL";
+      loadBtn.classList.toggle("complete", megDone(MEG_LOAD_STEP));
+    }
+  }
+
+  // Click handlers
   if (stepBtn){
     stepBtn.addEventListener("click", async () => {
       if (!usable()) return;
-
-      // PATCH: ignore clicks if megohmmeter (hidden anyway, but defensive)
-      if (id === "megohmmeter") return;
-
       const next = !done();
       await setDoneState(next);
       refreshStepBtn();
     });
   }
 
+  if (lineBtn){
+    lineBtn.addEventListener("click", async () => {
+      if (!usable()) return;
+      const next = !megDone(MEG_LINE_STEP);
+      await setMegDoneState(MEG_LINE_STEP, next);
+      refreshMegBtns();
+    });
+  }
+
+  if (loadBtn){
+    loadBtn.addEventListener("click", async () => {
+      if (!usable()) return;
+      const next = !megDone(MEG_LOAD_STEP);
+      await setMegDoneState(MEG_LOAD_STEP, next);
+      refreshMegBtns();
+    });
+  }
+
+  // Initial paint
   refreshStepBtn();
-  window.addEventListener("storage", refreshStepBtn);
-  window.addEventListener("focus", refreshStepBtn);
-  window.addEventListener("pageshow", refreshStepBtn);
+  refreshMegBtns();
+
+  // Keep in sync across tabs/focus
+  window.addEventListener("storage", () => { refreshStepBtn(); refreshMegBtns(); });
+  window.addEventListener("focus", () => { refreshStepBtn(); refreshMegBtns(); });
+  window.addEventListener("pageshow", () => { refreshStepBtn(); refreshMegBtns(); });
 
   // Start Firebase listener (if configured) for cross-device updates
-  if (usable()) fbListenStep(eq, id);
+  if (usable()){
+    if (IS_MEGOHMMETER){
+      fbListenStep(eq, MEG_LINE_STEP, refreshMegBtns);
+      fbListenStep(eq, MEG_LOAD_STEP, refreshMegBtns);
+    } else {
+      fbListenStep(eq, id, refreshStepBtn);
+    }
+  }
 
   window.addEventListener("beforeunload", () => {
-    try{ if (fbUnsub) fbUnsub(); }catch(e){}
+    try{
+      if (fbUnsubs && fbUnsubs.length){
+        fbUnsubs.forEach(u => { try{ u && u(); }catch(e){} });
+      }
+    }catch(e){}
   });
 
   // Helper: add eq to INTERNAL links only
@@ -191,86 +275,6 @@
     }
 
     return u.pathname + u.search + u.hash;
-  }
-
-  // =========================
-  // PATCH: MEGOHMMETER TWO-STEP COMPLETION BUTTONS
-  // - Only active when id === "megohmmeter"
-  // - Uses step ids: megohmmeter_line / megohmmeter_load
-  // - When both done => sets landingKey()
-  // - Mirrors to Firebase using fbSetStep/fbListenStep (best effort)
-  // =========================
-  const lineCompleteBtn = document.getElementById("lineCompleteBtn");
-  const loadCompleteBtn = document.getElementById("loadCompleteBtn");
-  const MEG_LINE_STEP = "megohmmeter_line";
-  const MEG_LOAD_STEP = "megohmmeter_load";
-
-  function megDone(stepId){
-    return !!(eq && localStorage.getItem(stepKey(stepId)) === "1");
-  }
-
-  function megAllDone(){
-    return megDone(MEG_LINE_STEP) && megDone(MEG_LOAD_STEP);
-  }
-
-  async function megSetDone(stepId, nextDone){
-    if (!eq || !stepId) return;
-
-    if (nextDone) localStorage.setItem(stepKey(stepId), "1");
-    else localStorage.removeItem(stepKey(stepId));
-
-    // Only set landing flag when BOTH are done
-    if (megAllDone()) {
-      localStorage.setItem(landingKey(), "1");
-    }
-
-    // Mirror to Firebase as equipment/{eq}/steps/{stepId}
-    await fbSetStep(eq, stepId, nextDone);
-  }
-
-  function refreshMegBtns(){
-    if (id !== "megohmmeter") return;
-    if (lineCompleteBtn){
-      lineCompleteBtn.disabled = !usable();
-      lineCompleteBtn.title = usable() ? "" : "Missing eq or id in URL";
-      lineCompleteBtn.classList.toggle("complete", megDone(MEG_LINE_STEP));
-    }
-    if (loadCompleteBtn){
-      loadCompleteBtn.disabled = !usable();
-      loadCompleteBtn.title = usable() ? "" : "Missing eq or id in URL";
-      loadCompleteBtn.classList.toggle("complete", megDone(MEG_LOAD_STEP));
-    }
-  }
-
-  if (id === "megohmmeter"){
-    // Listen for remote changes for both meg steps, in addition to the base id listener above.
-    if (usable()){
-      fbListenStep(eq, MEG_LINE_STEP);
-      fbListenStep(eq, MEG_LOAD_STEP);
-    }
-
-    if (lineCompleteBtn){
-      lineCompleteBtn.addEventListener("click", async () => {
-        if (!usable()) return;
-        const next = !megDone(MEG_LINE_STEP);
-        await megSetDone(MEG_LINE_STEP, next);
-        refreshMegBtns();
-      });
-    }
-
-    if (loadCompleteBtn){
-      loadCompleteBtn.addEventListener("click", async () => {
-        if (!usable()) return;
-        const next = !megDone(MEG_LOAD_STEP);
-        await megSetDone(MEG_LOAD_STEP, next);
-        refreshMegBtns();
-      });
-    }
-
-    refreshMegBtns();
-    window.addEventListener("storage", refreshMegBtns);
-    window.addEventListener("focus", refreshMegBtns);
-    window.addEventListener("pageshow", refreshMegBtns);
   }
 
   // EMBED MODE
