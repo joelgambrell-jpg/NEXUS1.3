@@ -77,6 +77,26 @@
     margin-top:26px;
   }
 
+  .actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin: 16px 0 8px;
+  }
+
+  .btn{
+    padding:10px 16px;
+    border-radius:999px;
+    font-weight:900;
+    cursor:pointer;
+    border:2px solid rgba(255,255,255,0.35);
+    background: rgba(0,0,0,0.25);
+    color:#fff;
+  }
+  .btn.secondary{
+    opacity:.9;
+  }
+
   .footer{
     margin-top:40px;
     font-size:12px;
@@ -93,6 +113,12 @@
 
 <div class="meta">
   Mission Critical Program
+</div>
+
+<div class="actions">
+  <button class="btn secondary" id="resetChecksBtn" type="button">
+    Reset Checkboxes
+  </button>
 </div>
 
 <h2>Description</h2>
@@ -150,34 +176,13 @@
 <h2>TPVR (Two Person Verification Rule)</h2>
 <p>Yes ☐ &nbsp;&nbsp; No ☐</p>
 
-<!-- ====================== -->
 <h2>Section 1: Pre-Work / Initial Conditions</h2>
 
 <ul>
-  <li>
-    <label><input type="checkbox">
-      Ensure all PPE is being worn and is serviceable throughout entire process.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Conform with Foreman in area that all wires are installed as specified on the drawing and ready for termination in space to be tested.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Follow LOTO procedure to ensure equipment is de-energized.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.
-    </label>
-  </li>
-
+  <li><label><input type="checkbox">Ensure all PPE is being worn and is serviceable throughout entire process.</label></li>
+  <li><label><input type="checkbox">Conform with Foreman in area that all wires are installed as specified on the drawing and ready for termination in space to be tested.</label></li>
+  <li><label><input type="checkbox">Follow LOTO procedure to ensure equipment is de-energized.</label></li>
+  <li><label><input type="checkbox">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</label></li>
   <li>
     <label><input type="checkbox">
       Retrieve Fluke 1503 or 1507 from tool cart or gang box and test battery using method on page 18 of the user manual.
@@ -187,83 +192,28 @@
       Fluke 1503 Manual
     </a>
   </li>
-
-  <li>
-    <label><input type="checkbox">
-      Ensure no part of your body is in contact with any exposed conductor including ends of test leads through skin, clothes or gloves to prevent electrical shock.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Insert black test lead into common input terminal and insert red test lead to insulation test terminal. Turn dial to 1000V setting and touch uninsulated tips together and press TEST. If “0” and 1050V is not shown immediately move to Backout Procedure.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Retrieve plastic caps and place over exposed conductor ends opposite of test area preferably downstream secure using electrical tape.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Secure opposite termination area using LOTO tools or a second trained person to ensure conductors are not touched during testing procedure.
-    </label>
-  </li>
+  <li><label><input type="checkbox">Ensure no part of your body is in contact with any exposed conductor including ends of test leads through skin, clothes or gloves to prevent electrical shock.</label></li>
+  <li><label><input type="checkbox">Insert black test lead into common input terminal and insert red test lead to insulation test terminal. Turn dial to 1000V setting and touch uninsulated tips together and press TEST. If “0” and 1050V is not shown immediately move to Backout Procedure.</label></li>
+  <li><label><input type="checkbox">Retrieve plastic caps and place over exposed conductor ends opposite of test area preferably downstream secure using electrical tape.</label></li>
+  <li><label><input type="checkbox">Secure opposite termination area using LOTO tools or a second trained person to ensure conductors are not touched during testing procedure.</label></li>
 </ul>
 
-<!-- ====================== -->
 <h2>Section 2: Testing the Conductors</h2>
 
 <ul>
-  <li>
-    <label><input type="checkbox">
-      Visually inspect visible portions of conductors to be tested for insulation damage including cuts, abrasion, wear or burns.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Ensure no part of your body is in contact with any exposed conductor including test leads through skin, clothes or gloves.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Place Common test lead on phase 1 / A brown or black conductor and insulation test terminal on phase 2 / B orange or red conductor.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Press TEST until meter displays 11.0MΩ and 1050V. Release and wait for voltage to drop to zero before progressing. If reading differs move to Backout Procedure.
-    </label>
-  </li>
-
-  <li>
-    <label><input type="checkbox">
-      Use chart to complete all applicable testing steps for each cable. If any conductor does not produce 11MΩ move to Backout Procedure.
-    </label>
-  </li>
+  <li><label><input type="checkbox">Visually inspect visible portions of conductors to be tested for insulation damage including cuts, abrasion, wear or burns.</label></li>
+  <li><label><input type="checkbox">Ensure no part of your body is in contact with any exposed conductor including test leads through skin, clothes or gloves.</label></li>
+  <li><label><input type="checkbox">Place Common test lead on phase 1 / A brown or black conductor and insulation test terminal on phase 2 / B orange or red conductor.</label></li>
+  <li><label><input type="checkbox">Press TEST until meter displays 11.0MΩ and 1050V. Release and wait for voltage to drop to zero before progressing. If reading differs move to Backout Procedure.</label></li>
+  <li><label><input type="checkbox">Use chart to complete all applicable testing steps for each cable. If any conductor does not produce 11MΩ move to Backout Procedure.</label></li>
 </ul>
 
-<!-- ====================== -->
 <h2>Validation</h2>
 <ul>
-  <li>
-    <label><input type="checkbox">
-      Verify all conductors tested have a passing value of 11MΩ recorded.
-    </label>
-  </li>
-  <li>
-    <label><input type="checkbox">
-      Notify Construction Foreman that testing has concluded and all conductors passed.
-    </label>
-  </li>
+  <li><label><input type="checkbox">Verify all conductors tested have a passing value of 11MΩ recorded.</label></li>
+  <li><label><input type="checkbox">Notify Construction Foreman that testing has concluded and all conductors passed.</label></li>
 </ul>
 
-<!-- ====================== -->
 <h2>Backout Procedure</h2>
 
 <div class="danger">
@@ -273,11 +223,7 @@
 </div>
 
 <ul>
-  <li>
-    <label><input type="checkbox">
-      Once issue is resolved, return to appropriate section and step, verify prior steps were unaffected, and resume work. If backout initiated during testing, restart from first conductor.
-    </label>
-  </li>
+  <li><label><input type="checkbox">Once issue is resolved, return to appropriate section and step, verify prior steps were unaffected, and resume work. If backout initiated during testing, restart from first conductor.</label></li>
 </ul>
 
 <h2>Approvals</h2>
@@ -288,8 +234,24 @@
 </p>
 
 <div class="footer">
-  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved 
- </div>
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</div>
+
+<script>
+  (function(){
+    const btn = document.getElementById("resetChecksBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const ok = confirm("Reset all checkboxes on this SOP?");
+      if (!ok) return;
+
+      document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach(cb => { cb.checked = false; });
+    });
+  })();
+</script>
 
 </body>
 </html>
