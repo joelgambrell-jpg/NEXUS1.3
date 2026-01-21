@@ -85,7 +85,7 @@ h1{
   transform:none;
 }
 
-/* ===== STEP COMPLETE (NEON GREEN) ===== */
+/* ===== COMPLETE (NEON GREEN) ===== */
 .btn.complete{
   background:#00ff66 !important;
   color:#002b14 !important;
@@ -202,6 +202,7 @@ h1{
     </label>
   </div>
 </div>
+
 <script>
   (function(){
     try{
@@ -226,18 +227,13 @@ h1{
 
   <h1 id="page-title">Loading…</h1>
 
-  <!-- Equipment label -->
   <div id="eqLabel" class="eq-label"></div>
 
   <div class="section-title" id="section-title"></div>
 
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
-
-    <!-- STEP COMPLETE TOGGLE -->
-    <button class="btn" id="stepCompleteBtn" type="button">
-      STEP COMPLETE
-    </button>
+    <!-- STEP COMPLETE REMOVED (completion now handled on the actual form pages) -->
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
@@ -246,18 +242,6 @@ h1{
 <!-- App logic -->
 <script src="config.js"></script>
 <script src="app.js"></script>
-
-<!-- Hide STEP COMPLETE on Megohmmeter form launcher (completion is on meg_log.html) -->
-<script>
-  (function(){
-    const qs = new URLSearchParams(location.search);
-    const id = (qs.get("id") || "").trim();
-    if(id === "megohmmeter"){
-      const btn = document.getElementById("stepCompleteBtn");
-      if(btn) btn.style.display = "none";
-    }
-  })();
-</script>
 
 <!-- Equipment context + link propagation -->
 <script>
