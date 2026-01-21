@@ -444,9 +444,20 @@
   }
   function stepKey(id){ return `nexus_${eq || "NO_EQ"}_step_${id}`; }
 
+  // ===== PATCH: Megohmmeter is complete only when BOTH sides are complete =====
+  const MEG_LINE_STEP = "megohmmeter_line";
+  const MEG_LOAD_STEP = "megohmmeter_load";
+  function megIsComplete(){
+    // legacy fallback: if you previously used step_meg, treat it as complete too
+    const legacy = localStorage.getItem(stepKey("meg")) === "1";
+    const line = localStorage.getItem(stepKey(MEG_LINE_STEP)) === "1";
+    const load = localStorage.getItem(stepKey(MEG_LOAD_STEP)) === "1";
+    return legacy || (line && load);
+  }
+
   const taskSteps=[
     {id:"rif",btn:"rifBtn"},
-    {id:"meg",btn:"lvtBtn"},
+    {id:"meg",btn:"lvtBtn"},          /* Megohmmeter tile */
     {id:"torque",btn:"torqueBtn"},
     {id:"l2",btn:"l2Btn"},
     {id:"prefod",btn:"prefodBtn"},
@@ -487,7 +498,12 @@
 
     taskSteps.forEach(s=>{
       const el = document.getElementById(s.btn);
-      const ok = localStorage.getItem(stepKey(s.id)) === "1";
+
+      // PATCH: override completion rule for Megohmmeter tile
+      const ok = (s.id === "meg")
+        ? megIsComplete()
+        : (localStorage.getItem(stepKey(s.id)) === "1");
+
       if (el) el.classList.toggle("complete", ok);
       if (ok) done++;
     });
@@ -658,12 +674,16 @@
         await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
 
       const stepsCol = collection(db, "equipment", eq, "steps");
-      const knownTaskIds = new Set(taskSteps.map(s => s.id));
+
+      // PATCH: include megohmmeter_line/load in allowed step ids
+      const knownStepIds = new Set(taskSteps.map(s => s.id));
+      knownStepIds.add(MEG_LINE_STEP);
+      knownStepIds.add(MEG_LOAD_STEP);
 
       fbStepsUnsub = onSnapshot(stepsCol, (snap) => {
         snap.forEach(docSnap => {
           const stepId = docSnap.id;
-          if (!knownTaskIds.has(stepId)) return;
+          if (!knownStepIds.has(stepId)) return;
 
           const data = docSnap.data() || {};
           if (data.done) localStorage.setItem(stepKey(stepId), "1");
