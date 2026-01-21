@@ -43,7 +43,7 @@
   const buttonsEl = document.getElementById("buttons");
   const mediaEl = document.getElementById("media");
 
-  // Keys used by equipment.html / index.html
+  // Keys used by equipment.html / package_export.html
   function stepKey(stepId){ return `nexus_${eq || "NO_EQ"}_step_${stepId}`; }
   function landingKey(){ return `nexus_${eq || "NO_EQ"}_landing_complete`; }
 
@@ -93,7 +93,7 @@
   }
 
   // =========================
-  // Completion button (RIF ONLY on form.html)
+  // Completion button (RIF ONLY on form/task landing)
   // =========================
   const stepBtn = document.getElementById("stepCompleteBtn");
 
@@ -177,17 +177,6 @@
     return u.pathname + u.search + u.hash;
   }
 
-  // Override RIF Equipment Meg button to use meg_log.html?mode=equipment
-  function applyRifEquipmentMegOverride(anchorEl){
-    if (!anchorEl) return;
-    const label = (anchorEl.textContent || "").trim().toLowerCase();
-    if (label === "equipment megohmmeter test (if applicable)".toLowerCase()){
-      anchorEl.href = withEq("meg_log.html?mode=equipment");
-      anchorEl.target = "_blank";
-      anchorEl.rel = "noopener noreferrer";
-    }
-  }
-
   // EMBED MODE
   if (cfg.embedUrl) {
     buttonsWrap.style.display = "none";
@@ -196,7 +185,7 @@
     return;
   }
 
-  // IMAGE MODE (unchanged)
+  // IMAGE MODE
   if (cfg.imageUrl) {
     buttonsWrap.style.display = "none";
     mediaEl.style.display = "block";
@@ -228,7 +217,7 @@
     }
   }
 
-  // TORQUE: SOP under Torque Application Log
+  // TORQUE: SOP directly under Torque Application Log
   if (id === "torque") {
     btnList.splice(1, 0, {
       text: "Torque SOP",
@@ -249,8 +238,6 @@
     }
 
     buttonsEl.appendChild(a);
-
-    if (id === "rif") applyRifEquipmentMegOverride(a);
   });
 
   refreshStepBtn();
