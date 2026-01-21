@@ -174,7 +174,7 @@ window.FORMS = {
         text: "SOP General Folder",
         href: "https://aceelectricnet.sharepoint.com/:f:/s/CMH098QAQC/IgAQM-row4waQbd2QWYR27mvAYSIW3WLiCt2W0EwVWlYsng?e=Brrj7W"
       },
-      { text: "Transformer Image", href: "?id=transformer" }
+      { text: "Transformer Image", href: "form.html?id=transformer" }
     ]
   },
 
