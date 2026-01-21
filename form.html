@@ -85,7 +85,7 @@ h1{
   transform:none;
 }
 
-/* ===== STEP COMPLETE (NEON GREEN) ===== */
+/* ===== COMPLETE (NEON GREEN) ===== */
 .btn.complete{
   background:#00ff66 !important;
   color:#002b14 !important;
@@ -188,13 +188,19 @@ h1{
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
 
-    <!-- MEGOHMMETER STEP COMPLETION -->
+    <!-- DEFAULT (all forms): single completion toggle -->
+    <button class="btn" id="stepCompleteBtn" type="button">
+      STEP COMPLETE
+    </button>
+
+    <!-- MEGOHMMETER ONLY: hidden by default; app.js will show when id=megohmmeter -->
     <button
       class="btn"
       id="lineCompleteBtn"
       type="button"
       data-form="megohmmeter"
       data-step="line"
+      style="display:none;"
     >
       LINE SIDE COMPLETE
     </button>
@@ -205,6 +211,7 @@ h1{
       type="button"
       data-form="megohmmeter"
       data-step="load"
+      style="display:none;"
     >
       LOAD SIDE COMPLETE
     </button>
@@ -213,15 +220,9 @@ h1{
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- ===================== -->
-<!-- App logic -->
-<!-- ===================== -->
 <script src="config.js"></script>
 <script src="app.js"></script>
 
-<!-- ===================== -->
-<!-- Equipment context + link propagation -->
-<!-- ===================== -->
 <script>
 (function () {
   const qs = new URLSearchParams(location.search);
