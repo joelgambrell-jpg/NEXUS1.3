@@ -60,6 +60,7 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   background:#0a0f24;
   border:2px solid #00c2ff;
   cursor:pointer;
+  transition: transform .12s ease;
 }
 .btn:hover{transform:translateY(-2px);}
 .btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
@@ -112,17 +113,6 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   </div>
 </div>
 
-<script>
-(function(){
-  try{
-    var sel=document.getElementById("nxRoleSelect");
-    if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
-      sel.value = window.NEXUS.getRole();
-    }
-  }catch(e){}
-})();
-</script>
-
 <a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
 <div class="nx-header-wrap">
@@ -141,18 +131,35 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
 
-    <!-- THIS MUST EXIST so app.js can show it on RIF -->
+    <!-- Exists for app.js; app.js will hide it unless id=rfi (or whatever you configured) -->
     <button class="btn" id="stepCompleteBtn" type="button">Step Complete</button>
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- Load FORMS first, then app logic -->
+<!-- IMPORTANT: role/core first so the banner select works immediately -->
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
+
+<script>
+/* Role selector sync (after nexus-core.js is present) */
+(function(){
+  try{
+    var sel=document.getElementById("nxRoleSelect");
+    if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+      sel.value = window.NEXUS.getRole();
+    }
+  }catch(e){}
+})();
+</script>
+
+<!-- Load FORMS first, then app logic (this fixes “Invalid or missing form ID”) -->
 <script src="forms.js"></script>
 <script src="app.js"></script>
 
 <script>
+/* Back link + eq label + force-eq onto INTERNAL links only (no SharePoint/Procore pollution) */
 (function () {
   const qs = new URLSearchParams(location.search);
   const eq = (qs.get("eq") || "").trim();
@@ -170,23 +177,33 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
 
   function patchLinks(){
     document.querySelectorAll('a[href]').forEach(a => {
+      const raw = a.getAttribute("href") || "";
+      if (!raw) return;
+
+      // Ignore external or special links
+      if (/^(https?:)?\/\//i.test(raw)) return;
+      if (/^(mailto:|tel:|sms:|#)/i.test(raw)) return;
+
       try{
-        const url = new URL(a.getAttribute("href"), location.href);
+        const url = new URL(raw, location.href);
+
+        // Only patch links that stay on this same site origin
         if (url.origin !== location.origin) return;
+
         url.searchParams.set("eq", eq);
-        a.setAttribute("href", url.toString());
+        a.setAttribute("href", url.pathname + url.search + url.hash);
       }catch(e){}
     });
   }
 
   patchLinks();
-
   const observer = new MutationObserver(patchLinks);
   observer.observe(document.getElementById("buttons") || document.body, { childList:true, subtree:true });
 })();
 </script>
 
 <script>
+/* Back behavior (same as you had) */
 (function(){
   window.NEXUS_back = function(){
     try{
@@ -207,7 +224,5 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
 </footer>
 
-<script src="assets/js/nexus-core.js"></script>
-<script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
