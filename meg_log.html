@@ -78,7 +78,7 @@
   })();
 </script>
 
-<!-- PATCH: TOP Back to Equipment (far-left + same shape as other buttons) -->
+<!-- Top Back to Equipment (button-shaped + far-left) -->
 <div style="max-width:1100px;margin:12px auto 0;padding:0 18px;">
   <a class="btn secondary" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
 </div>
@@ -125,6 +125,7 @@
   </table>
   <div class="btns" style="margin-top:10px">
     <button class="btn" id="addLineRow" type="button">Add Line Row</button>
+    <button class="btn" id="saveLineBtn" type="button">Save</button>
   </div>
 
   <div style="height:14px"></div>
@@ -144,11 +145,11 @@
   </table>
 
   <div class="btns" style="margin-top:10px">
-    <!-- PATCH: BOTTOM Back to Equipment (first in row => far-left + same shape) -->
+    <!-- Bottom Back to Equipment (first => far-left) -->
     <a class="btn secondary" id="backBtn" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
 
     <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
-    <button class="btn" id="saveBtn" type="button">Save</button>
+    <button class="btn" id="saveLoadBtn" type="button">Save</button>
   </div>
 
   <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
@@ -163,14 +164,17 @@
   const eqLabel=document.getElementById('eqLabel');
   eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Missing equipment ID (eq)';
 
-  // Keep href meaningful (onclick handles navigation; href is fallback)
+  // Fallback href (onclick handles navigation; href helps if JS disabled)
   const backBtnEl = document.getElementById('backBtn');
   if (backBtnEl) backBtnEl.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
 
   const statusChip=document.getElementById('statusChip');
 
-  // PATCH: track dirty state centrally
-  window.NEXUS_isDirty = false;
+  // Dirty flags per section + header
+  window.NEXUS_dirty = { header:false, line:false, load:false };
+  function anyDirty(){
+    return !!(window.NEXUS_dirty.header || window.NEXUS_dirty.line || window.NEXUS_dirty.load);
+  }
 
   // v2 splits rows into Line/Load while keeping backward-compatibility with v1.
   const keyV2 = `nexus_${eq||'NO_EQ'}_meg_log_v2`;
@@ -200,8 +204,13 @@
     return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
 
+  function readSavedV2(){
+    const raw = localStorage.getItem(keyV2);
+    if(!raw) return null;
+    try{ return JSON.parse(raw); }catch(e){ return null; }
+  }
+
   function load(){
-    // Prefer v2. If only v1 exists, migrate it into Line Side rows.
     const rawV2 = localStorage.getItem(keyV2);
     const rawV1 = localStorage.getItem(keyV1);
     try{
@@ -209,7 +218,7 @@
         const data = JSON.parse(rawV2);
         apply(data);
         statusChip.textContent='Loaded';
-        window.NEXUS_isDirty = false;
+        window.NEXUS_dirty = { header:false, line:false, load:false };
         return;
       }
       if(rawV1){
@@ -227,11 +236,11 @@
         localStorage.setItem(keyV2, JSON.stringify(migrated));
         apply(migrated);
         statusChip.textContent='Loaded (migrated)';
-        window.NEXUS_isDirty = false;
+        window.NEXUS_dirty = { header:false, line:false, load:false };
         return;
       }
     }catch(e){
-      // fall through to defaults
+      // fall through
     }
     addDefault();
   }
@@ -256,11 +265,11 @@
     for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
     for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
     statusChip.textContent='Not saved';
-    window.NEXUS_isDirty = false; // default form state not yet edited
+    window.NEXUS_dirty = { header:false, line:false, load:false };
   }
 
-  function collect(){
-    const collectFrom = (tbodyEl) => [...tbodyEl.querySelectorAll('tr')].map(tr => {
+  function collectRowsFrom(tbodyEl){
+    return [...tbodyEl.querySelectorAll('tr')].map(tr => {
       const inputs=tr.querySelectorAll('input,select');
       return {
         conductor: inputs[0].value.trim(),
@@ -270,14 +279,14 @@
         comments: inputs[4].value.trim()
       };
     });
+  }
+
+  function collectHeader(){
     return {
       eq,
       testDate: testDate.value,
       tech: tech.value.trim(),
       notes: notes.value.trim(),
-      lineRows: collectFrom(lineRowsEl),
-      loadRows: collectFrom(loadRowsEl),
-      updatedAt: new Date().toISOString()
     };
   }
 
@@ -286,29 +295,85 @@
     // Example shape: /equipment/{eq}/forms/meg_log
   }
 
-  async function save(){
-    const data=collect();
-    localStorage.setItem(keyV2, JSON.stringify(data));
-    await saveToFirebase(data);
+  function setSavedUI(){
     statusChip.innerHTML = '<span class="ok">Saved</span>';
-    window.NEXUS_isDirty = false; // PATCH: clear dirty on save
   }
-
-  function markDirty(){
+  function setNotSavedUI(){
     statusChip.textContent = 'Not saved';
-    window.NEXUS_isDirty = true; // PATCH: set dirty on edits
   }
 
-  document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty(); });
-  document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty(); });
-  document.getElementById('saveBtn').addEventListener('click',save);
+  // Save only Line rows (preserve Load rows in storage)
+  async function saveLine(){
+    const existing = readSavedV2() || {};
+    const header = collectHeader();
+    const merged = {
+      ...existing,
+      ...header,
+      lineRows: collectRowsFrom(lineRowsEl),
+      loadRows: Array.isArray(existing.loadRows) ? existing.loadRows : (collectRowsFrom(loadRowsEl)), // preserve if exists
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'line'
+    };
+    localStorage.setItem(keyV2, JSON.stringify(merged));
+    await saveToFirebase(merged);
 
-  // Dirty tracking
+    window.NEXUS_dirty.line = false;
+    window.NEXUS_dirty.header = false; // header saved as part of line save
+    if(!anyDirty()) setSavedUI(); else setNotSavedUI();
+  }
+
+  // Save only Load rows (preserve Line rows in storage)
+  async function saveLoad(){
+    const existing = readSavedV2() || {};
+    const header = collectHeader();
+    const merged = {
+      ...existing,
+      ...header,
+      loadRows: collectRowsFrom(loadRowsEl),
+      lineRows: Array.isArray(existing.lineRows) ? existing.lineRows : (collectRowsFrom(lineRowsEl)), // preserve if exists
+      updatedAt: new Date().toISOString(),
+      updatedBy: 'load'
+    };
+    localStorage.setItem(keyV2, JSON.stringify(merged));
+    await saveToFirebase(merged);
+
+    window.NEXUS_dirty.load = false;
+    window.NEXUS_dirty.header = false; // header saved as part of load save
+    if(!anyDirty()) setSavedUI(); else setNotSavedUI();
+  }
+
+  function markDirty(kind){
+    setNotSavedUI();
+    if(kind === 'line') window.NEXUS_dirty.line = true;
+    else if(kind === 'load') window.NEXUS_dirty.load = true;
+    else window.NEXUS_dirty.header = true;
+  }
+
+  document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty('line'); });
+  document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty('load'); });
+
+  document.getElementById('saveLineBtn').addEventListener('click',saveLine);
+  document.getElementById('saveLoadBtn').addEventListener('click',saveLoad);
+
+  // Dirty tracking: detect which section changed
   document.addEventListener('input', (e) => {
     const t = e.target;
     if(!t) return;
-    if(t.matches('input') || t.matches('select') || t.matches('textarea')) markDirty();
-  });
+    if(!(t.matches('input') || t.matches('select') || t.matches('textarea'))) return;
+
+    // Header fields
+    if (t.id === 'testDate' || t.id === 'tech' || t.id === 'notes') {
+      markDirty('header');
+      return;
+    }
+
+    // Line vs Load based on table containment
+    if (t.closest && t.closest('#lineRows')) { markDirty('line'); return; }
+    if (t.closest && t.closest('#loadRows')) { markDirty('load'); return; }
+
+    // Fallback
+    markDirty('header');
+  }, true);
 
   load();
 })();
@@ -316,14 +381,14 @@
 
 <script>
 (function(){
-  // PATCH: NEXUS_back now warns when "Not saved" / dirty before navigating.
+  // Back warns if anything is dirty OR chip says "Not saved"
   window.NEXUS_back = function(){
-    // Determine dirty state from flag OR chip text (defensive)
     let dirty = false;
     try{
       const chip = document.getElementById('statusChip');
       const chipText = chip ? (chip.textContent || '').trim().toLowerCase() : '';
-      dirty = !!window.NEXUS_isDirty || chipText.includes('not saved');
+      const d = window.NEXUS_dirty || {header:false,line:false,load:false};
+      dirty = !!(d.header || d.line || d.load) || chipText.includes('not saved');
     }catch(e){}
 
     if(dirty){
@@ -331,7 +396,6 @@
       if(!ok) return false;
     }
 
-    // Keep prior "history back" behavior when applicable, but only after confirmation.
     try{
       if (document.referrer && document.referrer.indexOf(location.host) !== -1){
         history.back();
