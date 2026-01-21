@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Megohmmeter Test Log</title>
-
 <style>
   :root{--bg:#b60000;--panel:rgba(255,255,255,0.20);--line:rgba(255,255,255,0.20);--accent:#00c2ff;--btn-bg:#0a0f24;--btn-txt:#3ecbff;--ok:#00ff66;}
   *{box-sizing:border-box}
@@ -12,24 +11,38 @@
   body{background-image:url("transformer.jpg");background-repeat:no-repeat;background-position:center center;background-size:cover;background-attachment:fixed}
   .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
   .nx-header{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center}
-  .nx-header img{height:54px;width:auto}
+  .nx-header img{height:54px;width:auto;max-width:100%;object-fit:contain}
   .container{max-width:980px;margin:28px auto;padding:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px)}
   h1{margin:0 0 6px;font-size:30px;font-weight:900}
   .sub{font-weight:900;opacity:.95;margin:0 0 12px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media(max-width:820px){.row{grid-template-columns:1fr}}
-  label{display:block;font-weight:900;margin:10px 0 6px;font-size:13px}
-  input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);font-weight:800}
-  textarea{min-height:90px}
-  table{width:100%;border-collapse:separate;border-spacing:0;border-radius:14px;background:rgba(0,0,0,0.18)}
-  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.14)}
+  label{display:block;font-weight:900;margin:10px 0 6px;font-size:13px;letter-spacing:.02em}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.22);outline:none;font-weight:800;font-size:15px;background:rgba(255,255,255,0.92);color:#111}
+  textarea{min-height:90px;resize:vertical}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:14px;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.18)}
+  th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.14);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.12em;opacity:.95;text-align:left}
   tr:last-child td{border-bottom:none}
-  .btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-  .btn{padding:12px 16px;font-weight:900;border-radius:999px;color:var(--btn-txt);background:var(--btn-bg);border:2px solid var(--accent);cursor:pointer}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:12px 16px;font-size:14px;font-weight:900;border-radius:999px;color:var(--btn-txt);background:var(--btn-bg);border:2px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
   .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35)}
-  .chip{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;background:rgba(0,0,0,0.18)}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:900;font-size:13px;border:1px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.18)}
   .ok{color:var(--ok)}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+</style>
+
+<style>
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
 </style>
 
 <link rel="stylesheet" href="assets/css/nexus-core.css">
@@ -37,13 +50,39 @@
 
 <body>
 
-<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
-
-<div class="nx-header-wrap">
-  <div class="nx-header">
-    <img src="nexus.png" alt="NEXUS" />
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
   </div>
 </div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
+
+<!-- PATCH: top Back to Equipment -->
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
+
+<div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
 
 <div class="container">
   <div class="topbar">
@@ -66,46 +105,244 @@
   </div>
 
   <label>Notes</label>
-  <textarea id="notes"></textarea>
+  <textarea id="notes" placeholder="Observations, conditions, issues..."></textarea>
 
-  <!-- tables unchanged -->
+  <div style="height:12px"></div>
 
-  <div class="btns">
+  <div style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:10px 0 8px">Line Side</div>
+  <table aria-label="Megohmmeter Test Log - Line Side">
+    <thead>
+      <tr>
+        <th style="width:18%">Conductor</th>
+        <th style="width:18%">Phase</th>
+        <th style="width:18%">Voltage</th>
+        <th style="width:18%">Reading</th>
+        <th style="width:28%">Comments</th>
+      </tr>
+    </thead>
+    <tbody id="lineRows"></tbody>
+  </table>
+  <div class="btns" style="margin-top:10px">
+    <button class="btn" id="addLineRow" type="button">Add Line Row</button>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div style="font-weight:900;letter-spacing:.06em;text-transform:uppercase;opacity:.95;margin:6px 0 8px">Load Side</div>
+  <table aria-label="Megohmmeter Test Log - Load Side">
+    <thead>
+      <tr>
+        <th style="width:18%">Conductor</th>
+        <th style="width:18%">Phase</th>
+        <th style="width:18%">Voltage</th>
+        <th style="width:18%">Reading</th>
+        <th style="width:28%">Comments</th>
+      </tr>
+    </thead>
+    <tbody id="loadRows"></tbody>
+  </table>
+
+  <div class="btns" style="margin-top:10px">
+    <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
     <button class="btn" id="saveBtn" type="button">Save</button>
-    <a class="btn secondary" href="#" onclick="return NEXUS_back();">Back to Equipment</a>
+
+    <!-- PATCH: bottom Back to Equipment (now uses NEXUS_back too) -->
+    <a class="btn secondary" id="backBtn" href="#" onclick="return NEXUS_back();">Back to Equipment</a>
+  </div>
+
+  <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
+    Firebase hook: this page saves locally now. When Firebase is enabled, replace <code>saveToFirebase()</code> with your Firestore write and use auth email as the user id.
   </div>
 </div>
 
 <script>
 (function(){
-  const qs = new URLSearchParams(location.search);
-  const eq = qs.get("eq") || "";
-  const statusChip = document.getElementById("statusChip");
+  const qs=new URLSearchParams(location.search);
+  const eq=(qs.get('eq')||'').trim();
+  const eqLabel=document.getElementById('eqLabel');
+  eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Missing equipment ID (eq)';
 
-  document.getElementById("eqLabel").textContent =
-    eq ? `Equipment: ${eq}` : "Missing equipment ID";
+  // Keep href meaningful (still overridden by onclick->NEXUS_back(), but harmless and helps fallback)
+  const backBtnEl = document.getElementById('backBtn');
+  if (backBtnEl) backBtnEl.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
 
-  let isDirty = false;
+  const statusChip=document.getElementById('statusChip');
 
-  document.addEventListener("input", () => {
-    isDirty = true;
-    statusChip.textContent = "Not saved";
-  }, true);
+  // PATCH: track dirty state centrally
+  window.NEXUS_isDirty = false;
 
-  window.NEXUS_back = function(){
-    if(isDirty){
-      if(!confirm("You have unsaved changes. Leave anyway?")) return false;
+  // v2 splits rows into Line/Load while keeping backward-compatibility with v1.
+  const keyV2 = `nexus_${eq||'NO_EQ'}_meg_log_v2`;
+  const keyV1 = `nexus_${eq||'NO_EQ'}_meg_log_v1`;
+
+  const lineRowsEl=document.getElementById('lineRows');
+  const loadRowsEl=document.getElementById('loadRows');
+  const testDate=document.getElementById('testDate');
+  const tech=document.getElementById('tech');
+  const notes=document.getElementById('notes');
+
+  function rowTemplate(r={}){
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeHtml(r.conductor||'')}" placeholder="e.g. Feeder" /></td>
+      <td><select>
+        ${['A','B','C','N','G'].map(p=>`<option ${p===(r.phase||'')?'selected':''}>${p}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${escapeHtml(r.voltage||'')}" placeholder="e.g. 1000V" /></td>
+      <td><input type="text" value="${escapeHtml(r.reading||'')}" placeholder="e.g. 500 MΩ" /></td>
+      <td><input type="text" value="${escapeHtml(r.comments||'')}" placeholder="" /></td>
+    `;
+    return tr;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function load(){
+    // Prefer v2. If only v1 exists, migrate it into Line Side rows.
+    const rawV2 = localStorage.getItem(keyV2);
+    const rawV1 = localStorage.getItem(keyV1);
+    try{
+      if(rawV2){
+        const data = JSON.parse(rawV2);
+        apply(data);
+        statusChip.textContent='Loaded';
+        window.NEXUS_isDirty = false;
+        return;
+      }
+      if(rawV1){
+        const data = JSON.parse(rawV1);
+        const migrated = {
+          eq,
+          testDate: data.testDate || '',
+          tech: data.tech || '',
+          notes: data.notes || '',
+          lineRows: Array.isArray(data.rows) ? data.rows : [],
+          loadRows: [],
+          migratedFrom: 'v1',
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(keyV2, JSON.stringify(migrated));
+        apply(migrated);
+        statusChip.textContent='Loaded (migrated)';
+        window.NEXUS_isDirty = false;
+        return;
+      }
+    }catch(e){
+      // fall through to defaults
     }
-    location.href = eq
-      ? `equipment.html?eq=${encodeURIComponent(eq)}`
-      : "equipment.html";
+    addDefault();
+  }
+
+  function apply(data){
+    testDate.value = data.testDate || '';
+    tech.value = data.tech || '';
+    notes.value = data.notes || '';
+    lineRowsEl.innerHTML = '';
+    loadRowsEl.innerHTML = '';
+    const line = Array.isArray(data.lineRows) ? data.lineRows : [];
+    const load = Array.isArray(data.loadRows) ? data.loadRows : [];
+    line.forEach(r => lineRowsEl.appendChild(rowTemplate(r)));
+    load.forEach(r => loadRowsEl.appendChild(rowTemplate(r)));
+    if(!line.length) for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
+    if(!load.length) for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
+  }
+
+  function addDefault(){
+    lineRowsEl.innerHTML='';
+    loadRowsEl.innerHTML='';
+    for(let i=0;i<5;i++) lineRowsEl.appendChild(rowTemplate({}));
+    for(let i=0;i<5;i++) loadRowsEl.appendChild(rowTemplate({}));
+    statusChip.textContent='Not saved';
+    window.NEXUS_isDirty = false; // default form state not yet edited
+  }
+
+  function collect(){
+    const collectFrom = (tbodyEl) => [...tbodyEl.querySelectorAll('tr')].map(tr => {
+      const inputs=tr.querySelectorAll('input,select');
+      return {
+        conductor: inputs[0].value.trim(),
+        phase: inputs[1].value,
+        voltage: inputs[2].value.trim(),
+        reading: inputs[3].value.trim(),
+        comments: inputs[4].value.trim()
+      };
+    });
+    return {
+      eq,
+      testDate: testDate.value,
+      tech: tech.value.trim(),
+      notes: notes.value.trim(),
+      lineRows: collectFrom(lineRowsEl),
+      loadRows: collectFrom(loadRowsEl),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  async function saveToFirebase(_data){
+    // PLACEHOLDER: Firestore write goes here.
+    // Example shape: /equipment/{eq}/forms/meg_log
+  }
+
+  async function save(){
+    const data=collect();
+    localStorage.setItem(keyV2, JSON.stringify(data));
+    await saveToFirebase(data);
+    statusChip.innerHTML = '<span class="ok">Saved</span>';
+    window.NEXUS_isDirty = false; // PATCH: clear dirty on save
+  }
+
+  function markDirty(){
+    statusChip.textContent = 'Not saved';
+    window.NEXUS_isDirty = true; // PATCH: set dirty on edits
+  }
+
+  document.getElementById('addLineRow').addEventListener('click',()=>{ lineRowsEl.appendChild(rowTemplate({})); markDirty(); });
+  document.getElementById('addLoadRow').addEventListener('click',()=>{ loadRowsEl.appendChild(rowTemplate({})); markDirty(); });
+  document.getElementById('saveBtn').addEventListener('click',save);
+
+  // Dirty tracking
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if(!t) return;
+    if(t.matches('input') || t.matches('select') || t.matches('textarea')) markDirty();
+  });
+
+  load();
+})();
+</script>
+
+<script>
+(function(){
+  // PATCH: NEXUS_back now warns when "Not saved" / dirty before navigating.
+  window.NEXUS_back = function(){
+    // Determine dirty state from flag OR chip text (defensive)
+    let dirty = false;
+    try{
+      const chip = document.getElementById('statusChip');
+      const chipText = chip ? (chip.textContent || '').trim().toLowerCase() : '';
+      dirty = !!window.NEXUS_isDirty || chipText.includes('not saved');
+    }catch(e){}
+
+    if(dirty){
+      const ok = window.confirm("You have unsaved changes. Leave anyway?");
+      if(!ok) return false;
+    }
+
+    // Keep prior "history back" behavior when applicable, but only after confirmation.
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
     return false;
   };
-
-  document.getElementById("saveBtn").addEventListener("click", () => {
-    isDirty = false;
-    statusChip.innerHTML = '<span class="ok">Saved</span>';
-  });
 })();
 </script>
 
@@ -115,6 +352,5 @@
 
 <script src="assets/js/nexus-core.js"></script>
 <script src="assets/js/nexus-firebase-bridge.js"></script>
-
 </body>
 </html>
