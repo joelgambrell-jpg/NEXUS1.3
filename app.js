@@ -86,48 +86,9 @@
         if (data.done) localStorage.setItem(stepKey(stepId), "1");
         else localStorage.removeItem(stepKey(stepId));
         refreshStepBtn();
-        // keep meg aggregate current if needed
-        syncMegAggregateFromParts();
       });
     }catch(e){
       console.warn("Firebase listener failed:", e);
-    }
-  }
-
-  // =========================
-  // MEGOHMMETER AGGREGATE FIX
-  // If both megohmmeter_line + megohmmeter_load are complete,
-  // mark the equipment step "meg" complete so equipment.html shows it done.
-  // =========================
-  const MEG_AGG_ID   = "meg";               // equipment page expects this step id
-  const MEG_LINE_ID  = "megohmmeter_line";  // line side completion flag
-  const MEG_LOAD_ID  = "megohmmeter_load";  // load side completion flag
-
-  function isMegPartsDone(partId){
-    return !!(eq && localStorage.getItem(stepKey(partId)) === "1");
-  }
-
-  async function syncMegAggregateFromParts(){
-    if (!eq) return;
-
-    // Only run if any of these exist (prevents touching other equipment types/pages)
-    const hasAny =
-      localStorage.getItem(stepKey(MEG_LINE_ID)) !== null ||
-      localStorage.getItem(stepKey(MEG_LOAD_ID)) !== null ||
-      localStorage.getItem(stepKey(MEG_AGG_ID))  !== null;
-
-    if (!hasAny) return;
-
-    const allDone = isMegPartsDone(MEG_LINE_ID) && isMegPartsDone(MEG_LOAD_ID);
-
-    if (allDone){
-      // localStorage aggregate for equipment.html progress
-      localStorage.setItem(stepKey(MEG_AGG_ID), "1");
-      // best-effort firebase mirror for cross-device progress
-      await fbSetStep(eq, MEG_AGG_ID, true);
-    } else {
-      localStorage.removeItem(stepKey(MEG_AGG_ID));
-      await fbSetStep(eq, MEG_AGG_ID, false);
     }
   }
 
@@ -189,24 +150,10 @@
   }
 
   refreshStepBtn();
+  window.addEventListener("storage", refreshStepBtn);
+  window.addEventListener("focus", refreshStepBtn);
+  window.addEventListener("pageshow", refreshStepBtn);
 
-  // Keep meg aggregate accurate when returning to this page / tab changes
-  syncMegAggregateFromParts();
-
-  window.addEventListener("storage", () => {
-    refreshStepBtn();
-    syncMegAggregateFromParts();
-  });
-  window.addEventListener("focus", () => {
-    refreshStepBtn();
-    syncMegAggregateFromParts();
-  });
-  window.addEventListener("pageshow", () => {
-    refreshStepBtn();
-    syncMegAggregateFromParts();
-  });
-
-  // Listen to RIF completion state (only needed on RIF landing)
   if (usable() && SHOW_STEP_COMPLETE_ON.has(id)) fbListenStep(eq, id);
 
   window.addEventListener("beforeunload", () => {
@@ -280,6 +227,20 @@
     });
   }
 
+  // IMPORTANT: Force the RIF "Equipment Megohmmeter Test (If Applicable)" button
+  // to go to its OWN single-test page, not the line/load meg test.
+  // Create this page later as: form.html?id=meg_equipment (or a dedicated html),
+  // but this link keeps it completely separate right now.
+  function rewriteRifEquipmentMegBtn(aEl){
+    if (!aEl) return;
+    const txt = (aEl.textContent || "").trim().toLowerCase();
+    if (txt.includes("equipment megohmmeter test")) {
+      aEl.href = withEq("form.html?id=meg_equipment");
+      aEl.target = "_blank";
+      aEl.rel = "noopener noreferrer";
+    }
+  }
+
   btnList.forEach((b) => {
     const a = document.createElement("a");
     a.className = "btn";
@@ -292,6 +253,9 @@
     }
 
     buttonsEl.appendChild(a);
+
+    // Apply RIF rewrite after insert
+    if (id === "rif") rewriteRifEquipmentMegBtn(a);
   });
 
   // Ensure button visibility after buttons render
