@@ -76,6 +76,9 @@ h1{
   border:2px solid #00c2ff;
   cursor:pointer;
 }
+.btn.secondary{
+  opacity:.9;
+}
 .btn:hover{
   transform:translateY(-2px);
 }
@@ -85,22 +88,9 @@ h1{
   transform:none;
 }
 
-/* ===== COMPLETE (NEON GREEN) ===== */
-.btn.complete{
-  background:#00ff66 !important;
-  color:#002b14 !important;
-  border-color:#00ff66 !important;
-  box-shadow:0 0 14px rgba(0,255,102,.85);
-}
-
 /* ===== MEDIA ===== */
 .media{
   margin-top:20px;
-}
-.media img{
-  max-width:100%;
-  border-radius:18px;
-  cursor:zoom-in;
 }
 .embed{
   width:100%;
@@ -108,41 +98,6 @@ h1{
   border:none;
   border-radius:12px;
   background:#111;
-}
-
-/* ===== MODAL ===== */
-.nx-modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  z-index:9999;
-  justify-content:center;
-  align-items:center;
-}
-.nx-modal-content{
-  position:relative;
-  max-width:90vw;
-  max-height:90vh;
-}
-.nx-modal-content img{
-  max-width:100%;
-  max-height:100%;
-}
-.nx-close{
-  position:absolute;
-  top:8px;
-  right:48px;
-  color:#fff;
-  font-size:24px;
-  font-weight:bold;
-  cursor:pointer;
-  background:rgba(0,0,0,0.5);
-  border-radius:50%;
-  width:32px;
-  height:32px;
-  line-height:32px;
-  text-align:center;
 }
 
 /* ===== NEXUS Shared Header ===== */
@@ -164,19 +119,6 @@ h1{
   max-width: 100%;
   object-fit: contain;
 }
-</style>
-
-<style>
-  .nx-footer{
-    margin-top: 40px;
-    padding: 18px 12px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.35);
-    border-top: 1px solid rgba(255,255,255,0.18);
-  }
 </style>
 
 <link rel="stylesheet" href="assets/css/nexus-core.css">
@@ -203,17 +145,6 @@ h1{
   </div>
 </div>
 
-<script>
-  (function(){
-    try{
-      var sel=document.getElementById("nxRoleSelect");
-      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
-        sel.value = window.NEXUS.getRole();
-      }
-    }catch(e){}
-  })();
-</script>
-
 <a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
 <div class="nx-header-wrap">
@@ -226,28 +157,36 @@ h1{
   <a class="back" id="backLink" href="index.html">← Back</a>
 
   <h1 id="page-title">Loading…</h1>
-
   <div id="eqLabel" class="eq-label"></div>
-
   <div class="section-title" id="section-title"></div>
 
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
-    <!-- STEP COMPLETE REMOVED (completion now handled on the actual form pages) -->
+
+    <!-- MEGOHMMETER SOP BUTTON (only visible on Megohmmeter form) -->
+    <a
+      id="megSopBtn"
+      class="btn secondary"
+      href="megohmmeter_sop.html"
+      target="_blank"
+      rel="noopener noreferrer"
+      style="display:none;"
+    >
+      Megohmmeter SOP
+    </a>
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- App logic -->
 <script src="config.js"></script>
 <script src="app.js"></script>
 
-<!-- Equipment context + link propagation -->
 <script>
 (function () {
   const qs = new URLSearchParams(location.search);
   const eq = (qs.get("eq") || "").trim();
+  const id = (qs.get("id") || "").trim();
 
   const backLink = document.getElementById("backLink");
   if (backLink){
@@ -258,38 +197,18 @@ h1{
   const label = document.getElementById("eqLabel");
   if (label) label.textContent = eq ? `Equipment: ${eq}` : "";
 
-  if (!eq) return;
-
-  function patchLinks(){
-    document.querySelectorAll('a[href]').forEach(a => {
-      try{
-        const url = new URL(a.getAttribute("href"), location.href);
-        if (url.origin !== location.origin) return;
-        url.searchParams.set("eq", eq);
-        a.setAttribute("href", url.toString());
-      }catch(e){}
-    });
+  /* Show SOP button ONLY for Megohmmeter */
+  const sopBtn = document.getElementById("megSopBtn");
+  if (sopBtn && (id === "meg" || id === "megohmmeter")) {
+    sopBtn.style.display = "block";
   }
 
-  patchLinks();
-
-  const observer = new MutationObserver(patchLinks);
-  observer.observe(document.getElementById("buttons") || document.body, {
-    childList:true,
-    subtree:true
-  });
 })();
 </script>
 
 <script>
 (function(){
   window.NEXUS_back = function(){
-    try{
-      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
-        history.back();
-        return false;
-      }
-    }catch(e){}
     const qs = new URLSearchParams(location.search);
     const eq = qs.get("eq");
     location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
