@@ -19,14 +19,14 @@
     background-size:cover;
     background-attachment:fixed;
   }
-  .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px);} 
+  .nx-header-wrap{background:rgba(0,0,0,0.35);border-bottom:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px);}
   .nx-header{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;}
   .nx-header img{height:54px;width:auto;object-fit:contain;}
   .wrap{max-width:1100px;margin:18px auto 60px;padding:0 18px;}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(10px);} 
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(10px);}
   .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;}
   .btn{padding:12px 16px;font-size:14px;font-weight:900;border-radius:999px;color:#3ecbff;background:#0a0f24;border:2px solid var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
-  .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35);} 
+  .btn.secondary{background:rgba(0,0,0,0.20);color:#fff;border:2px solid rgba(255,255,255,0.35);}
   .btn:disabled{opacity:.55;cursor:not-allowed;}
   h1{margin:0 0 6px;font-size:28px;font-weight:900;}
   .sub{margin:0 0 14px;font-weight:800;opacity:.95;}
@@ -74,9 +74,10 @@
   }
 </style>
 
-  <link rel="stylesheet" href="assets/css/nexus-core.css">
+<link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
-<body>\n
+<body>
+
 <div id="nxSessionBanner" class="nx-session-banner">
   <div class="nx-left">
     <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
@@ -142,7 +143,7 @@
     </div>
 
     <div class="hint">
-      This generates a single printable package that includes: RIF (status), Megohmmeter Test Log (Line/Load), Torque Log (rows + tilt), L2 (status/link), and Pre-FOD (status/link).<br>
+      This generates a single printable package that includes: RIF (status), Megohmmeter Test Log (Line/Load), <b>Equipment Megohmmeter Test (If Applicable)</b>, Torque Log (rows + tilt), L2 (status/link), and Pre-FOD (status/link).<br>
       Procore upload is manual in this pre-Firebase build: export to PDF, then open the Procore page and attach the PDF.
       Firebase migration hook is included in code as a placeholder.
     </div>
@@ -197,11 +198,16 @@
     return `<div class="k">${safe(k)}</div><div>${safe(v||'')}</div>`;
   }
 
+  function hasAnyFilledRow(rows){
+    const out = (Array.isArray(rows)?rows:[]);
+    return out.some(r => Object.values(r||{}).some(x => String(x||'').trim()!=='' ));
+  }
+
   function renderMeg(data){
     if(!data) return `<div class="muted">No saved Megohmmeter Test Log data found.</div>`;
 
     const mkTable = (rows) => {
-      const out = (Array.isArray(rows)?rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));
+      const out = (Array.isArray(rows)?rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));;
       if(!out.length) return `<div class="muted">(No rows filled)</div>`;
       return `
         <table>
@@ -226,10 +232,38 @@
     `;
   }
 
+  function renderEquipMeg(data){
+    if(!data) return `<div class="muted">No saved Equipment Megohmmeter Test data found.</div>`;
+
+    const mkTable = (rows) => {
+      const out = (Array.isArray(rows)?rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));;
+      if(!out.length) return `<div class="muted">(No rows filled)</div>`;
+      return `
+        <table>
+          <thead><tr><th>Conductor</th><th>Phase</th><th>Voltage</th><th>Reading</th><th>Comments</th></tr></thead>
+          <tbody>
+            ${out.map(r=>`<tr><td>${safe(r.conductor)}</td><td>${safe(r.phase)}</td><td>${safe(r.voltage)}</td><td>${safe(r.reading)}</td><td>${safe(r.comments)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    };
+
+    // Support either "rows" or "equipRows" (in case naming differs between builds)
+    const rows = data.rows || data.equipRows || [];
+    return `
+      <div class="kv">
+        ${kvRow('Test Date', data.testDate)}
+        ${kvRow('Technician', data.tech)}
+        ${kvRow('Notes', data.notes)}
+      </div>
+      ${mkTable(rows)}
+    `;
+  }
+
   function renderTorque(data){
     if(!data) return `<div class="muted">No saved Torque Log data found.</div>`;
 
-    const rows = (Array.isArray(data.rows)?data.rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));
+    const rows = (Array.isArray(data.rows)?data.rows:[]).filter(r=>Object.values(r||{}).some(x=>String(x||'').trim()!==''));;
     const tilt = data.tilt || {};
 
     const rowsTable = rows.length ? `
@@ -264,9 +298,8 @@
     `;
   }
 
-  function renderStatusLine(label, stepId, extra){
-    const s = isDone(stepId) ? 'COMPLETE' : 'NOT COMPLETE';
-    return `<div><b>${safe(label)}:</b> ${safe(s)}${extra?` <span class="muted">(${safe(extra)})</span>`:''}</div>`;
+  function renderStatusLine(label, statusText, extra){
+    return `<div><b>${safe(label)}:</b> ${safe(statusText)}${extra?` <span class="muted">(${safe(extra)})</span>`:''}</div>`;
   }
 
   function buildReport(){
@@ -275,12 +308,30 @@
     const procoreConstructionUrl = meta.procoreEquipUrl || '';
     const procoreEnergizationUrl = meta.procoreEnergizationUrl || '';
 
+    // Line/Load meg (existing)
     const meg = readJSON(`nexus_${eq||'NO_EQ'}_meg_log_v2`) || readJSON(`nexus_${eq||'NO_EQ'}_meg_log_v1`);
+
+    // Equipment meg (separate)
+    const equipMeg =
+      readJSON(`nexus_${eq||'NO_EQ'}_equip_meg_log_v2`) ||
+      readJSON(`nexus_${eq||'NO_EQ'}_equip_meg_log_v1`);
+
     const torque = readJSON(`nexus_${eq||'NO_EQ'}_torque_log_v1`);
 
     const rifLink = eq ? `form.html?id=rif&eq=${encodeURIComponent(eq)}` : 'form.html?id=rif';
     const megLink = eq ? `meg_log.html?eq=${encodeURIComponent(eq)}` : 'meg_log.html';
+    const equipMegLink = eq ? `meg_log.html?mode=equipment&eq=${encodeURIComponent(eq)}` : 'meg_log.html?mode=equipment';
     const torqueLink = eq ? `torque_log.html?eq=${encodeURIComponent(eq)}` : 'torque_log.html';
+
+    // Equipment Meg completion heuristic (no step key required)
+    const equipRows = (equipMeg && (equipMeg.rows || equipMeg.equipRows)) ? (equipMeg.rows || equipMeg.equipRows) : [];
+    const equipMegHasData =
+      !!equipMeg && (
+        String(equipMeg.testDate||'').trim() ||
+        String(equipMeg.tech||'').trim() ||
+        String(equipMeg.notes||'').trim() ||
+        hasAnyFilledRow(equipRows)
+      );
 
     reportEl.innerHTML = `
       ${sectionHeader('NEXUS Package', eq ? `Equipment: ${eq}` : '')}
@@ -291,16 +342,22 @@
       </div>
 
       <h3>Completion Summary</h3>
-      ${renderStatusLine('RIF', 'rif', rifLink)}
-      ${renderStatusLine('Megohmmeter', 'meg', megLink)}
-      ${renderStatusLine('Torque', 'torque', torqueLink)}
-      ${renderStatusLine('L2', 'l2')}
-      ${renderStatusLine('Pre-FOD', 'prefod')}
+      ${renderStatusLine('RIF', isDone('rif') ? 'COMPLETE' : 'NOT COMPLETE', rifLink)}
+      ${renderStatusLine('Megohmmeter (Line/Load)', isDone('meg') ? 'COMPLETE' : 'NOT COMPLETE', megLink)}
+      ${renderStatusLine('Equipment Meg (If Applicable)', equipMegHasData ? 'COMPLETE' : 'NOT COMPLETE', equipMegLink)}
+      ${renderStatusLine('Torque', isDone('torque') ? 'COMPLETE' : 'NOT COMPLETE', torqueLink)}
+      ${renderStatusLine('L2', isDone('l2') ? 'COMPLETE' : 'NOT COMPLETE')}
+      ${renderStatusLine('Pre-FOD', isDone('prefod') ? 'COMPLETE' : 'NOT COMPLETE')}
 
       <div class="pagebreak"></div>
 
-      ${sectionHeader('Megohmmeter Test Log', '')}
+      ${sectionHeader('Megohmmeter Test Log (Line/Load)', '')}
       ${renderMeg(meg)}
+
+      <div class="pagebreak"></div>
+
+      ${sectionHeader('Equipment Megohmmeter Test (If Applicable)', '')}
+      ${renderEquipMeg(equipMeg)}
 
       <div class="pagebreak"></div>
 
@@ -341,10 +398,6 @@
   }
 
   document.getElementById('printBtn').addEventListener('click', () => {
-    // Firebase hook placeholder: when enabled, use a Cloud Function to render PDF server-side and upload.
-    // window.nexusFirebase?.exportPackagePdf?.(eq, { destination: destSel.value })
-    //   .then(()=>{})
-    //   .catch(()=>{});
     window.print();
   });
 
@@ -370,12 +423,11 @@
 })();
 </script>
 
-
 <footer class="nx-footer">
   © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
 </footer>
 
-  <script src="assets/js/nexus-core.js"></script>
-  <script src="assets/js/nexus-firebase-bridge.js"></script>
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
