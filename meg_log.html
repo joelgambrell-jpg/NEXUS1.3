@@ -47,7 +47,6 @@
 
 <link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
-
 <body>
 
 <div id="nxSessionBanner" class="nx-session-banner">
@@ -79,8 +78,10 @@
   })();
 </script>
 
-<!-- PATCH: top Back to Equipment -->
-<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
+<!-- PATCH: TOP Back to Equipment (far-left + same shape as other buttons) -->
+<div style="max-width:1100px;margin:12px auto 0;padding:0 18px;">
+  <a class="btn secondary" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
+</div>
 
 <div class="nx-header-wrap"><div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div></div>
 
@@ -143,11 +144,11 @@
   </table>
 
   <div class="btns" style="margin-top:10px">
+    <!-- PATCH: BOTTOM Back to Equipment (first in row => far-left + same shape) -->
+    <a class="btn secondary" id="backBtn" href="#" onclick="return NEXUS_back();">← Back to Equipment</a>
+
     <button class="btn" id="addLoadRow" type="button">Add Load Row</button>
     <button class="btn" id="saveBtn" type="button">Save</button>
-
-    <!-- PATCH: bottom Back to Equipment (now uses NEXUS_back too) -->
-    <a class="btn secondary" id="backBtn" href="#" onclick="return NEXUS_back();">Back to Equipment</a>
   </div>
 
   <div style="margin-top:12px;opacity:.9;font-size:13px;line-height:1.35">
@@ -162,7 +163,7 @@
   const eqLabel=document.getElementById('eqLabel');
   eqLabel.textContent = eq ? `Equipment: ${eq}` : 'Missing equipment ID (eq)';
 
-  // Keep href meaningful (still overridden by onclick->NEXUS_back(), but harmless and helps fallback)
+  // Keep href meaningful (onclick handles navigation; href is fallback)
   const backBtnEl = document.getElementById('backBtn');
   if (backBtnEl) backBtnEl.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : 'index.html';
 
