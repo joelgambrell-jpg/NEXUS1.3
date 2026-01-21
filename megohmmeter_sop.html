@@ -7,8 +7,13 @@
 
 <style>
   :root{
-    --hdr:#D9D9D9;      /* Word light gray */
+    --hdr:#D9D9D9;      /* Word light gray header */
     --border:#000;
+
+    /* Word-style highlight colors (solid) */
+    --hl-red:#ff0000;   /* Safety Note */
+    --hl-ylw:#ffff00;   /* Location/Process Change */
+    --hl-grn:#00ff00;   /* Important Note */
   }
 
   *{ box-sizing:border-box; }
@@ -50,6 +55,7 @@
     height: fit-content;
   }
 
+  /* Sections */
   .section{
     margin-top: 14px;
     border:1px solid var(--border);
@@ -61,74 +67,89 @@
     font-weight:700;
   }
   .section .body{
-    padding: 8px;
+    padding: 0; /* tables handle their own padding */
   }
 
-  .line{
-    min-height: 18px;
-    padding: 6px 0;
+  /* SOP table layout (Word-like) */
+  table.sop{
+    width:100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.sop td{
+    border-top: 1px solid #c9c9c9;
+    border-right: 1px solid #c9c9c9;
+    padding: 10px 10px;
+    vertical-align: top;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  table.sop tr:first-child td{ border-top:none; }
+  table.sop td.num{
+    width: 60px;
+    text-align: left;
+    color:#000;
+    font-weight: 400;
+  }
+  table.sop td.txt{
+    width:auto;
+    border-right: 1px solid #c9c9c9;
+  }
+  table.sop td.cb{
+    width: 44px;
+    text-align: center;
   }
 
-  .kv{
-    margin:0;
-    white-space:pre-line;
-  }
-
-  .list{
-    margin:0;
-    padding-left: 18px;
-  }
-
-  /* Checklist rows */
-  .chk-row{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    padding: 6px 0;
-  }
-  .chk-row input[type="checkbox"]{
+  /* Checkbox sizing */
+  input[type="checkbox"]{
     width: 18px;
     height: 18px;
     margin-top: 2px;
   }
-  .chk-row .txt{
-    flex:1;
-    white-space:pre-line;
+
+  /* Ensure text WRAPS (fix clipping) */
+  .cellwrap{
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  /* SOP “chart below” table */
+  /* Word-style highlight behind TEXT ONLY */
+  .hl{ display:inline; padding: 2px 3px; }
+  .hl.red{ background: var(--hl-red); color:#000; }
+  .hl.yellow{ background: var(--hl-ylw); color:#000; }
+  .hl.green{ background: var(--hl-grn); color:#000; }
+
+  /* Links */
+  a{ color:#000; }
+
+  /* Chart table (Section 2 step 5) */
   table.chart{
     width:100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 8px;
     table-layout: fixed;
   }
   table.chart td{
     border:1px solid #000;
-    padding: 6px 8px;
+    padding: 3px 8px;
     vertical-align: middle;
-    font-weight: 700;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.1;
   }
-  table.chart td:first-child{
-    width: 28%;
+  table.chart td:first-child{ width: 30%; }
+  .black-fill{ background:#000; }
+
+  /* Comments lines */
+  .lines{
+    width:100%;
+    border-collapse: collapse;
+    table-layout: fixed;
   }
-  .blank{
-    display:inline-block;
-    width: 100%;
-    border-bottom: 2px solid #000;
-    transform: translateY(-2px);
-  }
-  .cell-flex{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .code{
-    font-weight:700;
-    white-space:nowrap;
-  }
-  .black-fill{
-    background:#000;
+  .lines td{
+    border-top: 1px solid #000;
+    height: 24px;
   }
 
   /* Approvals table */
@@ -147,14 +168,6 @@
     background: var(--hdr);
   }
 
-  /* Comments lines */
-  .comments-line{
-    white-space:pre-wrap;
-    font-weight:700;
-  }
-
-  a{ color:#000; }
-
   @media print{
     .btn{ display:none !important; }
     .page{ max-width:none; }
@@ -170,294 +183,353 @@
       <h1>Megohmmeter Conductor Test Procedures SOP</h1>
       <div class="subtitle">Mission Critical Program</div>
     </div>
-
-    <!-- Requested feature: reset checkboxes -->
     <button class="btn" type="button" id="resetChecksBtn">Reset Checkboxes</button>
   </div>
 
-  <!-- ====== Header info blocks (matches Word layout/ordering) ====== -->
+  <!-- Description -->
   <div class="section">
     <div class="hdr">Description</div>
-    <div class="body"><div class="line"></div></div>
+    <div class="body" style="padding:10px 10px; min-height:36px;"></div>
   </div>
 
+  <!-- Work Area(s) -->
   <div class="section">
     <div class="hdr">Work Area(s)</div>
-    <div class="body"><div class="line"></div></div>
+    <div class="body" style="padding:10px 10px; min-height:36px;"></div>
   </div>
 
+  <!-- Affected Equipment -->
   <div class="section">
     <div class="hdr">Affected Equipment</div>
-    <div class="body"><div class="line"></div></div>
+    <div class="body" style="padding:10px 10px; min-height:36px;"></div>
   </div>
 
+  <!-- Contacts -->
   <div class="section">
     <div class="hdr">Contacts</div>
-    <div class="body">
-      <p class="kv">GC - __________________________________________________________________________________________
-ACE - __________________
-OTHER - ____________________________</p>
+    <div class="body" style="padding:10px 10px;">
+      GC - __________________________________________________________________________________________<br>
+      ACE - _________________________________________________________________________________________<br>
+      OTHER - ______________________________________________________________________________________
     </div>
   </div>
 
+  <!-- Tools -->
   <div class="section">
     <div class="hdr">Tools</div>
-    <div class="body">
-      <p class="kv">FLUKE 1507/1503 Insulation Tester</p>
+    <div class="body" style="padding:10px 10px;">
+      FLUKE 1507/1503 Insulation Tester
     </div>
   </div>
 
+  <!-- Parts / Materials -->
   <div class="section">
     <div class="hdr">Parts / Materials</div>
-    <div class="body">
-      <p class="kv">Plastic caps applicable to wire size
-Electrical Tape</p>
+    <div class="body" style="padding:10px 10px;">
+      Plastic caps applicable to wire size<br>
+      Electrical Tape
     </div>
   </div>
 
+  <!-- Expected Risk -->
   <div class="section">
     <div class="hdr">Expected Risk to Facility</div>
-    <div class="body">
-      <p class="kv">Improper testing may damage equipment</p>
+    <div class="body" style="padding:10px 10px;">
+      Improper testing may damage equipment
     </div>
   </div>
 
+  <!-- Potential Hazards -->
   <div class="section">
     <div class="hdr">Potential Hazards</div>
-    <div class="body">
-      <div class="line"></div>
+    <div class="body" style="padding:10px 10px; min-height:36px;">
+      Hazard / Hazard Elimination
     </div>
   </div>
 
+  <!-- PPE -->
   <div class="section">
     <div class="hdr">PPE / Safety Equipment</div>
-    <div class="body">
-      <p class="kv">Approved Hardhat
-Z87+Safety Glasses
-Hi-visibility vest with Ace logo
-Cut level 4 Gloves
-Approved Safety Toe Shoes</p>
+    <div class="body" style="padding:10px 10px;">
+      Approved Hardhat<br>
+      Z87+Safety Glasses<br>
+      Hi-visibility vest with Ace logo<br>
+      Cut level 4 Gloves<br>
+      Approved Safety Toe Shoes
     </div>
   </div>
 
+  <!-- Forms -->
   <div class="section">
     <div class="hdr">Forms / Permits / Reports</div>
-    <div class="body">
-      <p class="kv">AA-Blank Meg Report (NC).xlsx</p>
+    <div class="body" style="padding:10px 10px;">
+      AA-Blank Meg Report (NC).xlsx
     </div>
   </div>
 
+  <!-- Supporting Info -->
   <div class="section">
     <div class="hdr">Supporting Info</div>
-    <div class="body">
-      <p class="kv">ANSI+NETA+ATS-2025.pdf</p>
+    <div class="body" style="padding:10px 10px;">
+      ANSI+NETA+ATS-2025.pdf
     </div>
   </div>
 
+  <!-- TPVR -->
   <div class="section">
     <div class="hdr">TPVR (Two Person Verification Rule)</div>
-    <div class="body">
-      <p class="kv">Yes or No</p>
+    <div class="body" style="padding:10px 10px;">
+      Yes or No
     </div>
   </div>
 
-  <!-- ====== Section 1 ====== -->
+  <!-- =========================
+       Section 1: Pre-Work
+       ========================= -->
   <div class="section">
     <div class="hdr">Section 1: Pre-Work / Initial Conditions</div>
     <div class="body">
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_1">
-        <label class="txt" for="s1_1">Ensure all PPE is being worn and is serviceable throughout entire process.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_2">
-        <label class="txt" for="s1_2">Conform with Foreman in area that all wires are installed as s... on the drawing and ready for termination in space to be tested.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_3">
-        <label class="txt" for="s1_3">Follow LOTO procedure to ensure equipment is de-energized.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_4">
-        <label class="txt" for="s1_4">Prepare work site by removing all debris, tools and nonessenti...e present and unavoidable move to Backout procedure immediately.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_5">
-        <label class="txt" for="s1_5">Retrieve Fluke 1503 or 1507 from tool cart or gang box and test battery using method on page 18 of the user manual.</label>
-      </div>
-      <div class="line" style="padding-left:28px;">
-        <a href="https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf" target="_blank" rel="noopener noreferrer">
-          https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf
-        </a>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_6">
-        <label class="txt" for="s1_6">Ensure no part of your body is in contact with any exposed con...ads through skin, clothes or gloves to prevent electrical shock.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_7">
-        <label class="txt" for="s1_7">Insert black test lead into common input terminal and insert b...0V is not shown immediately on screen move to Backout Procedure.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_8">
-        <label class="txt" for="s1_8">Retrieve plastic caps from cart and place over exposed conduct...of test area preferably downstream secure using electrical tape.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s1_9">
-        <label class="txt" for="s1_9">Secure opposite termination area using LOTO tools or a second ... ensure the conductors are not touched during testing procedure.</label>
-      </div>
-
+      <table class="sop" aria-label="Section 1 checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_1"></td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap">Conform with Foreman in area that all wires are installed as specified on the drawing and ready for termination in space to be tested.</div></td>
+          <td class="cb"><input type="checkbox" id="s1_2"></td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Follow LOTO procedure to ensure equipment is de-energized.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_3"></td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_4"></td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              <span class="hl yellow">Retrieve Fluke 1503 or 1507 from tool cart or gang box and test battery using method on page 18 of the user manual.</span><br>
+              <span class="hl yellow">
+                <a href="https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf" target="_blank" rel="noopener noreferrer">
+                  https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf
+                </a>
+              </span>
+            </div>
+          </td>
+          <td class="cb"><input type="checkbox" id="s1_5"></td>
+        </tr>
+        <tr>
+          <td class="num">6.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Ensure no part of your body is in contact with any exposed conductor including ends of test leads through skin, clothes or gloves to prevent electrical shock.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_6"></td>
+        </tr>
+        <tr>
+          <td class="num">7.</td>
+          <td class="txt"><div class="cellwrap">Insert black test lead into common input terminal and insert black test lead to Insulation test terminal. Turn dial to 1000V setting and touch uninsulated tips of test leads together and press “TEST”. If “0” and 1050V is not shown immediately on screen move to Backout Procedure.</div></td>
+          <td class="cb"><input type="checkbox" id="s1_7"></td>
+        </tr>
+        <tr>
+          <td class="num">8.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Retrieve plastic caps from cart and place over exposed conductor ends opposite of test area preferably downstream secure using electrical tape.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_8"></td>
+        </tr>
+        <tr>
+          <td class="num">9.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Secure opposite termination area using LOTO tools or a second trained person to ensure the conductors are not touched during testing procedure.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s1_9"></td>
+        </tr>
+      </table>
     </div>
   </div>
 
-  <!-- ====== Section 2 ====== -->
+  <!-- =========================
+       Section 2: Testing Conductors
+       ========================= -->
   <div class="section">
     <div class="hdr">Section 2: Testing the Conductors</div>
     <div class="body">
-
-      <div class="chk-row">
-        <input type="checkbox" id="s2_1">
-        <label class="txt" for="s2_1">Visually inspect the visible portions of the conductors to be ...tion including but not limited to cuts, abrasion, wear or burns.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s2_2">
-        <label class="txt" for="s2_2">Ensure no part of your body is in contact with any exposed con...ads through skin, clothes or gloves to prevent electrical shock.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s2_3">
-        <label class="txt" for="s2_3">Place the Common test lead onto the exposed portion of the pha...ings and can indicate an issue in construction of the equipment.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s2_4">
-        <label class="txt" for="s2_4">Press the test button on the lead is equipped or on the meter ...ng. If the shown reading is different move to Backout Procedure.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="s2_5">
-        <label class="txt" for="s2_5">Use chart below to complete all applicable testing steps for e...does not produce a test value of 11MΩ move to Backout Procedure.</label>
-      </div>
-
-      <!-- Required: include the table in Section 2 Step 5 -->
-      <table class="chart" aria-label="Megohmmeter chart">
+      <table class="sop" aria-label="Section 2 checklist">
         <tr>
-          <td>Phase to Phase</td>
-          <td>
-            <div class="cell-flex"><span class="code">A-B:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
-          <td>
-            <div class="cell-flex"><span class="code">A-C:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
-          <td>
-            <div class="cell-flex"><span class="code">B-C:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap">Visually inspect the visible portions of the conductors to be tested for damage to insulation including but not limited to cuts, abrasion, wear or burns.</div></td>
+          <td class="cb"><input type="checkbox" id="s2_1"></td>
         </tr>
         <tr>
-          <td>Phase to Ground</td>
-          <td>
-            <div class="cell-flex"><span class="code">A-G:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
-          <td>
-            <div class="cell-flex"><span class="code">B-G:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
-          <td>
-            <div class="cell-flex"><span class="code">C-G:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">Ensure no part of your body is in contact with any exposed conductor including points of test leads through skin, clothes or gloves to prevent electrical shock.</span></div></td>
+          <td class="cb"><input type="checkbox" id="s2_2"></td>
         </tr>
         <tr>
-          <td>Phase to Neutral</td>
-          <td>
-            <div class="cell-flex"><span class="code">A-N:</span><span class="blank" aria-hidden="true"></span></div>
+          <td class="num">3.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Place the Common test lead onto the exposed portion of the phase 1 or A brown or black conductor and the insulation test terminal to the phase 2 or B orange or red conductor.
+              <span class="hl yellow">Color designations correspond to system voltage ratings and can indicate an issue in construction of the equipment.</span>
+            </div>
           </td>
-          <td>
-            <div class="cell-flex"><span class="code">B-N:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
-          <td>
-            <div class="cell-flex"><span class="code">C-N:</span><span class="blank" aria-hidden="true"></span></div>
-          </td>
+          <td class="cb"><input type="checkbox" id="s2_3"></td>
         </tr>
         <tr>
-          <td>Neutral to Ground</td>
-          <td>
-            <div class="cell-flex"><span class="code">N-G:</span><span class="blank" aria-hidden="true"></span></div>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap">Press the test button on the lead is equipped or on the meter then proceed as prescribed below while documenting each reading. If the shown reading is different move to Backout Procedure.</div></td>
+          <td class="cb"><input type="checkbox" id="s2_4"></td>
+        </tr>
+        <tr>
+          <td class="num">5.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Place the Black test lead on the 1 or A phase conductor and the Red test lead on the 2 or B phase conductor. Press the TEST button until the screen displays
+              <span class="hl green">11MΩ and 1050VDC</span>
+              then proceed as prescribed below while documenting each reading.
+              <span class="hl red">If any conductor does not produce a test value of 11MΩ move to Backout Procedure.</span>
+
+              <table class="chart" aria-label="Megohmmeter chart">
+                <tr>
+                  <td>Phase to Phase</td>
+                  <td>A-B: ____________</td>
+                  <td>A-C: ____________</td>
+                  <td>B-C: ____________</td>
+                </tr>
+                <tr>
+                  <td>Phase to Ground</td>
+                  <td>A-G: ____________</td>
+                  <td>B-G: ____________</td>
+                  <td>C-G: ____________</td>
+                </tr>
+                <tr>
+                  <td>Phase to Neutral</td>
+                  <td>A-N: ____________</td>
+                  <td>B-N: ____________</td>
+                  <td>C-N: ____________</td>
+                </tr>
+                <tr>
+                  <td>Neutral to Ground</td>
+                  <td>N-G: ____________</td>
+                  <td class="black-fill" colspan="2"></td>
+                </tr>
+              </table>
+
+            </div>
           </td>
-          <td class="black-fill" colspan="2"></td>
+          <td class="cb"><input type="checkbox" id="s2_5"></td>
         </tr>
       </table>
-
     </div>
   </div>
 
-  <!-- ====== Validation ====== -->
+  <!-- =========================
+       Validation
+       ========================= -->
   <div class="section">
     <div class="hdr">Validation</div>
     <div class="body">
-
-      <div class="chk-row">
-        <input type="checkbox" id="v_1">
-        <label class="txt" for="v_1">Verify all conductors to be tested have a passing value of 11MΩ associated with them recorded in documentation sheet.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="v_2">
-        <label class="txt" for="v_2">Notify construction Foreman that testing has concluded, and all conductors tested have passed.</label>
-      </div>
-
+      <table class="sop" aria-label="Validation checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Verify all conductors to be tested have a <span class="hl green">passing value of 11MΩ</span> associated with them recorded in documentation sheet.
+            </div>
+          </td>
+          <td class="cb"><input type="checkbox" id="v_1"></td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">Notify construction Foreman that testing has concluded, and all conductors tested have passed.</span></div></td>
+          <td class="cb"><input type="checkbox" id="v_2"></td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap">&nbsp;</div></td>
+          <td class="cb"><input type="checkbox" id="v_3"></td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt"><div class="cellwrap">&nbsp;</div></td>
+          <td class="cb"><input type="checkbox" id="v_4"></td>
+        </tr>
+      </table>
     </div>
   </div>
 
-  <!-- ====== Backout Procedure ====== -->
+  <!-- =========================
+       Backout Procedure
+       ========================= -->
   <div class="section">
     <div class="hdr">Backout Procedure</div>
     <div class="body">
-
-      <div class="chk-row">
-        <input type="checkbox" id="b_1">
-        <label class="txt" for="b_1">STOP WORK</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="b_2">
-        <label class="txt" for="b_2">PLACE equipment in SAFE condition</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="b_3">
-        <label class="txt" for="b_3">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</label>
-      </div>
-
-      <div class="chk-row">
-        <input type="checkbox" id="b_4">
-        <label class="txt" for="b_4">Once issue is resolved, return to appropriate Section and St... during testing re-start testing procedure from first conductor.</label>
-      </div>
-
+      <table class="sop" aria-label="Backout checklist">
+        <tr>
+          <td class="num">1.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">STOP WORK</span></div></td>
+          <td class="cb"><input type="checkbox" id="b_1"></td>
+        </tr>
+        <tr>
+          <td class="num">2.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl red">PLACE equipment in SAFE condition</span></div></td>
+          <td class="cb"><input type="checkbox" id="b_2"></td>
+        </tr>
+        <tr>
+          <td class="num">3.</td>
+          <td class="txt"><div class="cellwrap"><span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span></div></td>
+          <td class="cb"><input type="checkbox" id="b_3"></td>
+        </tr>
+        <tr>
+          <td class="num">4.</td>
+          <td class="txt">
+            <div class="cellwrap">
+              Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work
+              <span class="hl green">if Backout is initiated during testing re-start testing procedure from first conductor.</span>
+            </div>
+          </td>
+          <td class="cb"><input type="checkbox" id="b_4"></td>
+        </tr>
+      </table>
     </div>
   </div>
 
-  <!-- ====== Comments (from SOP) ====== -->
+  <!-- =========================
+       Comments
+       ========================= -->
   <div class="section">
     <div class="hdr">Comments</div>
-    <div class="body">
-      <div class="comments-line">______________________________________________________________...______________________________________________________________
-_____________________________________________________...______________________________________________________________</div>
+    <div class="body" style="padding:10px 10px;">
+      <div style="margin-bottom:10px;">
+        Color Key<br>
+        <span class="hl green">Important Note</span><br>
+        <span class="hl red">Safety Note</span><br>
+        <span class="hl yellow">Location Change</span>
+      </div>
+
+      <table class="lines" aria-label="Comment lines">
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+      </table>
     </div>
   </div>
 
-  <!-- ====== Approvals ====== -->
+  <!-- =========================
+       Approvals
+       ========================= -->
   <div class="section">
     <div class="hdr">Approvals</div>
-    <div class="body">
+    <div class="body" style="padding:10px 10px;">
       <table class="appr" aria-label="Approvals">
         <tr>
           <td>Version</td>
