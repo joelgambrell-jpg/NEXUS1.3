@@ -49,35 +49,12 @@
 
   // Keys used by equipment.html / index.html
   function stepKey(stepId){ return `nexus_${eq || "NO_EQ"}_step_${stepId}`; }
-  function landingKey(){ return `nexus_${eq || "NO_EQ"}_landing_complete`; }
 
   // =========================
   // Firebase sync (optional)
   // - expects window.NEXUS_FB = { db, auth } from your firebase init script
   // - mirrors Firestore <-> localStorage
   // =========================
-  async function fbSetStep(eqId, stepId, isDone){
-    try{
-      if (!window.NEXUS_FB?.db || !eqId || !stepId) return;
-      const { db, auth } = window.NEXUS_FB;
-
-      const { doc, setDoc, serverTimestamp } =
-        await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
-
-      const ref = doc(db, "equipment", eqId, "steps", stepId);
-      await setDoc(ref, {
-        done: !!isDone,
-        updatedAt: serverTimestamp(),
-        updatedBy: auth?.currentUser?.uid || null
-      }, { merge:true });
-    }catch(e){
-      // silent fail: localStorage still works offline
-      console.warn("Firebase step sync failed:", e);
-    }
-  }
-
-  // Allow multiple listeners (Megohmmeter has 2)
-  let fbUnsubs = [];
   async function fbListenStep(eqId, stepId, onChange){
     try{
       if (!window.NEXUS_FB?.db || !eqId || !stepId) return;
@@ -88,174 +65,29 @@
 
       const ref = doc(db, "equipment", eqId, "steps", stepId);
 
-      const unsub = onSnapshot(ref, (snap) => {
+      return onSnapshot(ref, (snap) => {
         if (!snap.exists()) return;
         const data = snap.data() || {};
         if (data.done) localStorage.setItem(stepKey(stepId), "1");
         else localStorage.removeItem(stepKey(stepId));
         try{ onChange && onChange(); }catch(e){}
       });
-
-      fbUnsubs.push(unsub);
     }catch(e){
       console.warn("Firebase listener failed:", e);
+      return null;
     }
   }
 
-  // =========================
-  // Completion buttons
-  // =========================
-  const stepBtn = document.getElementById("stepCompleteBtn");      // legacy single button
-  const lineBtn = document.getElementById("lineCompleteBtn");      // new (Megohmmeter)
-  const loadBtn = document.getElementById("loadCompleteBtn");      // new (Megohmmeter)
-
-  // Steps that should NOT have completion toggles (support/reference only)
-  const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"]);
-  const hideToggle = NON_COMPLETABLE.has(id);
-
-  const IS_MEGOHMMETER = (id === "megohmmeter");
-  const MEG_LINE_STEP = "megohmmeter_line";
-  const MEG_LOAD_STEP = "megohmmeter_load";
-
-  function usable(){ return !!(eq && id); }
-
-  // Standard (single-step) done state
-  function done(){ return !!(eq && id && localStorage.getItem(stepKey(id)) === "1"); }
-
-  // Megohmmeter (two-step) done state
-  function megDone(stepId){ return !!(eq && localStorage.getItem(stepKey(stepId)) === "1"); }
-  function megAllDone(){
-    return megDone(MEG_LINE_STEP) && megDone(MEG_LOAD_STEP);
-  }
-
-  async function setDoneState(nextDone){
-    if (!usable()) return;
-
-    // Keep existing cfg.completedKey behavior (optional/legacy)
-    if (cfg.completedKey){
-      if (nextDone) localStorage.setItem(cfg.completedKey, "true");
-      else localStorage.removeItem(cfg.completedKey);
-    }
-
-    // Local-first write (offline-friendly)
-    if (nextDone){
-      localStorage.setItem(stepKey(id), "1");
-      localStorage.setItem(landingKey(), "1");
-    } else {
-      localStorage.removeItem(stepKey(id));
-      // Do not clear landing flag here; equipment.html recomputes it accurately.
-    }
-
-    // Firebase mirror (best-effort)
-    await fbSetStep(eq, id, nextDone);
-  }
-
-  async function setMegDoneState(stepId, nextDone){
-    if (!usable()) return;
-
-    if (nextDone) localStorage.setItem(stepKey(stepId), "1");
-    else localStorage.removeItem(stepKey(stepId));
-
-    // Landing is "complete" only when BOTH line + load are complete
-    if (megAllDone()){
-      localStorage.setItem(landingKey(), "1");
-    }
-
-    // Firebase mirror for the specific step
-    await fbSetStep(eq, stepId, nextDone);
-  }
-
-  function refreshStepBtn(){
-    // STANDARD SINGLE STEP
-    if (!stepBtn) return;
-    if (hideToggle || IS_MEGOHMMETER){ stepBtn.style.display = "none"; return; }
-
-    // Always visible; disable if missing eq/id to prevent bad writes
-    stepBtn.style.display = "block";
-    stepBtn.disabled = !usable();
-    stepBtn.title = usable() ? "" : "Missing eq or id in URL";
-
-    stepBtn.classList.toggle("complete", done());
-  }
-
-  function refreshMegBtns(){
-    // MEGOHMMETER TWO STEP
-    if (!IS_MEGOHMMETER) return;
-
-    // For non-completable, hide these too
-    if (hideToggle){
-      if (lineBtn) lineBtn.style.display = "none";
-      if (loadBtn) loadBtn.style.display = "none";
-      return;
-    }
-
-    if (lineBtn){
-      lineBtn.style.display = "block";
-      lineBtn.disabled = !usable();
-      lineBtn.title = usable() ? "" : "Missing eq or id in URL";
-      lineBtn.classList.toggle("complete", megDone(MEG_LINE_STEP));
-    }
-    if (loadBtn){
-      loadBtn.style.display = "block";
-      loadBtn.disabled = !usable();
-      loadBtn.title = usable() ? "" : "Missing eq or id in URL";
-      loadBtn.classList.toggle("complete", megDone(MEG_LOAD_STEP));
-    }
-  }
-
-  // Click handlers
-  if (stepBtn){
-    stepBtn.addEventListener("click", async () => {
-      if (!usable()) return;
-      const next = !done();
-      await setDoneState(next);
-      refreshStepBtn();
-    });
-  }
-
-  if (lineBtn){
-    lineBtn.addEventListener("click", async () => {
-      if (!usable()) return;
-      const next = !megDone(MEG_LINE_STEP);
-      await setMegDoneState(MEG_LINE_STEP, next);
-      refreshMegBtns();
-    });
-  }
-
-  if (loadBtn){
-    loadBtn.addEventListener("click", async () => {
-      if (!usable()) return;
-      const next = !megDone(MEG_LOAD_STEP);
-      await setMegDoneState(MEG_LOAD_STEP, next);
-      refreshMegBtns();
-    });
-  }
-
-  // Initial paint
-  refreshStepBtn();
-  refreshMegBtns();
-
-  // Keep in sync across tabs/focus
-  window.addEventListener("storage", () => { refreshStepBtn(); refreshMegBtns(); });
-  window.addEventListener("focus", () => { refreshStepBtn(); refreshMegBtns(); });
-  window.addEventListener("pageshow", () => { refreshStepBtn(); refreshMegBtns(); });
-
-  // Start Firebase listener (if configured) for cross-device updates
-  if (usable()){
-    if (IS_MEGOHMMETER){
-      fbListenStep(eq, MEG_LINE_STEP, refreshMegBtns);
-      fbListenStep(eq, MEG_LOAD_STEP, refreshMegBtns);
-    } else {
-      fbListenStep(eq, id, refreshStepBtn);
-    }
+  // Start Firebase listener for this form step ONLY if you later re-enable completion on this page.
+  // (Currently: completion is handled on the actual data-entry pages, not here.)
+  let fbUnsub = null;
+  if (eq && id){
+    // leaving this disabled by default to avoid assumptions:
+    // fbUnsub = await fbListenStep(eq, id, () => {});
   }
 
   window.addEventListener("beforeunload", () => {
-    try{
-      if (fbUnsubs && fbUnsubs.length){
-        fbUnsubs.forEach(u => { try{ u && u(); }catch(e){} });
-      }
-    }catch(e){}
+    try{ if (fbUnsub) fbUnsub(); }catch(e){}
   });
 
   // Helper: add eq to INTERNAL links only
