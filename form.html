@@ -91,7 +91,6 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   border-top: 1px solid rgba(255,255,255,0.18);
 }
 
-/* Prevent Step Complete flash before JS decides visibility */
 #stepCompleteBtn{ display:none; }
 </style>
 
@@ -148,20 +147,18 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
 
-    <!-- ADDED: SOP button opens in a new tab -->
-    <button class="btn" type="button" onclick="window.open('torque_sop.html','_blank')">Open SOP</button>
+    <!-- Added SOP button -->
+    <button class="btn" type="button" onclick="window.open('torque_sop.html','_blank')">
+      Open SOP
+    </button>
 
-    <!-- Must exist (app.js will show/hide + style it) -->
     <button class="btn" id="stepCompleteBtn" type="button">Mark Step Complete</button>
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- IMPORTANT: you have config.js (this defines window.FORMS) -->
 <script src="config.js"></script>
-
-<!-- IMPORTANT: app.js MUST be the updated “FULL drop-in” version that enables Step Complete on all tasks -->
 <script src="app.js"></script>
 
 <script>
@@ -180,7 +177,6 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
 
   if (!eq) return;
 
-  // Ensure internal links keep eq
   function patchLinks(){
     document.querySelectorAll('a[href]').forEach(a => {
       try{
@@ -200,15 +196,10 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
 })();
 </script>
 
+<!-- FIXED BACK BUTTON (always equipment page) -->
 <script>
 (function(){
   window.NEXUS_back = function(){
-    try{
-      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
-        history.back();
-        return false;
-      }
-    }catch(e){}
     const qs = new URLSearchParams(location.search);
     const eq = qs.get("eq");
     location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
@@ -223,5 +214,6 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
 
 <script src="assets/js/nexus-core.js"></script>
 <script src="assets/js/nexus-firebase-bridge.js"></script>
+
 </body>
 </html>
