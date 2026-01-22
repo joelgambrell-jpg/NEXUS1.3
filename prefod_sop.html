@@ -1,4 +1,4 @@
-<!-- prefod_sop.html (FULL drop-in with progressive Backout unlock + readable gray lock) -->
+<!-- prefod_sop.html (FULL drop-in with: progressive Backout unlock + readable gray lock + Foreman+ "Backout Complete" return-to-step) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -112,7 +112,15 @@
     pointer-events:none;
   }
 
-  /* White document-only area (requested) */
+  /* Flash highlight when returning to the triggering step */
+  .flash-step{
+    outline: 3px solid rgba(0, 194, 255, 0.85);
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.18);
+    border-radius: 10px;
+    transition: outline-color 0.3s ease;
+  }
+
+  /* White document-only area */
   .doc-sheet{
     background: rgba(255,255,255,0.95);
     color:#111;
@@ -191,7 +199,7 @@
   }
   .sw{width:24px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,0.18);}
 
-  /* Highlight colors (requested: red, yellow, blue) */
+  /* Highlight colors */
   .hl-yellow{background:#fff59d;padding:0 .12em;border-radius:4px;}
   .hl-red{background:#ff6b6b;color:#111;padding:0 .12em;border-radius:4px;}
   .hl-blue{background:#7fd8ff;padding:0 .12em;border-radius:4px;}
@@ -304,6 +312,18 @@
     <div class="doc-sheet">
       <div id="sections"></div>
 
+      <!-- Backout Complete (Foreman+) -->
+      <div id="backoutCompleteWrap" style="display:none;margin-top:14px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">
+          <span style="font-size:12px;font-weight:900;opacity:.85;">
+            Foreman+ required to confirm Backout completion
+          </span>
+          <button class="btn secondary" id="backoutCompleteBtn" type="button" disabled>
+            Backout Complete (Return to Step)
+          </button>
+        </div>
+      </div>
+
       <div class="foot">
         <div class="box">
           <h3>Comments</h3>
@@ -335,8 +355,8 @@
 <!-- Confirm modal -->
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal">
-    <h3 id="modalTitle">Confirm Backout</h3>
-    <p id="modalMsg">Selecting “Needs Attention” triggers Backout Procedure. Continue?</p>
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalMsg">Confirm action?</p>
     <div class="modal-actions">
       <button class="mbtn" id="modalCancel" type="button">Cancel</button>
       <button class="mbtn primary" id="modalConfirm" type="button">Confirm</button>
@@ -361,7 +381,7 @@
   // Storage
   const KEY = `nexus_${eq||"NO_EQ"}_prefod_sop_v1`;
 
-  // Status options (NO Backout option)
+  // Status options
   const STATUS = {
     NONE: "",
     OK: "ok",
@@ -369,7 +389,7 @@
     ATTENTION: "attention"
   };
 
-  // Data extracted from your uploaded SOP (highlights preserved)
+  // SOP sections
   const SECTIONS = [
     {
       id:"sec1",
@@ -457,16 +477,39 @@
   const backoutChip = document.getElementById("backoutChip");
   const globalComment = document.getElementById("globalComment");
 
+  const backoutCompleteWrap = document.getElementById("backoutCompleteWrap");
+  const backoutCompleteBtn = document.getElementById("backoutCompleteBtn");
+
   // Modal refs
   const modalBackdrop = document.getElementById("modalBackdrop");
   const modalCancel = document.getElementById("modalCancel");
   const modalConfirm = document.getElementById("modalConfirm");
   const modalMsg = document.getElementById("modalMsg");
+  const modalTitle = document.getElementById("modalTitle");
+
+  // Role helpers
+  const ROLE_RANK = { viewer:0, tech:1, foreman:2, superintendent:3, admin:4 };
+
+  function getCurrentRole(){
+    try{
+      if (window.NEXUS && typeof window.NEXUS.getRole === "function"){
+        return window.NEXUS.getRole() || "viewer";
+      }
+    }catch(e){}
+    const sel = document.getElementById("nxRoleSelect");
+    return (sel && sel.value) ? sel.value : "viewer";
+  }
+
+  function isForemanPlus(){
+    const r = getCurrentRole();
+    return (ROLE_RANK[r] || 0) >= ROLE_RANK.foreman;
+  }
 
   // State
   let state = {
     comment: "",
     backoutTriggered: false,
+    backoutFrom: null, // { sectionId, stepIdx }
     steps: {} // key: `${sectionId}:${idx}` => { status, note }
   };
 
@@ -479,6 +522,51 @@
     }catch(e){}
   }
 
+  function writeState(){
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+      saveChip.textContent = "Saved";
+    }catch(e){
+      saveChip.textContent = "Save failed";
+    }
+    applyBackoutLock();
+    applyBackoutCompleteUI();
+  }
+
+  function buildSelect(value){
+    const sel = document.createElement("select");
+    sel.innerHTML = `
+      <option value="${STATUS.NONE}">Select…</option>
+      <option value="${STATUS.OK}">Complete / OK</option>
+      <option value="${STATUS.NA}">N/A</option>
+      <option value="${STATUS.ATTENTION}">Needs Attention</option>
+    `;
+    sel.value = value || STATUS.NONE;
+    return sel;
+  }
+
+  function applyBackoutCompleteUI(){
+    const show = !!state.backoutTriggered;
+    backoutCompleteWrap.style.display = show ? "block" : "none";
+    if (!show) return;
+
+    const allowed = isForemanPlus() && !!state.backoutFrom;
+    backoutCompleteBtn.disabled = !allowed;
+
+    // Update button label with where it will return
+    if (state.backoutFrom && state.backoutFrom.sectionId){
+      const sid = state.backoutFrom.sectionId;
+      const sidx = (state.backoutFrom.stepIdx ?? 0) + 1;
+      backoutCompleteBtn.textContent = allowed
+        ? `Backout Complete (Return to ${sid.toUpperCase()} • Step ${sidx})`
+        : `Backout Complete (Foreman+ Required)`;
+    }else{
+      backoutCompleteBtn.textContent = allowed
+        ? "Backout Complete (Return to Step)"
+        : "Backout Complete (Foreman+ Required)";
+    }
+  }
+
   function applyBackoutLock(){
     const isBackout = !!state.backoutTriggered;
 
@@ -487,13 +575,11 @@
     backoutChip.classList.toggle("active", isBackout);
 
     if (!isBackout){
-      // unlock everything
       document.querySelectorAll(".sec").forEach(sec => sec.classList.remove("locked"));
       return;
     }
 
-    // Determine progress through Backout steps:
-    // Count consecutive Backout steps marked OK from step 1 onward.
+    // Determine progress through Backout steps: consecutive OK from step 1 onward
     const backoutStepsCount = (SECTIONS.find(s => s.id === "backout")?.steps.length) || 0;
 
     let progressed = 0;
@@ -517,30 +603,36 @@
     });
   }
 
-  function writeState(){
-    try{
-      localStorage.setItem(KEY, JSON.stringify(state));
-      saveChip.textContent = "Saved";
-    }catch(e){
-      saveChip.textContent = "Save failed";
-    }
-    applyBackoutLock();
-  }
+  function scrollToTriggerStep(){
+    if (!state.backoutFrom) return;
 
-  function buildSelect(value){
-    const sel = document.createElement("select");
-    sel.innerHTML = `
-      <option value="${STATUS.NONE}">Select…</option>
-      <option value="${STATUS.OK}">Complete / OK</option>
-      <option value="${STATUS.NA}">N/A</option>
-      <option value="${STATUS.ATTENTION}">Needs Attention</option>
-    `;
-    sel.value = value || STATUS.NONE;
-    return sel;
+    const sid = state.backoutFrom.sectionId;
+    const idx = state.backoutFrom.stepIdx;
+
+    const secEl = document.getElementById(sid);
+    if (!secEl) return;
+
+    // Table rows are in tbody; idx is zero-based
+    const rows = secEl.querySelectorAll("tbody tr");
+    const row = rows && rows[idx] ? rows[idx] : null;
+    if (!row) {
+      secEl.scrollIntoView({ behavior:"smooth", block:"start" });
+      return;
+    }
+
+    row.scrollIntoView({ behavior:"smooth", block:"center" });
+
+    // flash + focus select
+    row.classList.add("flash-step");
+    setTimeout(() => row.classList.remove("flash-step"), 1600);
+
+    const sel = row.querySelector("select");
+    if (sel) setTimeout(() => { try{ sel.focus(); }catch(e){} }, 400);
   }
 
   function render(){
     sectionsEl.innerHTML = "";
+
     SECTIONS.forEach(sec => {
       const secWrap = document.createElement("div");
       secWrap.className = "sec";
@@ -618,21 +710,23 @@
           }
 
           // Confirm before committing Needs Attention
-          modalMsg.textContent =
-            "Selecting “Needs Attention” triggers Backout Procedure. Continue?";
+          modalTitle.textContent = "Confirm Backout";
+          modalMsg.textContent = "Selecting “Needs Attention” triggers Backout Procedure. Continue?";
 
           openModal({
             onConfirm: () => {
               state.steps[key] = state.steps[key] || {};
               state.steps[key].status = STATUS.ATTENTION;
 
-              // Trigger backout flow
+              // Trigger backout flow + remember where it happened
               state.backoutTriggered = true;
+              state.backoutFrom = { sectionId: sec.id, stepIdx: idx };
 
               saveChip.textContent = "Unsaved";
 
-              // Apply lock now (everything dims/locks until backout progress unlocks)
+              // Apply lock + enable Foreman+ completion UI
               applyBackoutLock();
+              applyBackoutCompleteUI();
 
               // Jump to Backout Procedure section
               const el = document.getElementById("backout");
@@ -664,8 +758,9 @@
     globalComment.value = state.comment || "";
     saveChip.textContent = "Loaded";
 
-    // Apply initial lock/unlock state after DOM is built
+    // Apply initial lock/unlock + completion UI after DOM is built
     applyBackoutLock();
+    applyBackoutCompleteUI();
   }
 
   // Modal helper
@@ -703,6 +798,42 @@
     }
   });
 
+  // Backout Complete button (Foreman+)
+  backoutCompleteBtn.addEventListener("click", () => {
+    if (!state.backoutTriggered) return;
+    if (!isForemanPlus()) return;
+    if (!state.backoutFrom) return;
+
+    const sid = state.backoutFrom.sectionId;
+    const sidx = (state.backoutFrom.stepIdx ?? 0) + 1;
+
+    modalTitle.textContent = "Confirm Backout Completed";
+    modalMsg.textContent =
+      `Confirm the Backout Procedure has been performed. This will exit Backout mode and return to ${sid.toUpperCase()} step ${sidx}. Continue?`;
+
+    openModal({
+      onConfirm: () => {
+        state.backoutTriggered = false;
+
+        // Keep the recorded location so we can jump back immediately
+        // (optional: clear it after the jump)
+        saveChip.textContent = "Unsaved";
+
+        // Unlock all sections and hide chip
+        applyBackoutLock();
+        applyBackoutCompleteUI();
+
+        // Return to the step where it happened
+        scrollToTriggerStep();
+
+        // Optional: once returned, clear the marker so next backout is clean
+        // Comment out if you want the marker preserved.
+        // state.backoutFrom = null;
+      },
+      onCancel: () => {}
+    });
+  });
+
   // Save
   document.getElementById("saveBtn").addEventListener("click", () => {
     state.comment = (globalComment.value || "").trim();
@@ -710,9 +841,20 @@
   });
   globalComment.addEventListener("input", () => { saveChip.textContent = "Unsaved"; });
 
+  // Keep role-gated UI in sync if role changes via dropdown
+  const roleSel = document.getElementById("nxRoleSelect");
+  if (roleSel){
+    roleSel.addEventListener("change", () => {
+      applyBackoutCompleteUI();
+    });
+  }
+
   // Init
   readState();
   render();
+
+  // If backout was active on load, ensure UI reflects role gating
+  applyBackoutCompleteUI();
 })();
 </script>
 
