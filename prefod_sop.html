@@ -488,7 +488,7 @@
 
       const isBackout = next === "backout";
       if (isBackout){
-        const ok = confirm("Backout selected. Confirm you want to trigger the Backout Procedure?");
+        const ok = confirm("Confirm you want to trigger the Backout Procedure?");
         if (!ok){
           select.value = was;
           applyState(select.value || "");
