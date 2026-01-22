@@ -36,8 +36,11 @@ body{
 }
 h1{font-size:32px;font-weight:700;margin-top:0;}
 .section-title{
-  font-size:22px;font-weight:bold;margin:20px 0 8px;
-  border-bottom:2px solid #fff;padding-bottom:6px;
+  font-size:22px;
+  font-weight:bold;
+  margin:20px 0 8px;
+  border-bottom:2px solid #fff;
+  padding-bottom:6px;
 }
 .eq-label{font-weight:900;margin:10px 0 18px;font-size:18px;}
 
@@ -145,15 +148,17 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
   <div id="buttonsWrap" class="button-panel">
     <div id="buttons"></div>
 
-    <!-- Must exist (JS will show it only where allowed) -->
-    <button class="btn" id="stepCompleteBtn" type="button">Step Complete</button>
+    <!-- Must exist (app.js will show/hide + style it) -->
+    <button class="btn" id="stepCompleteBtn" type="button">Mark Step Complete</button>
   </div>
 
   <div id="media" class="media" style="display:none;"></div>
 </div>
 
-<!-- IMPORTANT: you have config.js (not forms.js) -->
+<!-- IMPORTANT: you have config.js (this defines window.FORMS) -->
 <script src="config.js"></script>
+
+<!-- IMPORTANT: app.js MUST be the updated “FULL drop-in” version that enables Step Complete on all tasks -->
 <script src="app.js"></script>
 
 <script>
@@ -172,19 +177,21 @@ h1{font-size:32px;font-weight:700;margin-top:0;}
 
   if (!eq) return;
 
+  // Ensure internal links keep eq
   function patchLinks(){
     document.querySelectorAll('a[href]').forEach(a => {
       try{
-        const url = new URL(a.getAttribute("href"), location.href);
+        const href = a.getAttribute("href");
+        if (!href) return;
+        const url = new URL(href, location.href);
         if (url.origin !== location.origin) return;
         url.searchParams.set("eq", eq);
-        a.setAttribute("href", url.toString());
+        a.setAttribute("href", url.pathname + url.search + url.hash);
       }catch(e){}
     });
   }
 
   patchLinks();
-
   const observer = new MutationObserver(patchLinks);
   observer.observe(document.getElementById("buttons") || document.body, { childList:true, subtree:true });
 })();
