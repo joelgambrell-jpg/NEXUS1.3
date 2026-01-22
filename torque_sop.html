@@ -1,3 +1,4 @@
+<!-- torque_sop.html (FULL drop-in with NEXUS styling/features + preserves content/highlights) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,92 +8,171 @@
 
 <style>
   :root{
-    --hdr:#D9D9D9;      /* Word light gray header */
-    --border:#000;
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --line:rgba(255,255,255,0.22);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --accent:#00c2ff;
 
-    /* Word-style highlight colors (solid) */
+    /* Keep your Word highlight colors (solid) */
     --hl-red:#ff0000;   /* Potential Safety Hazard */
     --hl-ylw:#ffff00;   /* Physical movement / location change */
     --hl-cyn:#00e5ff;   /* Informational sections */
-    --hl-grn:#00ff00;   /* Important Note (kept for consistency) */
+    --hl-grn:#00ff00;   /* Important Note */
   }
 
   *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; background:#fff; color:#000; font-family: Arial, Helvetica, sans-serif; }
+  html,body{ margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; color:#fff; background:var(--bg); }
 
-  .page{
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 22px 18px 40px;
+  body{
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
   }
 
+  /* NEXUS header */
+  .nx-header-wrap{
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+  }
+  .nx-header{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+  }
+  .nx-header img{ height: 54px; width:auto; object-fit:contain; }
+
+  .wrap{max-width:1100px;margin:18px auto 60px;padding:0 18px;}
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+  }
+
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 14px;}
+  .left-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .right-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+
+  .btn{
+    padding:12px 16px;
+    font-size:14px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    gap:10px;
+  }
+  .btn.secondary{
+    background: rgba(0,0,0,0.22);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+
+  .chip{
+    padding:8px 12px;border-radius:999px;font-weight:900;
+    border:1px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.22);
+  }
+  .chip.alert{
+    background: rgba(255,50,50,0.20);
+    border-color: rgba(255,90,90,0.55);
+    color:#fff;
+    box-shadow: 0 0 0 2px rgba(255,60,60,0.10) inset;
+  }
+  .chip.alert.active{
+    background:#ff2b2b;
+    border-color:#ff2b2b;
+    color:#fff;
+    box-shadow:0 0 14px rgba(255,0,0,.75);
+    animation:pulse 1.1s infinite alternate;
+  }
+  @keyframes pulse{
+    from{ box-shadow:0 0 8px rgba(255,0,0,.45); }
+    to{ box-shadow:0 0 20px rgba(255,0,0,.95); }
+  }
+
+  /* White document-only area */
+  .doc-sheet{
+    background: rgba(255,255,255,0.95);
+    color:#111;
+    border-radius:16px;
+    border:1px solid rgba(0,0,0,0.10);
+    padding:14px;
+  }
+
+  /* Locked but readable */
+  .locked{
+    opacity:.72;
+    pointer-events:none;
+  }
+
+  /* Flash highlight when returning to triggering step */
+  .flash-step{
+    outline: 3px solid rgba(0, 194, 255, 0.85);
+    box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.18);
+    border-radius: 10px;
+  }
+
+  /* Your document layout preserved */
+  .page{ padding:0; }
   .top{
     display:flex;
     align-items:flex-start;
     justify-content:space-between;
     gap:12px;
+    margin-bottom: 10px;
   }
 
-  .brand{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    margin: 10px 0 6px;
-  }
-  .brand-left{
-    font-weight:700;
-  }
-  .brand-right{
-    text-align:right;
-    font-weight:700;
-  }
+  h1{ margin:0; font-size:22px; font-weight:900; color:#111; }
+  .subtitle{ margin-top:6px; font-size:14px; font-weight:900; color:#111; opacity:.9; }
 
-  h1{ margin:0; font-size:22px; font-weight:700; }
-  .subtitle{ margin-top:6px; font-size:14px; font-weight:700; }
-
-  .btn{
-    appearance:none;
-    border:1px solid #000;
-    background:#fff;
-    color:#000;
-    font-weight:700;
-    padding:8px 10px;
-    border-radius:6px;
-    cursor:pointer;
-    height: fit-content;
-  }
-
-  /* Sections */
+  /* Original Word-like sections */
   .section{
     margin-top: 14px;
-    border:1px solid var(--border);
+    border:1px solid #000;
     background:#fff;
   }
   .section .hdr{
-    background: var(--hdr);
-    border-bottom:1px solid var(--border);
+    background:#D9D9D9;
+    border-bottom:1px solid #000;
     padding: 6px 8px;
-    font-weight:700;
+    font-weight:900;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:10px;
     flex-wrap:wrap;
+    color:#111;
   }
-  .section .body{ padding: 0; }
+  .section .body{ padding: 0; color:#111; }
 
   /* Legend */
   .legend{
-    font-weight:700;
+    font-weight:900;
     font-size: 12px;
     display:flex;
     gap:10px;
     flex-wrap:wrap;
     align-items:center;
+    color:#111;
   }
 
-  /* SOP table layout (Word-like) */
   table.sop{
     width:100%;
     border-collapse: collapse;
@@ -105,20 +185,20 @@
     vertical-align: top;
     font-size: 16px;
     line-height: 1.25;
+    color:#111;
   }
   table.sop tr:first-child td{ border-top:none; }
   table.sop td.num{ width:60px; text-align:left; font-weight:400; }
   table.sop td.txt{ width:auto; }
   table.sop td.status{ width: 170px; text-align:left; }
 
-  /* Ensure text WRAPS */
   .cellwrap{
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
   }
 
-  /* Word-style highlight behind TEXT ONLY */
+  /* Word-style highlight behind TEXT ONLY (kept) */
   .hl{ display:inline; padding: 2px 3px; }
   .hl.red{ background: var(--hl-red); color:#000; }
   .hl.yellow{ background: var(--hl-ylw); color:#000; }
@@ -127,7 +207,7 @@
 
   a{ color:#000; }
 
-  /* Status controls: "Complete" or "Problem" */
+  /* Status controls */
   .status-wrap{
     display:flex;
     gap:12px;
@@ -139,9 +219,10 @@
     align-items:center;
     gap:6px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 900;
     user-select:none;
     cursor:pointer;
+    color:#111;
   }
   .pill input{
     width:16px;
@@ -172,552 +253,887 @@
     border:1px solid #000;
     padding: 6px 8px;
     vertical-align: middle;
-    font-weight:700;
+    font-weight:900;
+    color:#111;
   }
-  table.appr tr:first-child td{ background: var(--hdr); }
+  table.appr tr:first-child td{ background:#D9D9D9; }
 
-  /* ===== PROBLEM MODE SAFETY VIEW =====
-     When any "Problem" is selected anywhere:
-     - Dim/transparent everything EXCEPT Backout section
-     - Disable interaction on dimmed sections
-  */
-  body.problem-mode .section{
-    opacity: 0.15;
-    transition: opacity .15s ease;
+  /* Modal confirm */
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background: rgba(0,0,0,0.55);
+    display:none;
+    align-items:center;justify-content:center;
+    padding:16px;
+    z-index:9999;
   }
-  body.problem-mode .section:not(#backoutSection){
-    pointer-events:none;
-    user-select:none;
+  .modal{
+    width:min(560px,100%);
+    background:#fff;color:#111;
+    border-radius:18px;
+    border:1px solid rgba(0,0,0,0.10);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding:16px;
   }
-  body.problem-mode #backoutSection{
-    opacity: 1 !important;
-    pointer-events:auto !important;
-    user-select:auto !important;
-    box-shadow: 0 0 0 3px rgba(255,0,0,0.25);
+  .modal h3{margin:0 0 8px;font-size:16px;}
+  .modal p{margin:0 0 12px;line-height:1.35;font-weight:800;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+  .mbtn{
+    padding:10px 14px;border-radius:999px;
+    font-weight:900;cursor:pointer;
+    border:2px solid rgba(0,0,0,0.15);
+    background: rgba(0,0,0,0.05);
+  }
+  .mbtn.primary{
+    background: #ff4242;
+    border-color:#ff4242;
+    color:#fff;
+  }
+
+  /* Footer */
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
   }
 
   @media print{
-    .btn{ display:none !important; }
-    .page{ max-width:none; }
+    .btn, .nx-session-banner, .nx-back-btn, #topControlsRow, #bottomControlsRow, #backoutCompleteWrap { display:none !important; }
+    .wrap{ max-width:none; margin:0; padding:0; }
+    .card{ background:transparent; border:none; box-shadow:none; }
+    body{ background:#fff !important; color:#000 !important; }
   }
 </style>
+
+<link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
 
 <body>
-<div class="page">
-
-  <div class="top">
-    <div>
-      <h1>Threaded Fastener Torque Application SOP</h1>
-      <div class="subtitle">Mission Critical Program</div>
-    </div>
-    <button class="btn" type="button" id="resetSelectionsBtn">Reset Selections</button>
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
   </div>
-
-  <div class="section">
-    <div class="hdr">
-      <span>Color Key</span>
-      <span class="legend">
-        <span><span class="hl red">Potential Safety Hazard:</span></span>
-        <span><span class="hl yellow">Physical movement or location change:</span></span>
-        <span><span class="hl cyan">Informational sections:</span></span>
-      </span>
-    </div>
-    <div class="body" style="padding:10px 10px;">
-      <!-- left blank intentionally to match the simple key block shown -->
-    </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;color:#fff;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
   </div>
+</div>
 
-  <!-- =========================
-       Section 1
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Section 1: Pre-Work / Initial Conditions</div>
-    <div class="body">
-      <table class="sop" aria-label="Section 1 checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl red">Follow LOTO procedure to ensure equipment is de-energized using a Live Dead Live method.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">4.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              Identify fasteners to be torqued by <u>clicking this link</u>. (Hyperlink to torque layout page)
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_4_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_4_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">5.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl cyan">Remove 3/8” drive Torque wrench from storage box on cart of gang box and verify calibration date is not past due.</span> If date has passed move to backout procedure immediately.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_5_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_5_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">6.</td>
-          <td class="txt"><div class="cellwrap">Select 6-point socket that corresponds to the fastener head size to be torqued from tool cart or gang box. <span class="hl cyan">Thread stick-out should be accounted for in this selection.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_6_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_6_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">7.</td>
-          <td class="txt"><div class="cellwrap">Select boxed end wrench from tool cart or gang box preferably a double offset 6-point that corresponds to the fastener head that torque is going to be applied to.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s1_7_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s1_7_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
 
-  <!-- =========================
-       Section 2
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Section 2: Verification of Torque Specification and Tool Functionality</div>
-    <div class="body">
-      <table class="sop" aria-label="Section 2 checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              Determine appropriate torque spec per manufacturer documentation. If torque value is not provided in submittal, apply torque value according to
-              <span class="hl cyan">ANSI/NETA ATS-2025 criteria found in tables 100.12.</span>
-              <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span>
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s2_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s2_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              Use hand to place selected socket on to nut side of fastener assembly to verify correct fitment.
-              <span class="hl cyan">At this time ensure thread stick-out will not interfere with socket internally while torquing.</span>
-              Verify appropriate size with selected boxed end wrench as well as clearance for the handle of the tool.
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s2_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s2_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt"><div class="cellwrap">Move the selector switch to the “ON” position on the ratcheting head of the torque wrench. If not marked, the selector bar should point away from you and to the right.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s2_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s2_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">4.</td>
-          <td class="txt"><div class="cellwrap">Apply the socket to the corresponding 3/8” square drive of the torque wrench and apply rotational force clockwise while listening for “clicks” to test the ratchet mechanism. Reverse rotational force to verify the stop works correctly and does not slip.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s2_4_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s2_4_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">5.</td>
-          <td class="txt"><div class="cellwrap">Use the dial or digital torque setting function on the torque wrench handle to set the appropriate torque value.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s2_5_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s2_5_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
-  <!-- =========================
-       Section 3
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Section 3: Apply Tools and Begin Torque Procedure</div>
-    <div class="body">
-      <table class="sop" aria-label="Section 3 checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt"><div class="cellwrap">Tighten the fastener assembly to the point at which all components are touching by hand.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt"><div class="cellwrap">Apply the socket on the torque wrench to the nut side of a pass-through bolt assembly, apply to the bolt head of a blind hole or captive nut fastener.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt"><div class="cellwrap">Place selected boxed end wrench on the opposite end of the fastener in the most mechanically advantageous position possible if applicable.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">4.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              <span class="hl red">Use the ratcheting head of the wrench to gain mechanical advantage</span>
-              when available for smooth application of force at a 90-degree angle to the fastener.
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_4_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_4_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">5.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              <span class="hl red">Place hand on knurled or rubber section of the torque wrench and place opposite hand on boxed end wrench or use as a force balancer if applicable.</span>
-              If fastener breaks, moves improperly while torquing, has a thread deformation or any other failure move to Backout procedure immediately.
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_5_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_5_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">6.</td>
-          <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s3_6_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s3_6_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
+<div class="nx-header-wrap">
+  <div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div>
+</div>
 
-  <!-- =========================
-       Section 4
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Section 4: Verify Torque Application and Apply Tamper Seal</div>
-    <div class="body">
-      <table class="sop" aria-label="Section 4 checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque was applied the first time.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s4_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s4_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt"><div class="cellwrap">Remove the boxed end wrench and torque wrench from fastener. Set boxed end wrench in a safe location.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s4_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s4_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt">
-            <div class="cellwrap">
-              <span class="hl yellow">Visually check the torque wrench setting to ensure it matches the prescribed value, set in Section 2 Step 5.</span>
-              If the torque setting has changed move to backout procedure immediately.
-            </div>
-          </td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="s4_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="s4_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- =========================
-       Validation
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Validation</div>
-    <div class="body">
-      <table class="sop" aria-label="Validation checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">Inspect mated surfaces for gaps, cracks, or deformations using a flashlight, mirror, or direct vision to ensure assembly integrity.</span> If any of these or any other failures are noted move to backout procedure immediately.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">Notify Foreman, Engineer or Manager that torque sequence has taken place and is complete.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Engineer or Manager perform 10 percent of total fastener in panel spot check with minimum of 2 torque verifications starting at Section 3 Step 2 through Section 4 Step 3.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">4.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Manager or Engineer apply a different color torque tamper paint to signify the completion of the spot check process.</span> Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_4_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_4_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">5.</td>
-          <td class="txt"><div class="cellwrap">Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator. Application recommendation can be found in <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_5_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_5_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">6.</td>
-          <td class="txt"><div class="cellwrap">Replace all covers and clean up any out of place torque paint utilizing the prescribed method.</div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="v_6_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="v_6_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- =========================
-       Backout (SAFETY VIEW)
-       Mapping locked per your instruction:
-       1-2 RED, 3-4 YELLOW
-       ========================= -->
-  <div class="section" id="backoutSection">
-    <div class="hdr">Backout</div>
-    <div class="body">
-      <table class="sop" aria-label="Backout checklist">
-        <tr>
-          <td class="num">1.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl red">STOP WORK</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="b_1_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="b_1_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">2.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl red">PLACE equipment in SAFE condition</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="b_2_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="b_2_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">3.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="b_3_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="b_3_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="num">4.</td>
-          <td class="txt"><div class="cellwrap"><span class="hl yellow">Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work.</span></div></td>
-          <td class="status">
-            <div class="status-wrap">
-              <label class="pill"><input type="radio" name="b_4_status" value="complete">Complete</label>
-              <label class="pill problem"><input type="radio" name="b_4_status" value="problem">Problem</label>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- =========================
-       Comments
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Comments</div>
-    <div class="body" style="padding:10px 10px;">
-      <div style="margin-bottom:10px;">
-        Color Key<br>
-        <span class="hl red">Potential Safety Hazard</span><br>
-        <span class="hl yellow">Physical movement or location change</span><br>
-        <span class="hl cyan">Informational sections</span>
+<div class="wrap">
+  <div class="card">
+    <div class="row" id="topControlsRow">
+      <div class="left-actions">
+        <a class="btn secondary" id="backTopBtn" href="#">← Back to Equipment</a>
       </div>
+      <div class="right-actions">
+        <span class="chip" id="saveChip">Not saved</span>
+        <span class="chip alert" id="backoutChip" style="display:none;">BACKOUT REQUIRED</span>
+        <button class="btn" id="saveBtn" type="button">Save</button>
+      </div>
+    </div>
 
-      <table class="lines" aria-label="Comment lines">
-        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-      </table>
+    <div class="doc-sheet">
+      <div class="page">
+
+        <div class="top">
+          <div>
+            <h1>Threaded Fastener Torque Application SOP</h1>
+            <div class="subtitle" id="eqLabel">Mission Critical Program</div>
+          </div>
+          <button class="btn secondary" type="button" id="resetSelectionsBtn">Reset Selections</button>
+        </div>
+
+        <div class="section" id="sec_key">
+          <div class="hdr">
+            <span>Color Key</span>
+            <span class="legend">
+              <span><span class="hl red">Potential Safety Hazard:</span></span>
+              <span><span class="hl yellow">Physical movement or location change:</span></span>
+              <span><span class="hl cyan">Informational sections:</span></span>
+            </span>
+          </div>
+          <div class="body" style="padding:10px 10px;">
+            <!-- left blank intentionally -->
+          </div>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="section" id="sec_s1">
+          <div class="hdr">Section 1: Pre-Work / Initial Conditions</div>
+          <div class="body">
+            <table class="sop" aria-label="Section 1 checklist" id="table_s1">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">Follow LOTO procedure to ensure equipment is de-energized using a Live Dead Live method.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">4.</td>
+                <td class="txt"><div class="cellwrap">Identify fasteners to be torqued by <u>clicking this link</u>. (Hyperlink to torque layout page)</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_4_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_4_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">5.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl cyan">Remove 3/8” drive Torque wrench from storage box on cart of gang box and verify calibration date is not past due.</span> If date has passed move to backout procedure immediately.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_5_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_5_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">6.</td>
+                <td class="txt"><div class="cellwrap">Select 6-point socket that corresponds to the fastener head size to be torqued from tool cart or gang box. <span class="hl cyan">Thread stick-out should be accounted for in this selection.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_6_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_6_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">7.</td>
+                <td class="txt"><div class="cellwrap">Select boxed end wrench from tool cart or gang box preferably a double offset 6-point that corresponds to the fastener head that torque is going to be applied to.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s1_7_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s1_7_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="section" id="sec_s2">
+          <div class="hdr">Section 2: Verification of Torque Specification and Tool Functionality</div>
+          <div class="body">
+            <table class="sop" aria-label="Section 2 checklist" id="table_s2">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap">Determine appropriate torque spec per manufacturer documentation. If torque value is not provided in submittal, apply torque value according to <span class="hl cyan">ANSI/NETA ATS-2025 criteria found in tables 100.12.</span> <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s2_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s2_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap">Use hand to place selected socket on to nut side of fastener assembly to verify correct fitment. <span class="hl cyan">At this time ensure thread stick-out will not interfere with socket internally while torquing.</span> Verify appropriate size with selected boxed end wrench as well as clearance for the handle of the tool.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s2_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s2_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap">Move the selector switch to the “ON” position on the ratcheting head of the torque wrench. If not marked, the selector bar should point away from you and to the right.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s2_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s2_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">4.</td>
+                <td class="txt"><div class="cellwrap">Apply the socket to the corresponding 3/8” square drive of the torque wrench and apply rotational force clockwise while listening for “clicks” to test the ratchet mechanism. Reverse rotational force to verify the stop works correctly and does not slip.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s2_4_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s2_4_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">5.</td>
+                <td class="txt"><div class="cellwrap">Use the dial or digital torque setting function on the torque wrench handle to set the appropriate torque value.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s2_5_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s2_5_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="section" id="sec_s3">
+          <div class="hdr">Section 3: Apply Tools and Begin Torque Procedure</div>
+          <div class="body">
+            <table class="sop" aria-label="Section 3 checklist" id="table_s3">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap">Tighten the fastener assembly to the point at which all components are touching by hand.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap">Apply the socket on the torque wrench to the nut side of a pass-through bolt assembly, apply to the bolt head of a blind hole or captive nut fastener.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap">Place selected boxed end wrench on the opposite end of the fastener in the most mechanically advantageous position possible if applicable.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">4.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">Use the ratcheting head of the wrench to gain mechanical advantage</span> when available for smooth application of force at a 90-degree angle to the fastener.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_4_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_4_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">5.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">Place hand on knurled or rubber section of the torque wrench and place opposite hand on boxed end wrench or use as a force balancer if applicable.</span> If fastener breaks, moves improperly while torquing, has a thread deformation or any other failure move to Backout procedure immediately.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_5_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_5_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">6.</td>
+                <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s3_6_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s3_6_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="section" id="sec_s4">
+          <div class="hdr">Section 4: Verify Torque Application and Apply Tamper Seal</div>
+          <div class="body">
+            <table class="sop" aria-label="Section 4 checklist" id="table_s4">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap">Slowly and steadily pull torque wrench in a straight line at a 90-degree angle to the fastener and release pressure immediately after the single audible “Click” to ensure accurate torque was applied the first time.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s4_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s4_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap">Remove the boxed end wrench and torque wrench from fastener. Set boxed end wrench in a safe location.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s4_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s4_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Visually check the torque wrench setting to ensure it matches the prescribed value, set in Section 2 Step 5.</span> If the torque setting has changed move to backout procedure immediately.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="s4_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="s4_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Validation -->
+        <div class="section" id="sec_validation">
+          <div class="hdr">Validation</div>
+          <div class="body">
+            <table class="sop" aria-label="Validation checklist" id="table_validation">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Inspect mated surfaces for gaps, cracks, or deformations using a flashlight, mirror, or direct vision to ensure assembly integrity.</span> If any of these or any other failures are noted move to backout procedure immediately.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Notify Foreman, Engineer or Manager that torque sequence has taken place and is complete.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Engineer or Manager perform 10 percent of total fastener in panel spot check with minimum of 2 torque verifications starting at Section 3 Step 2 through Section 4 Step 3.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">4.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Foreman, Manager or Engineer apply a different color torque tamper paint to signify the completion of the spot check process.</span> Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_4_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_4_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">5.</td>
+                <td class="txt"><div class="cellwrap">Apply torque tamper paint in a single line to immobile surface, washers, nut, bolt threads, chamfers, and bolt points as a visual indicator of completed torque procedure as well as a fastener movement indicator. Application recommendation can be found in <span class="hl cyan">ANSI+NETA+ATS-2025.pdf</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_5_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_5_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">6.</td>
+                <td class="txt"><div class="cellwrap">Replace all covers and clean up any out of place torque paint utilizing the prescribed method.</div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="v_6_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="v_6_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Backout -->
+        <div class="section" id="backoutSection">
+          <div class="hdr">Backout</div>
+          <div class="body">
+            <table class="sop" aria-label="Backout checklist" id="table_backout">
+              <!-- CONTENT UNCHANGED -->
+              <tr>
+                <td class="num">1.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">STOP WORK</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="b_1_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="b_1_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">2.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl red">PLACE equipment in SAFE condition</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="b_2_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="b_2_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">3.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="b_3_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="b_3_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+              <tr>
+                <td class="num">4.</td>
+                <td class="txt"><div class="cellwrap"><span class="hl yellow">Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work.</span></div></td>
+                <td class="status"><div class="status-wrap">
+                  <label class="pill"><input type="radio" name="b_4_status" value="complete">Complete</label>
+                  <label class="pill problem"><input type="radio" name="b_4_status" value="problem">Problem</label>
+                </div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="section" id="sec_comments">
+          <div class="hdr">Comments</div>
+          <div class="body" style="padding:10px 10px;">
+            <div style="margin-bottom:10px;">
+              Color Key<br>
+              <span class="hl red">Potential Safety Hazard</span><br>
+              <span class="hl yellow">Physical movement or location change</span><br>
+              <span class="hl cyan">Informational sections</span>
+            </div>
+
+            <div style="margin: 8px 0 10px;">
+              <div style="font-weight:900;font-size:12px;opacity:.85;">Notes (saved with page)</div>
+              <input id="globalComment" type="text" style="width:100%;padding:10px;border:1px solid rgba(0,0,0,0.18);border-radius:12px;font-weight:800;"
+                     placeholder="Notes / findings / rework details…" />
+            </div>
+
+            <table class="lines" aria-label="Comment lines">
+              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Approvals -->
+        <div class="section" id="sec_approvals">
+          <div class="hdr">Approvals</div>
+          <div class="body" style="padding:10px 10px;">
+            <table class="appr" aria-label="Approvals">
+              <tr>
+                <td>Version</td>
+                <td>Date</td>
+                <td>Author(s)</td>
+                <td>Approved By</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>09/11/2025</td>
+                <td>Joel Gambrell</td>
+                <td></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Foreman+ Backout Complete -->
+        <div id="backoutCompleteWrap" style="display:none;margin-top:14px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">
+            <span style="font-size:12px;font-weight:900;opacity:.85;">
+              Foreman+ required to confirm Backout completion
+            </span>
+            <button class="btn secondary" id="backoutCompleteBtn" type="button" disabled>
+              Backout Complete (Return to Step)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="row" id="bottomControlsRow" style="margin-top:14px;">
+      <div class="left-actions">
+        <a class="btn secondary" id="backBottomBtn" href="#">← Back to Equipment</a>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- =========================
-       Approvals
-       ========================= -->
-  <div class="section">
-    <div class="hdr">Approvals</div>
-    <div class="body" style="padding:10px 10px;">
-      <table class="appr" aria-label="Approvals">
-        <tr>
-          <td>Version</td>
-          <td>Date</td>
-          <td>Author(s)</td>
-          <td>Approved By</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>09/11/2025</td>
-          <td>Joel Gambrell</td>
-          <td></td>
-        </tr>
-      </table>
+<!-- Confirm modal -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalMsg">Confirm action?</p>
+    <div class="modal-actions">
+      <button class="mbtn" id="modalCancel" type="button">Cancel</button>
+      <button class="mbtn primary" id="modalConfirm" type="button">Confirm</button>
     </div>
   </div>
-
 </div>
 
 <script>
 (function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+
+  // Back links
+  const backHref = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
+  document.getElementById("backTopBtn").href = backHref;
+  document.getElementById("backBottomBtn").href = backHref;
+
+  // Subtitle label (append equipment if present)
+  const eqLabel = document.getElementById("eqLabel");
+  if (eqLabel){
+    eqLabel.textContent = eq ? `Mission Critical Program • Equipment: ${eq}` : "Mission Critical Program";
+  }
+
+  // Storage key (unique)
+  const KEY = `nexus_${eq||"NO_EQ"}_torque_sop_v1`;
+
+  // Role helpers
+  const ROLE_RANK = { viewer:0, tech:1, foreman:2, superintendent:3, admin:4 };
+  function getCurrentRole(){
+    try{
+      if (window.NEXUS && typeof window.NEXUS.getRole === "function"){
+        return window.NEXUS.getRole() || "viewer";
+      }
+    }catch(e){}
+    const sel = document.getElementById("nxRoleSelect");
+    return (sel && sel.value) ? sel.value : "viewer";
+  }
+  function isForemanPlus(){
+    const r = getCurrentRole();
+    return (ROLE_RANK[r] || 0) >= ROLE_RANK.foreman;
+  }
+
+  // UI refs
+  const saveChip = document.getElementById("saveChip");
+  const saveBtn = document.getElementById("saveBtn");
+  const backoutChip = document.getElementById("backoutChip");
+  const globalComment = document.getElementById("globalComment");
   const resetBtn = document.getElementById("resetSelectionsBtn");
 
-  function anyProblemSelected(){
-    return !!document.querySelector('input[type="radio"][value="problem"]:checked');
+  const backoutCompleteWrap = document.getElementById("backoutCompleteWrap");
+  const backoutCompleteBtn = document.getElementById("backoutCompleteBtn");
+
+  // Modal refs
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
+  const modalMsg = document.getElementById("modalMsg");
+  const modalTitle = document.getElementById("modalTitle");
+
+  // Sections for progressive unlock (lock primary workflow until backout progresses)
+  const unlockOrder = ["sec_s1","sec_s2","sec_s3","sec_s4","sec_validation","sec_comments","sec_approvals"];
+
+  // State
+  let state = {
+    comment: "",
+    backoutTriggered: false,
+    backoutFrom: null, // { radioName, sectionId, rowIndex }
+    radios: {} // name => "complete"|"problem"
+  };
+
+  function readState(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj === "object") state = { ...state, ...obj };
+    }catch(e){}
   }
 
-  function applyProblemMode(){
-    const on = anyProblemSelected();
-    document.body.classList.toggle("problem-mode", on);
+  function markUnsaved(){ saveChip.textContent = "Unsaved"; }
 
-    if (on){
-      const backout = document.getElementById("backoutSection");
-      if (backout) backout.scrollIntoView({ behavior:"smooth", block:"start" });
+  function writeState(){
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+      saveChip.textContent = "Saved";
+    }catch(e){
+      saveChip.textContent = "Save failed";
     }
+    applyBackoutLock();
+    applyBackoutCompleteUI();
   }
 
-  document.querySelectorAll('input[type="radio"]').forEach(r => {
-    r.addEventListener("change", applyProblemMode);
+  // Modal helper
+  let modalHandlers = { onConfirm:null, onCancel:null };
+  function openModal({title, msg, onConfirm, onCancel}){
+    modalTitle.textContent = title || "Confirm";
+    modalMsg.textContent = msg || "Confirm action?";
+    modalHandlers.onConfirm = onConfirm || null;
+    modalHandlers.onCancel = onCancel || null;
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden","false");
+  }
+  function closeModal(){
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden","true");
+    modalHandlers.onConfirm = null;
+    modalHandlers.onCancel = null;
+  }
+  modalCancel.addEventListener("click", () => { try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e){} closeModal(); });
+  modalConfirm.addEventListener("click", () => { try{ modalHandlers.onConfirm && modalHandlers.onConfirm(); }catch(e){} closeModal(); });
+  modalBackdrop.addEventListener("click", (e) => {
+    if (e.target === modalBackdrop){ try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e2){} closeModal(); }
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalBackdrop.style.display === "flex"){
+      try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e2){} closeModal();
+    }
   });
 
-  if (resetBtn){
-    resetBtn.addEventListener("click", () => {
-      const ok = confirm("Reset all Complete/Problem selections?");
-      if (!ok) return;
-      document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-      document.body.classList.remove("problem-mode");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  function setRadioValue(name, value){
+    state.radios[name] = value;
+    markUnsaved();
+  }
+
+  function restoreRadios(){
+    Object.keys(state.radios || {}).forEach(name => {
+      const val = state.radios[name];
+      const inp = document.querySelector(`input[type="radio"][name="${CSS.escape(name)}"][value="${val}"]`);
+      if (inp) inp.checked = true;
     });
   }
 
-  applyProblemMode();
+  function getBackoutProgress(){
+    const keys = ["b_1_status","b_2_status","b_3_status","b_4_status"];
+    let progressed = 0;
+    for (let i=0;i<keys.length;i++){
+      const n = keys[i];
+      const v = state.radios[n] || "";
+      if (v === "complete") progressed++;
+      else break;
+    }
+    return progressed;
+  }
+
+  function applyBackoutLock(){
+    const isBackout = !!state.backoutTriggered;
+
+    backoutChip.style.display = isBackout ? "inline-flex" : "none";
+    backoutChip.classList.toggle("active", isBackout);
+
+    if (!isBackout){
+      document.querySelectorAll(".section").forEach(sec => sec.classList.remove("locked"));
+      return;
+    }
+
+    const progressed = getBackoutProgress(); // 0..4
+    const unlocked = new Set(unlockOrder.slice(0, progressed));
+
+    document.querySelectorAll(".section").forEach(sec => {
+      if (sec.id === "backoutSection"){
+        sec.classList.remove("locked");
+        return;
+      }
+
+      // Key section stays locked in backout
+      if (sec.id === "sec_key"){
+        sec.classList.add("locked");
+        return;
+      }
+
+      const isMain = unlockOrder.includes(sec.id);
+      if (!isMain){
+        sec.classList.add("locked");
+      }else{
+        sec.classList.toggle("locked", !unlocked.has(sec.id));
+      }
+    });
+  }
+
+  function applyBackoutCompleteUI(){
+    const show = !!state.backoutTriggered;
+    backoutCompleteWrap.style.display = show ? "block" : "none";
+    if (!show) return;
+
+    const allowed = isForemanPlus() && !!state.backoutFrom;
+    backoutCompleteBtn.disabled = !allowed;
+
+    if (state.backoutFrom && state.backoutFrom.sectionId){
+      const sid = state.backoutFrom.sectionId;
+      const step = (state.backoutFrom.rowIndex ?? 0) + 1;
+      backoutCompleteBtn.textContent = allowed
+        ? `Backout Complete (Return to ${sid.toUpperCase()} • Step ${step})`
+        : `Backout Complete (Foreman+ Required)`;
+    }else{
+      backoutCompleteBtn.textContent = allowed
+        ? "Backout Complete (Return to Step)"
+        : "Backout Complete (Foreman+ Required)";
+    }
+  }
+
+  function scrollToTrigger(){
+    if (!state.backoutFrom) return;
+
+    const secEl = document.getElementById(state.backoutFrom.sectionId);
+    if (!secEl) return;
+
+    const rows = secEl.querySelectorAll("table.sop tr");
+    const row = rows && rows[state.backoutFrom.rowIndex] ? rows[state.backoutFrom.rowIndex] : null;
+
+    if (row){
+      row.scrollIntoView({ behavior:"smooth", block:"center" });
+      row.classList.add("flash-step");
+      setTimeout(() => row.classList.remove("flash-step"), 1600);
+
+      const firstRadio = row.querySelector('input[type="radio"]');
+      if (firstRadio) setTimeout(() => { try{ firstRadio.focus(); }catch(e){} }, 400);
+    }else{
+      secEl.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+  }
+
+  function attachRadioHandlers(){
+    document.querySelectorAll('input[type="radio"]').forEach(r => {
+      const tr = r.closest("tr");
+      const sec = r.closest(".section");
+      const sectionId = sec ? sec.id : null;
+      const rowIndex = tr && sec ? Array.from(sec.querySelectorAll("table.sop tr")).indexOf(tr) : 0;
+
+      r.addEventListener("change", () => {
+        const name = r.name;
+        const value = r.value;
+
+        if ((name || "").startsWith("b_")){
+          setRadioValue(name, value);
+          applyBackoutLock();
+          return;
+        }
+
+        if (value === "problem"){
+          const prev = state.radios[name] || "";
+          openModal({
+            title: "Confirm Backout",
+            msg: "Selecting “Problem” triggers Backout Procedure. Continue?",
+            onConfirm: () => {
+              setRadioValue(name, value);
+              state.backoutTriggered = true;
+              state.backoutFrom = { radioName: name, sectionId: sectionId || "sec_s1", rowIndex: rowIndex >= 0 ? rowIndex : 0 };
+              applyBackoutLock();
+              applyBackoutCompleteUI();
+
+              const backout = document.getElementById("backoutSection");
+              if (backout) backout.scrollIntoView({ behavior:"smooth", block:"start" });
+            },
+            onCancel: () => {
+              const cur = document.querySelectorAll(`input[type="radio"][name="${CSS.escape(name)}"]`);
+              cur.forEach(x => x.checked = false);
+              if (prev){
+                const prevInp = document.querySelector(`input[type="radio"][name="${CSS.escape(name)}"][value="${prev}"]`);
+                if (prevInp) prevInp.checked = true;
+              }
+            }
+          });
+          return;
+        }
+
+        setRadioValue(name, value);
+      });
+    });
+  }
+
+  backoutCompleteBtn.addEventListener("click", () => {
+    if (!state.backoutTriggered) return;
+    if (!isForemanPlus()) return;
+    if (!state.backoutFrom) return;
+
+    const sid = state.backoutFrom.sectionId;
+    const step = (state.backoutFrom.rowIndex ?? 0) + 1;
+
+    openModal({
+      title: "Confirm Backout Completed",
+      msg: `Confirm the Backout Procedure has been performed. This will exit Backout mode and return to ${sid.toUpperCase()} step ${step}. Continue?`,
+      onConfirm: () => {
+        state.backoutTriggered = false;
+        markUnsaved();
+        applyBackoutLock();
+        applyBackoutCompleteUI();
+        scrollToTrigger();
+      },
+      onCancel: () => {}
+    });
+  });
+
+  // Save
+  saveBtn.addEventListener("click", () => {
+    if (globalComment) state.comment = (globalComment.value || "").trim();
+    writeState();
+  });
+
+  if (globalComment){
+    globalComment.addEventListener("input", () => { state.comment = (globalComment.value || ""); markUnsaved(); });
+  }
+
+  // Reset
+  if (resetBtn){
+    resetBtn.addEventListener("click", () => {
+      openModal({
+        title: "Reset Selections",
+        msg: "Reset all Complete/Problem selections and clear Backout state?",
+        onConfirm: () => {
+          document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+          state.radios = {};
+          state.backoutTriggered = false;
+          state.backoutFrom = null;
+          if (globalComment) globalComment.value = "";
+          state.comment = "";
+          markUnsaved();
+          applyBackoutLock();
+          applyBackoutCompleteUI();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        onCancel: () => {}
+      });
+    });
+  }
+
+  // Role sync
+  const roleSel = document.getElementById("nxRoleSelect");
+  if (roleSel){
+    roleSel.addEventListener("change", () => applyBackoutCompleteUI());
+  }
+
+  // Init
+  readState();
+  restoreRadios();
+  if (globalComment) globalComment.value = state.comment || "";
+  saveChip.textContent = "Loaded";
+  attachRadioHandlers();
+  applyBackoutLock();
+  applyBackoutCompleteUI();
 })();
 </script>
 
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
