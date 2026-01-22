@@ -120,7 +120,7 @@ window.FORMS = {
       },
       {
         text: "Pre-FOD SOP",
-        href: "https://aceelectricnet.sharepoint.com/:w:/s/CMH098QAQC/IQCpW0cDseVESZtxpMJhVbtoARkKtiVva1DMB0G5HlUuGPc?e=S2yeDr"
+        href: "prefod_sop.html"
       },
       {
         text: "Pre-FOD Inspection Link to Procore (Live after updated by customer)",
