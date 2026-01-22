@@ -509,35 +509,28 @@
     }
   ];
 
-  // Progressive unlock rules while Backout is active:
-  // - Backout step 0 complete => unlock nothing else
-  // - Backout steps 1-2 complete => unlock sections up to the triggering section (inclusive)
-  // - Backout step 3 complete => unlock all sections
   function unlockPolicy(progress, triggerSectionId){
     if (progress >= 3) return "all";
     if (progress >= 1) return "throughTrigger";
     return "none";
   }
 
-  // UI refs
   const sectionsEl = document.getElementById("sections");
   const saveChip = document.getElementById("saveChip");
   const backoutChip = document.getElementById("backoutChip");
   const globalComment = document.getElementById("globalComment");
 
-  // Modal refs
   const modalBackdrop = document.getElementById("modalBackdrop");
   const modalCancel = document.getElementById("modalCancel");
   const modalConfirm = document.getElementById("modalConfirm");
   const modalMsg = document.getElementById("modalMsg");
   const modalTitle = document.getElementById("modalTitle");
 
-  // State
   let state = {
     comment: "",
     backoutTriggered: false,
-    backoutFrom: null, // { sectionId, idx }
-    steps: {} // key: `${sectionId}:${idx}` => { status, note }
+    backoutFrom: null,
+    steps: {}
   };
 
   function readState(){
@@ -563,17 +556,16 @@
   function buildSelect(value, disabled){
     const sel = document.createElement("select");
     sel.innerHTML = `
-      <option value="${STATUS.NONE}">Select…</option>
-      <option value="${STATUS.OK}">Complete / OK</option>
-      <option value="${STATUS.NA}">N/A</option>
-      <option value="${STATUS.ATTENTION}">Needs Attention</option>
+      <option value="">Select…</option>
+      <option value="ok">Complete / OK</option>
+      <option value="na">N/A</option>
+      <option value="attention">Needs Attention</option>
     `;
-    sel.value = value || STATUS.NONE;
+    sel.value = value || "";
     if (disabled) sel.disabled = true;
     return sel;
   }
 
-  // Modal helper
   let modalHandlers = { onConfirm:null, onCancel:null };
   function openModal({title,msg,onConfirm,onCancel}){
     modalTitle.textContent = title || "Confirm";
@@ -610,17 +602,16 @@
   }
 
   function getBackoutProgress(){
-    // count consecutive OK steps in backout
     let p = 0;
     const backout = SECTIONS.find(s => s.id === "backout");
     if (!backout) return 0;
     for (let i=0;i<backout.steps.length;i++){
       const key = `backout:${i}`;
-      const st = (state.steps[key] && state.steps[key].status) || STATUS.NONE;
-      if (st === STATUS.OK) p++;
+      const st = (state.steps[key] && state.steps[key].status) || "";
+      if (st === "ok") p++;
       else break;
     }
-    return p; // 0..4
+    return p;
   }
 
   function sectionIndex(id){
@@ -649,7 +640,6 @@
         return;
       }
 
-      // Info-only blocks remain readable but locked during backout until fully resolved
       if (sec.isInfoOnly){
         el.classList.add("nx-locked");
         return;
@@ -667,7 +657,6 @@
         return;
       }
 
-      // all
       el.classList.remove("nx-locked");
     });
   }
@@ -726,7 +715,6 @@
       const body = document.createElement("div");
       body.className = "sec-body";
 
-      // Backout complete button appears inside backout section (bottom)
       const isBackout = !!sec.isBackout;
 
       const tbl = document.createElement("table");
@@ -744,7 +732,7 @@
 
       sec.steps.forEach((html, idx) => {
         const key = `${sec.id}:${idx}`;
-        const saved = state.steps[key] || { status: STATUS.NONE, note: "" };
+        const saved = state.steps[key] || { status: "", note: "" };
 
         const tr = document.createElement("tr");
         tr.setAttribute("data-step-key", key);
@@ -759,7 +747,6 @@
         const tdStatus = document.createElement("td");
         tdStatus.className = "col-status";
 
-        // info-only sections: disable controls but keep readable
         const sel = buildSelect(saved.status, !!sec.isInfoOnly);
         tdStatus.appendChild(sel);
 
@@ -772,25 +759,21 @@
         note.disabled = !!sec.isInfoOnly;
         tdNote.appendChild(note);
 
-        // Notes event
         note.addEventListener("input", () => {
           state.steps[key] = state.steps[key] || {};
           state.steps[key].note = note.value || "";
           saveChip.textContent = "Unsaved";
         });
 
-        // Status event
         let prev = sel.value;
         sel.addEventListener("focus", () => { prev = sel.value; });
 
         sel.addEventListener("change", () => {
-          // If section is info-only, ignore
           if (sec.isInfoOnly){
-            sel.value = prev || STATUS.NONE;
+            sel.value = prev || "";
             return;
           }
 
-          // Backout section behavior: just set value
           if (isBackout){
             state.steps[key] = state.steps[key] || {};
             state.steps[key].status = sel.value;
@@ -800,8 +783,7 @@
             return;
           }
 
-          // Normal section: Needs Attention triggers Backout mode w/ confirmation
-          if (sel.value !== STATUS.ATTENTION){
+          if (sel.value !== "attention"){
             state.steps[key] = state.steps[key] || {};
             state.steps[key].status = sel.value;
             saveChip.textContent = "Unsaved";
@@ -813,7 +795,7 @@
             msg: "Selecting “Needs Attention” triggers Backout Procedure. Continue?",
             onConfirm: () => {
               state.steps[key] = state.steps[key] || {};
-              state.steps[key].status = STATUS.ATTENTION;
+              state.steps[key].status = "attention";
 
               state.backoutTriggered = true;
               state.backoutFrom = { sectionId: sec.id, idx: idx };
@@ -827,7 +809,7 @@
               if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
             },
             onCancel: () => {
-              sel.value = prev || STATUS.NONE;
+              sel.value = prev || "";
             }
           });
         });
@@ -859,7 +841,6 @@
       sectionsEl.appendChild(secWrap);
     });
 
-    // attach backout complete handler after render
     const backoutCompleteBtn = document.getElementById("backoutCompleteBtn");
     if (backoutCompleteBtn){
       backoutCompleteBtn.addEventListener("click", () => {
@@ -876,7 +857,6 @@
           msg: `Confirm the Backout has been performed. This will exit Backout mode and return to ${target}. Continue?`,
           onConfirm: () => {
             state.backoutTriggered = false;
-            // (Optional) leave the triggering step as Needs Attention unless you want it cleared manually.
             saveChip.textContent = "Unsaved";
             updateBackoutUI();
             applyLocks();
@@ -894,32 +874,24 @@
     syncBackoutCompleteButton();
   }
 
-  // Save
   document.getElementById("saveBtn").addEventListener("click", () => {
     state.comment = (globalComment.value || "").trim();
     writeState();
   });
   globalComment.addEventListener("input", () => { saveChip.textContent = "Unsaved"; });
 
-  // Role changes affect Backout Complete availability
   const roleSel = document.getElementById("nxRoleSelect");
   if (roleSel) roleSel.addEventListener("change", () => syncBackoutCompleteButton());
 
-  // Init
   readState();
   render();
 })();
 </script>
 
+<!-- FIXED: Always go back to equipment page, never history.back() -->
 <script>
 (function(){
   window.NEXUS_back = function(){
-    try{
-      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
-        history.back();
-        return false;
-      }
-    }catch(e){}
     const qs = new URLSearchParams(location.search);
     const eq = qs.get("eq");
     location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
