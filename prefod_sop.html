@@ -1,3 +1,4 @@
+<!-- prefod_sop.html (FULL drop-in) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,8 +16,6 @@
     --btn-txt:#3ecbff;
     --accent:#00c2ff;
     --ok:#2dff9b;
-    --warn:#ffd84d;
-    --stop:#ff3b3b;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg);}
@@ -28,7 +27,7 @@
     background-attachment:fixed;
   }
 
-  /* Header */
+  /* Shared header */
   .nx-header-wrap{
     background: rgba(0,0,0,0.35);
     border-bottom: 1px solid rgba(255,255,255,0.18);
@@ -86,101 +85,134 @@
     padding:8px 12px;border-radius:999px;font-weight:900;
     border:1px solid rgba(255,255,255,0.25);
     background:rgba(0,0,0,0.22);
-    white-space:nowrap;
+  }
+  .chip.alert{
+    background: rgba(255,50,50,0.20);
+    border-color: rgba(255,90,90,0.55);
+    color:#fff;
+    box-shadow: 0 0 0 2px rgba(255,60,60,0.10) inset;
   }
 
-  .section{
-    margin-top:14px;
+  /* White document-only area (requested) */
+  .doc-sheet{
+    background: rgba(255,255,255,0.95);
+    color:#111;
+    border-radius:16px;
+    border:1px solid rgba(0,0,0,0.10);
     padding:14px;
-    border-radius:18px;
-    background: rgba(0,0,0,0.18);
-    border: 1px solid rgba(255,255,255,0.20);
   }
-  .section h2{
-    margin:0 0 10px;
-    font-size:16px;
+
+  .sec{
+    margin-top:12px;
+    border:1px solid rgba(0,0,0,0.10);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .sec-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 12px;
+    background: rgba(0,0,0,0.04);
+    border-bottom:1px solid rgba(0,0,0,0.08);
     font-weight:900;
-    letter-spacing:.02em;
   }
-  .hint{font-size:13px;opacity:.92;line-height:1.35;margin:6px 0 12px;}
+  .sec-head small{font-weight:800;opacity:.75;}
+  .sec-body{padding:12px;}
 
   table{width:100%;border-collapse:collapse;table-layout:fixed;}
-  th,td{
-    border:1px solid rgba(255,255,255,0.22);
-    padding:10px;
-    vertical-align:top;
-    font-size:13px;
-  }
-  th{background:rgba(0,0,0,0.22);text-align:left;font-weight:900;}
-  .col-num{width:56px;}
-  .col-status{width:190px;}
-  @media (max-width:900px){ .col-status{width:160px;} }
+  th,td{border:1px solid rgba(0,0,0,0.14);padding:10px;vertical-align:top;font-size:13px;}
+  th{background: rgba(0,0,0,0.05);text-align:left;font-weight:900;}
+  td .desc{line-height:1.35;}
 
-  select, textarea, input{
+  .col-step{width:64px;text-align:center;font-weight:900;}
+  .col-status{width:180px;}
+  .col-note{width:260px;}
+  @media (max-width: 900px){
+    .col-status{width:160px;}
+    .col-note{width:200px;}
+  }
+
+  select,input[type="text"]{
     width:100%;
-    padding:10px 12px;
+    padding:10px 10px;
     border-radius:12px;
-    border:1px solid rgba(255,255,255,0.18);
+    border:1px solid rgba(0,0,0,0.18);
     outline:none;
     font-size:13px;
-    font-weight:900;
-    background: rgba(255,255,255,0.92);
+    font-weight:800;
+    background:#fff;
     color:#111;
   }
-  textarea{min-height:110px;resize:vertical;font-weight:800;}
 
-  /* Status coloring (row glow + pill) */
-  tr[data-state="complete"]{box-shadow: inset 0 0 0 9999px rgba(45,255,155,0.10);}
-  tr[data-state="attention"]{box-shadow: inset 0 0 0 9999px rgba(255,216,77,0.12);}
-  tr[data-state="backout"]{box-shadow: inset 0 0 0 9999px rgba(255,59,59,0.12);}
-
-  .legend{
-    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
-    margin-top:10px;
-  }
-  .pill{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:8px 10px;border-radius:999px;
-    border:1px solid rgba(255,255,255,0.22);
-    background:rgba(0,0,0,0.22);
-    font-weight:900;font-size:12px;
-  }
-  .dot{width:10px;height:10px;border-radius:999px;display:inline-block;}
-  .dot.ok{background:var(--ok);}
-  .dot.warn{background:var(--warn);}
-  .dot.stop{background:var(--stop);}
-
-  /* Backout styling */
-  .backoutBox{
-    border-radius:18px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,0.22);
-  }
-  .backoutRow{
+  .foot{
+    margin-top:14px;
     display:grid;
-    grid-template-columns: 56px 1fr;
-    gap:0;
-    border-bottom:1px solid rgba(255,255,255,0.18);
+    grid-template-columns: 1.1fr 0.9fr;
+    gap:12px;
   }
-  .backoutRow:last-child{border-bottom:none;}
-  .backoutNum{
-    display:flex;align-items:center;justify-content:center;
-    font-weight:900;
-    background:rgba(0,0,0,0.25);
-    padding:12px 8px;
+  @media (max-width: 900px){ .foot{grid-template-columns:1fr;} }
+
+  .box{
+    border:1px solid rgba(0,0,0,0.10);
+    border-radius:14px;
+    background:#fff;
+    padding:12px;
   }
-  .backoutText{
-    padding:12px 12px;
-    font-weight:900;
-    color:#111;
+  .box h3{margin:0 0 10px;font-size:14px;}
+  .legend{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:8px;
+    font-size:13px;
   }
-  .bk-red .backoutText{background: rgba(255,59,59,0.95); color:#111;}
-  .bk-yellow .backoutText{background: rgba(255,216,77,0.95); color:#111;}
+  .tag{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 10px;border-radius:12px;border:1px solid rgba(0,0,0,0.10);
+    background: rgba(0,0,0,0.03);
+  }
+  .sw{width:24px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,0.18);}
 
-  .anchor{scroll-margin-top:120px;}
+  /* Highlight colors (requested: red, yellow, blue) */
+  .hl-yellow{background:#fff59d;padding:0 .12em;border-radius:4px;}
+  .hl-red{background:#ff6b6b;color:#111;padding:0 .12em;border-radius:4px;}
+  .hl-blue{background:#7fd8ff;padding:0 .12em;border-radius:4px;}
 
-  .actionsBottom{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px;}
+  .b{font-weight:900;}
+  .i{font-style:italic;}
 
+  /* Modal confirm */
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background: rgba(0,0,0,0.55);
+    display:none;
+    align-items:center;justify-content:center;
+    padding:16px;
+    z-index:9999;
+  }
+  .modal{
+    width:min(560px,100%);
+    background:#fff;color:#111;
+    border-radius:18px;
+    border:1px solid rgba(0,0,0,0.10);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding:16px;
+  }
+  .modal h3{margin:0 0 8px;font-size:16px;}
+  .modal p{margin:0 0 12px;line-height:1.35;font-weight:700;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+  .mbtn{
+    padding:10px 14px;border-radius:999px;
+    font-weight:900;cursor:pointer;
+    border:2px solid rgba(0,0,0,0.15);
+    background: rgba(0,0,0,0.05);
+  }
+  .mbtn.primary{
+    background: #ff4242;
+    border-color:#ff4242;
+    color:#fff;
+  }
+
+  /* Footer */
   .nx-footer{
     margin-top: 40px;
     padding: 18px 12px;
@@ -240,121 +272,36 @@
         <a class="btn secondary" id="backTopBtn" href="#">← Back to Equipment</a>
       </div>
       <div class="right-actions">
-        <span class="chip" id="statusChip">Not saved</span>
-        <!-- Step complete buttons (Line/Load completion) -->
-        <button class="btn" id="lineCompleteBtn" type="button" style="display:none;">Line Side Complete</button>
-        <button class="btn" id="loadCompleteBtn" type="button" style="display:none;">Load Side Complete</button>
+        <span class="chip" id="saveChip">Not saved</span>
+        <span class="chip alert" id="backoutChip" style="display:none;">BACKOUT REQUIRED</span>
+        <button class="btn" id="saveBtn" type="button">Save</button>
       </div>
     </div>
 
     <h1>Pre-FOD SOP</h1>
     <div class="sub" id="eqLabel">Equipment: (missing eq)</div>
 
-    <div class="section">
-      <h2>TPVR (Two Person Verification Rule)</h2>
-      <div class="hint">Select Yes or No.</div>
-      <table>
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th>Requirement</th>
-            <th class="col-status">Status</th>
-          </tr>
-        </thead>
-        <tbody id="tpvrBody"></tbody>
-      </table>
-    </div>
+    <!-- White document-only area -->
+    <div class="doc-sheet">
+      <div id="sections"></div>
 
-    <div class="section">
-      <h2>Section 1: Exterior Inspection</h2>
-      <div class="hint">Complete all checks. If any step is non-conforming, move to Backout Procedure immediately.</div>
-      <table>
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th>Step</th>
-            <th class="col-status">Status</th>
-          </tr>
-        </thead>
-        <tbody id="s1Body"></tbody>
-      </table>
-    </div>
-
-    <div class="section">
-      <h2>Section 2: Open All Equipment Panels and Inspect</h2>
-      <div class="hint">If any step is found to be non-conforming, move to Backout Procedure immediately.</div>
-      <table>
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th>Step</th>
-            <th class="col-status">Status</th>
-          </tr>
-        </thead>
-        <tbody id="s2Body"></tbody>
-      </table>
-    </div>
-
-    <div class="section">
-      <h2>Section 3: Final Cleaning Process</h2>
-      <div class="hint">Perform final cleaning. If a step requires repetition, note it and repeat as needed.</div>
-      <table>
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th>Step</th>
-            <th class="col-status">Status</th>
-          </tr>
-        </thead>
-        <tbody id="s3Body"></tbody>
-      </table>
-    </div>
-
-    <div class="section anchor" id="backoutAnchor">
-      <h2>Backout Procedure</h2>
-      <div class="hint">Backout Steps 1–2 are <b style="color:#ffd84d">Critical Stop</b>. Steps 3–4 are <b style="color:#ffd84d">Caution / Resume</b>.</div>
-
-      <div class="backoutBox">
-        <div class="backoutRow bk-red">
-          <div class="backoutNum">1</div>
-          <div class="backoutText">STOP WORK</div>
+      <div class="foot">
+        <div class="box">
+          <h3>Comments</h3>
+          <input id="globalComment" type="text" placeholder="Notes / findings / rework details…" />
+          <div style="margin-top:8px;font-size:12px;opacity:.8;font-weight:800;">
+            Tip: “Needs Attention” will require confirmation and then jump to Backout Procedure.
+          </div>
         </div>
-        <div class="backoutRow bk-red">
-          <div class="backoutNum">2</div>
-          <div class="backoutText">PLACE equipment in SAFE condition</div>
+
+        <div class="box">
+          <h3>Color Coding</h3>
+          <div class="legend">
+            <div class="tag"><span class="sw" style="background:#ff6b6b;"></span><b>Red</b> — Stop / critical instruction</div>
+            <div class="tag"><span class="sw" style="background:#fff59d;"></span><b>Yellow</b> — Caution / important reminder</div>
+            <div class="tag"><span class="sw" style="background:#7fd8ff;"></span><b>Blue</b> — Conditional / decision point</div>
+          </div>
         </div>
-        <div class="backoutRow bk-yellow">
-          <div class="backoutNum">3</div>
-          <div class="backoutText">COORDINATE with appropriate contacts Foreman, Manager or Engineer to determine safe path forward.</div>
-        </div>
-        <div class="backoutRow bk-yellow">
-          <div class="backoutNum">4</div>
-          <div class="backoutText">Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Comments</h2>
-      <div class="hint">Use comments to document issues, decisions, and any backout triggers.</div>
-
-      <div class="legend" aria-label="Color coding legend">
-        <span class="pill"><span class="dot ok"></span>Complete / OK</span>
-        <span class="pill"><span class="dot warn"></span>Needs Attention / Note</span>
-        <span class="pill"><span class="dot stop"></span>Backout / Stop Work</span>
-      </div>
-
-      <div style="margin-top:10px;">
-        <textarea id="comments" placeholder="Add comments here..."></textarea>
-      </div>
-
-      <div class="actionsBottom">
-        <button class="btn secondary" id="saveBtn" type="button">Save</button>
-        <button class="btn" id="markReviewedBtn" type="button">Mark Reviewed</button>
-      </div>
-
-      <div style="margin-top:10px;opacity:.9;font-size:13px;line-height:1.35">
-        Saves to localStorage per equipment. If you choose <b>Backout</b> on any step, a confirmation prompt appears before jumping to the Backout Procedure.
       </div>
     </div>
 
@@ -362,9 +309,18 @@
       <div class="left-actions">
         <a class="btn secondary" id="backBottomBtn" href="#">← Back to Equipment</a>
       </div>
-      <div class="right-actions">
-        <button class="btn secondary" id="scrollTopBtn" type="button">Back to Top</button>
-      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm Backout</h3>
+    <p id="modalMsg">Selecting “Needs Attention” triggers Backout Procedure. Continue?</p>
+    <div class="modal-actions">
+      <button class="mbtn" id="modalCancel" type="button">Cancel</button>
+      <button class="mbtn primary" id="modalConfirm" type="button">Confirm</button>
     </div>
   </div>
 </div>
@@ -374,222 +330,332 @@
   const qs = new URLSearchParams(location.search);
   const eq = (qs.get("eq") || "").trim();
 
-  // ---- Links + labels
-  const eqLabel = document.getElementById("eqLabel");
-  if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID (eq)";
-
+  // Back links
   const backHref = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
   document.getElementById("backTopBtn").href = backHref;
   document.getElementById("backBottomBtn").href = backHref;
 
-  document.getElementById("scrollTopBtn").addEventListener("click", () => window.scrollTo({top:0,behavior:"smooth"}));
+  // Label
+  const eqLabel = document.getElementById("eqLabel");
+  if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID (eq)";
 
-  // ---- Storage keys
-  const keyPrefod = `nexus_${eq||"NO_EQ"}_prefod_sop_v1`;
-  const keyReviewed = `nexus_${eq||"NO_EQ"}_step_prefod`; // optional: allows Equipment page completion tile to light up if you want
-  // NOTE: If your equipment.html expects `nexus_${eq}_step_prefod` this matches.
+  // Storage
+  const KEY = `nexus_${eq||"NO_EQ"}_prefod_sop_v1`;
 
-  // If you want “step complete” buttons similar to Meg (line/load) on this SOP:
-  // Keep them hidden by default unless you later decide to show them.
-  const lineCompleteBtn = document.getElementById("lineCompleteBtn");
-  const loadCompleteBtn = document.getElementById("loadCompleteBtn");
-  if (lineCompleteBtn) lineCompleteBtn.style.display = "none";
-  if (loadCompleteBtn) loadCompleteBtn.style.display = "none";
+  // Status options (NO Backout option)
+  const STATUS = {
+    NONE: "",
+    OK: "ok",
+    NA: "na",
+    ATTENTION: "attention"
+  };
 
-  const statusChip = document.getElementById("statusChip");
-  const commentsEl = document.getElementById("comments");
-
-  const STATUS = [
-    { v:"",  t:"Select…" , state:"" },
-    { v:"ok", t:"Complete / OK", state:"complete" },
-    { v:"na", t:"N/A", state:"complete" },
-    { v:"attn", t:"Needs Attention", state:"attention" },
-    { v:"backout", t:"Backout (STOP)", state:"backout", isBackout:true }
-  ];
-
-  // ---- Content (editable)
-  const tpvr = [
-    { n: 1, text: "TPVR (Two Person Verification Rule) — Yes or No" }
-  ];
-
-  const section1 = [
-    { n: 1, text: "Ensure all PPE is being worn and is serviceable throughout entire process" },
-    { n: 2, text: "Follow LOTO procedure and confirm equipment is de-energized" },
-    { n: 3, text: "Confirm with foreman that work in this piece of equipment has been finished and verify all work is complete above this piece of equipment during this inspection" },
-    { n: 4, text: "Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately" },
-    { n: 5, text: "Verify that all labels display all the correct information and are placed in the appropriate locations on the equipment" },
-    { n: 6, text: "Verify location, clearance and orientation of equipment matches engineering drawing and conforms to NEC article 110 and 400 series" },
-    { n: 7, text: "Look for missing knockout covers, damaged connectors or gaps in exterior penetrations" },
-    { n: 8, text: "Inspect for gaps at base or wall contact points while inspecting anchoring hardware for appropriate condition and usage per NEC article 110 and 400 series" },
-    { n: 9, text: "Look for evidence of liquid on or around the equipment that could penetrate the enclosure" },
-    { n: 10, text: "Inspect for dents, scratches and other damage to the exterior that diminish functionality" },
-    { n: 11, text: "Remove any debris suppression plastic from vents" }
-  ];
-
-  const section2 = [
-    { n: 1, text: "If any step is found to be non-conforming move to Backout Procedure immediately" },
-    { n: 2, text: "Open all accessible panels and inspect all cavities for debris, loose hardware, tools, wire clippings, or foreign material" },
-    { n: 3, text: "Verify all wire terminations are properly installed, dressed, and there are no loose conductors" },
-    { n: 4, text: "Inspect for damaged insulation, pinch points, sharp edges, or abrasion risk inside the enclosure" },
-    { n: 5, text: "Verify grounding/bonding conductors and hardware are installed correctly and secure" }
-  ];
-
-  const section3 = [
-    { n: 1, text: "Use a vacuum cleaner with HEPA filtration system to clean every interior surface starting at the top of the enclosure working downward including walls but bars and floor" },
-    { n: 2, text: "Retrieve a Swiffer duster from QCx cart to clean every surface that is not completely accessible to clean with a gloved hand" },
-    { n: 3, text: "Coordinate with foreman or manager to perform borescope inspection of all cavities that are not fully visible from the access panels removed previously for debris" },
-    { n: 4, text: "Retrieve a microfiber cloth and spray bottle of isopropyl alcohol from the QCx cart or gang box. Fold cloth into 4 sections and apply 4 sprays onto the microfiber cloth." },
-    { n: 5, text: "Wipe every surface starting at the top of the enclosure working downward to remove any residual dust debris or oils. As the cloth becomes soiled fold opposing directions to maintain a clean surface touching the equipment as may be necessary." },
-    { n: 6, text: "Step 4 may need to be repeated to keep the alcohol evaporating as well as the microfiber cloth becoming soiled in step 5." }
-  ];
-
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  }
-
-  function readJSON(key){
-    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
-  }
-  function writeJSON(key, obj){
-    localStorage.setItem(key, JSON.stringify(obj));
-  }
-
-  function buildRow(stepKey, item, saved){
-    const tr = document.createElement("tr");
-    tr.dataset.stepKey = stepKey;
-
-    const savedVal = (saved && saved[stepKey]) ? saved[stepKey] : "";
-    const prevVal = savedVal;
-
-    tr.dataset.state = "";
-
-    const select = document.createElement("select");
-    STATUS.forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o.v;
-      opt.textContent = o.t;
-      if (o.v === savedVal) opt.selected = true;
-      select.appendChild(opt);
-    });
-
-    function applyState(val){
-      const match = STATUS.find(x => x.v === val);
-      tr.dataset.state = match?.state || "";
+  // Data extracted from your uploaded SOP (highlights preserved)
+  const SECTIONS = [
+    {
+      id:"sec1",
+      title:"Section 1: Exterior Inspection",
+      steps:[
+        `<span class="hl-red">Ensure all PPE is </span><span class="hl-red">being worn</span><span class="hl-red"> and </span><span class="hl-red">is </span><span class="hl-red">serviceable</span><span class="hl-red"> throughout entire process</span>`,
+        `<span class="hl-red">Follow LOTO procedure</span><span class="hl-red"> </span><span class="hl-red">and</span><span class="hl-red"> </span><span class="hl-red">confirm</span><span class="hl-red"> equipment is de</span><span class="hl-red">-</span><span class="hl-red">energized</span>`,
+        `<span class="hl-yellow">Confirm with foreman that work in this piece of equipment has been finished</span><span class="hl-yellow"> and verify </span><span class="hl-yellow">all work is complete</span><span class="hl-yellow"> above this piece of equipment during this inspection</span>`,
+        `Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately`,
+        `Verify that all labels display all the correct information and are placed in the appropriate locations on the equipment`,
+        `Verify location, clearance and orientation of equipment matches engineering drawing and conforms to NEC article 110 and 400 series`,
+        `Look for missing knockout covers, damaged connectors or gaps in exterior penetrations`,
+        `Inspect for gaps at base or wall contact points while inspecting anchoring hardware for appropriate condition and usage per NEC article 110 and 400 series`,
+        `Look for evidence of liquid on or around the equipment that could penetrate the enclosure`,
+        `Inspect for dents, scratches and other damage to the exterior that diminish functionality`,
+        `Remove any debris suppression plastic from vents`
+      ]
+    },
+    {
+      id:"sec2",
+      title:"Section 2: Open All Equipment Panels and Inspect",
+      steps:[
+        `<span class="hl-blue">If any step </span><span class="hl-blue">is found to be non-conforming </span><span class="hl-blue">move to Backout Procedure immediately</span>`,
+        `Remove panel fasteners and access panels from all equipment verifying condition and functionality of each piece of hardware. Place hardware on cart in a secure location.`,
+        `Remove any guards/shielding that is not specifically torqued and painted from the manufacturer. Place hardware on cart in a secure location.`,
+        `Inspect all penetrations for proper assembly, sealing and fitment with flashlight`,
+        `Remove breakers and open shutters MV switchgear per AWS`,
+        `Visually verify all phases are landed appropriately and not crossed`,
+        `Ensure cable identification meets NEC article 200 series, 300 series, 400 series and 500 series as well as ACE electric standards.`,
+        `Inspect all crimps and lug connections and terminations conform to NEC article 110, 300 and 400, 404 and 406`,
+        `Using a UV flashlight verifying all torqued fasteners have been marked with torque seal paint and meet NEC article 110, 300 series and 400 series requirements. 10 percent or 2 fasteners in a group of less than 10 should be marked twice to verify torque process is complete.`,
+        `Inspect all sumps, sump pumps and filter media for damage, debris or factory installed plastic films in air handling units`,
+        `Remove dust and debris mitigation plastic barriers applied during RIF process`,
+        `Inspect all filters and filter media in Data Hall Air Handler for debris, liquids and correct air flow direction`
+      ]
+    },
+    {
+      id:"sec3",
+      title:"Section 3: Final Cleaning Process",
+      steps:[
+        `Use a vacuum cleaner with HEPA filtration system to clean every interior surface starting at the top of the enclosure working downward including walls bus bars and floor`,
+        `<span class="hl-yellow">Retrieve</span><span class="hl-yellow"> a Swiffer duster</span><span class="hl-yellow"> from </span><span class="hl-yellow">QCx</span><span class="hl-yellow"> cart</span><span class="hl-yellow"> to clean every surface that is not completely accessible to clean with a gloved hand</span>`,
+        `<span class="hl-yellow">Coordinate with foreman or manager to perform borescope</span><span class="hl-yellow"> inspect</span><span class="hl-yellow">ion of</span><span class="hl-yellow"> all cavities that are not fully visible from the access panels removed previously for debris</span>`,
+        `<span class="hl-yellow">Retrieve a microfiber cloth and spray bottle of isopropyl alcohol from the </span><span class="hl-yellow">QCx</span><span class="hl-yellow"> cart or gang box. Fold cloth into 4 </span><span class="hl-yellow">sections and</span><span class="hl-yellow"> apply 4 sprays onto the microfiber cloth.</span>`,
+        `Wipe every surface starting at the top of the enclosure working downward to remove any residual dust debris or oils. As the cloth becomes soiled fold opposing directions to maintain a clean surface touching the equipment may be necessary.`,
+        `Step 4 may need to be repeated due to alcohol evaporating as well as the microfiber cloth becoming soiled in step 5`,
+        `Move to Validation section step 1-3`,
+        `Re-install all previously removed shields and guards during Section 2 step 3`,
+        `Re-install all panels and fasteners that were removed in Section 2 step 2`
+      ]
+    },
+    {
+      id:"sec4",
+      title:"Section 4: Handover Process",
+      steps:[
+        `Complete FOD process documentation on appropriate form`,
+        `Initiate Backout Procedure steps 1-2`,
+        `Notify foreman, engineer or manager that FOD inspection is complete.`
+      ]
+    },
+    {
+      id:"validation",
+      title:"Validation",
+      steps:[
+        `Foreman, engineer or manager conduct final inspection consisting of Section 1, Section 2 steps 4-11 and Section 3 step 3. Addressing any unsatisfactory findings with notations and rework before moving to next step.`,
+        `Foreman, engineer or manager release technician to continue process at Section 3 step 8`,
+        `Foreman, engineer or manager apply serialized tamper evident tape to all panels that can open.`
+      ]
+    },
+    {
+      id:"backout",
+      title:"Backout Procedure",
+      steps:[
+        `<span class="hl-red b">STOP WORK</span>`,
+        `<span class="hl-red b">PLACE equipment in SAFE condition</span>`,
+        `<span class="hl-red b">COORDINATE with appropriate </span><span class="hl-red b">c</span><span class="hl-red b">ontacts</span><span class="hl-red b"> </span><span class="hl-red b">Foreman</span><span class="hl-red b">, Manager or Engineer</span><span class="hl-red b"> to determine safe path forward</span><span class="hl-red b">.</span>`,
+        `<span class="hl-yellow">Once</span><span class="hl-yellow"> issue is resolved, return to appropriate Section and Step in this procedure</span><span class="hl-yellow">, verify steps previously completed</span><span class="hl-yellow"> were unaffected </span><span class="hl-yellow">and resume work</span><span class="hl-yellow">.</span>`
+      ]
     }
-    applyState(savedVal);
+  ];
 
-    select.addEventListener("focus", () => {
-      select.dataset.prev = select.value || "";
-    });
+  // UI refs
+  const sectionsEl = document.getElementById("sections");
+  const saveChip = document.getElementById("saveChip");
+  const backoutChip = document.getElementById("backoutChip");
+  const globalComment = document.getElementById("globalComment");
 
-    select.addEventListener("change", () => {
-      const next = select.value || "";
-      const was = select.dataset.prev ?? prevVal ?? "";
+  // Modal refs
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
+  const modalMsg = document.getElementById("modalMsg");
 
-      const isBackout = next === "backout";
-      if (isBackout){
-        const ok = confirm("Confirm you want to trigger the Backout Procedure?");
-        if (!ok){
-          select.value = was;
-          applyState(select.value || "");
-          return;
-        }
-        // confirmed: scroll to Backout section
-        setTimeout(() => {
-          const el = document.getElementById("backoutAnchor");
-          if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
-        }, 50);
-      }
-      applyState(next);
-      markDirty();
-      // keep prev updated
-      select.dataset.prev = next;
-    });
+  // State
+  let state = {
+    comment: "",
+    backoutTriggered: false,
+    steps: {} // key: `${sectionId}:${idx}` => { status, note }
+  };
 
-    tr.innerHTML = `
-      <td class="col-num" style="font-weight:900;text-align:center;">${escapeHtml(item.n)}</td>
-      <td>${escapeHtml(item.text)}</td>
-      <td class="col-status"></td>
-    `;
-    tr.children[2].appendChild(select);
-    return tr;
-  }
-
-  function renderSection(tbodyId, items, prefix, savedMap){
-    const body = document.getElementById(tbodyId);
-    body.innerHTML = "";
-    items.forEach(it => {
-      const k = `${prefix}_${String(it.n).padStart(2,"0")}`;
-      body.appendChild(buildRow(k, it, savedMap));
-    });
-  }
-
-  let dirty = false;
-  function markDirty(){
-    dirty = true;
-    if (statusChip) statusChip.textContent = "Unsaved changes";
-  }
-
-  function collectStates(){
-    const map = {};
-    document.querySelectorAll("tbody tr[data-step-key]").forEach(tr => {
-      const k = tr.dataset.stepKey;
-      const sel = tr.querySelector("select");
-      map[k] = sel ? (sel.value || "") : "";
-    });
-    return map;
-  }
-
-  function save(){
-    const payload = {
-      eq: eq || "",
-      updatedAt: new Date().toLocaleString(),
-      states: collectStates(),
-      comments: commentsEl ? (commentsEl.value || "") : ""
-    };
-    writeJSON(keyPrefod, payload);
-    dirty = false;
-    if (statusChip) statusChip.textContent = "Saved";
-  }
-
-  function load(){
-    const saved = readJSON(keyPrefod) || {};
-    const states = saved.states || {};
-    if (commentsEl) commentsEl.value = saved.comments || "";
-
-    renderSection("tpvrBody", tpvr, "tpvr", states);
-    renderSection("s1Body", section1, "s1", states);
-    renderSection("s2Body", section2, "s2", states);
-    renderSection("s3Body", section3, "s3", states);
-
-    if (statusChip){
-      statusChip.textContent = saved.updatedAt ? `Loaded (${saved.updatedAt})` : "Not saved";
-    }
-  }
-
-  // Buttons
-  document.getElementById("saveBtn").addEventListener("click", save);
-
-  document.getElementById("markReviewedBtn").addEventListener("click", () => {
-    // Mark the Pre-FOD task as complete (equipment tile can pick this up)
+  function readState(){
     try{
-      localStorage.setItem(keyReviewed, "1");
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj === "object") state = { ...state, ...obj };
     }catch(e){}
-    save();
-    if (statusChip) statusChip.textContent = "Reviewed + Saved";
+  }
+  function writeState(){
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+      saveChip.textContent = "Saved";
+    }catch(e){
+      saveChip.textContent = "Save failed";
+    }
+    backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
+  }
+
+  function statusLabel(v){
+    if (v===STATUS.OK) return "Complete / OK";
+    if (v===STATUS.NA) return "N/A";
+    if (v===STATUS.ATTENTION) return "Needs Attention";
+    return "Select…";
+  }
+
+  function buildSelect(value){
+    const sel = document.createElement("select");
+    sel.innerHTML = `
+      <option value="${STATUS.NONE}">Select…</option>
+      <option value="${STATUS.OK}">Complete / OK</option>
+      <option value="${STATUS.NA}">N/A</option>
+      <option value="${STATUS.ATTENTION}">Needs Attention</option>
+    `;
+    sel.value = value || STATUS.NONE;
+    return sel;
+  }
+
+  function render(){
+    sectionsEl.innerHTML = "";
+    SECTIONS.forEach(sec => {
+      const secWrap = document.createElement("div");
+      secWrap.className = "sec";
+      secWrap.id = sec.id;
+
+      const head = document.createElement("div");
+      head.className = "sec-head";
+      head.innerHTML = `<div>${sec.title}</div><small>${sec.steps.length} steps</small>`;
+
+      const body = document.createElement("div");
+      body.className = "sec-body";
+
+      const tbl = document.createElement("table");
+      tbl.innerHTML = `
+        <thead>
+          <tr>
+            <th class="col-step">Step</th>
+            <th>Procedure</th>
+            <th class="col-status">Status</th>
+            <th class="col-note">Notes</th>
+          </tr>
+        </thead>
+      `;
+
+      const tb = document.createElement("tbody");
+
+      sec.steps.forEach((html, idx) => {
+        const key = `${sec.id}:${idx}`;
+        const saved = state.steps[key] || { status: STATUS.NONE, note: "" };
+
+        const tr = document.createElement("tr");
+
+        const tdStep = document.createElement("td");
+        tdStep.className = "col-step";
+        tdStep.textContent = String(idx + 1);
+
+        const tdDesc = document.createElement("td");
+        tdDesc.innerHTML = `<div class="desc">${html}</div>`;
+
+        const tdStatus = document.createElement("td");
+        tdStatus.className = "col-status";
+        const sel = buildSelect(saved.status);
+        tdStatus.appendChild(sel);
+
+        const tdNote = document.createElement("td");
+        tdNote.className = "col-note";
+        const note = document.createElement("input");
+        note.type = "text";
+        note.placeholder = "Optional note…";
+        note.value = saved.note || "";
+        tdNote.appendChild(note);
+
+        // Events
+        note.addEventListener("input", () => {
+          state.steps[key] = state.steps[key] || {};
+          state.steps[key].note = note.value || "";
+          saveChip.textContent = "Unsaved";
+        });
+
+        // Needs Attention => confirm => trigger backout (no Backout option exists)
+        let prev = sel.value;
+        sel.addEventListener("focus", () => { prev = sel.value; });
+
+        sel.addEventListener("change", () => {
+          if (sel.value !== STATUS.ATTENTION){
+            state.steps[key] = state.steps[key] || {};
+            state.steps[key].status = sel.value;
+            saveChip.textContent = "Unsaved";
+            return;
+          }
+
+          // Confirm before committing Needs Attention
+          modalMsg.textContent =
+            "Selecting “Needs Attention” triggers Backout Procedure. Continue?";
+
+          openModal({
+            onConfirm: () => {
+              state.steps[key] = state.steps[key] || {};
+              state.steps[key].status = STATUS.ATTENTION;
+
+              // default to Backout flow
+              state.backoutTriggered = true;
+              backoutChip.style.display = "inline-flex";
+
+              saveChip.textContent = "Unsaved";
+
+              // Jump to Backout Procedure section
+              const el = document.getElementById("backout");
+              if (el){
+                el.scrollIntoView({ behavior:"smooth", block:"start" });
+              }
+            },
+            onCancel: () => {
+              sel.value = prev || STATUS.NONE;
+            }
+          });
+        });
+
+        tr.appendChild(tdStep);
+        tr.appendChild(tdDesc);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdNote);
+        tb.appendChild(tr);
+      });
+
+      tbl.appendChild(tb);
+      body.appendChild(tbl);
+
+      secWrap.appendChild(head);
+      secWrap.appendChild(body);
+      sectionsEl.appendChild(secWrap);
+    });
+
+    globalComment.value = state.comment || "";
+    backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
+    saveChip.textContent = "Loaded";
+  }
+
+  // Modal helper
+  let modalHandlers = { onConfirm:null, onCancel:null };
+  function openModal({onConfirm,onCancel}){
+    modalHandlers.onConfirm = onConfirm || null;
+    modalHandlers.onCancel = onCancel || null;
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden","false");
+  }
+  function closeModal(){
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden","true");
+    modalHandlers.onConfirm = null;
+    modalHandlers.onCancel = null;
+  }
+  modalCancel.addEventListener("click", () => {
+    try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e){}
+    closeModal();
+  });
+  modalConfirm.addEventListener("click", () => {
+    try{ modalHandlers.onConfirm && modalHandlers.onConfirm(); }catch(e){}
+    closeModal();
+  });
+  modalBackdrop.addEventListener("click", (e) => {
+    if (e.target === modalBackdrop){
+      try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e2){}
+      closeModal();
+    }
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalBackdrop.style.display === "flex"){
+      try{ modalHandlers.onCancel && modalHandlers.onCancel(); }catch(e2){}
+      closeModal();
+    }
   });
 
-  // Autosave safety: keep light, only save on unload if dirty
-  window.addEventListener("beforeunload", () => {
-    try{ if (dirty) save(); }catch(e){}
+  // Save
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    state.comment = (globalComment.value || "").trim();
+    writeState();
   });
+  globalComment.addEventListener("input", () => { saveChip.textContent = "Unsaved"; });
 
-  // Change tracking
-  document.addEventListener("input", (e) => {
-    if (e.target && (e.target.id === "comments")) markDirty();
-  });
+  // Init
+  readState();
+  render();
 
-  load();
+  // If already triggered backout, show chip immediately
+  backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
 })();
 </script>
 
