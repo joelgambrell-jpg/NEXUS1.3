@@ -1,9 +1,8 @@
-<!-- megohmmeter_sop.html (FULL drop-in with NEXUS styling/features + preserves content/highlights) -->
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Megohmmeter SOP</title>
 
 <style>
@@ -14,16 +13,9 @@
     --btn-bg:#0a0f24;
     --btn-txt:#3ecbff;
     --accent:#00c2ff;
-
-    /* Keep your Word highlight colors (solid) */
-    --hl-red:#ff0000;
-    --hl-ylw:#ffff00;
-    --hl-grn:#00ff00;
   }
-
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; color:#fff; background:var(--bg); }
-
+  *{box-sizing:border-box;}
+  html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg);}
   body{
     background-image:url("transformer.jpg");
     background-repeat:no-repeat;
@@ -32,7 +24,7 @@
     background-attachment:fixed;
   }
 
-  /* NEXUS header */
+  /* Shared header */
   .nx-header-wrap{
     background: rgba(0,0,0,0.35);
     border-bottom: 1px solid rgba(255,255,255,0.18);
@@ -55,6 +47,9 @@
     padding: 18px;
     backdrop-filter: blur(10px);
   }
+
+  h1{margin:0 0 6px;font-size:28px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.35);}
+  .sub{margin:0 0 12px;font-weight:900;opacity:.95;}
 
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 14px;}
   .left-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
@@ -97,7 +92,6 @@
   .chip.alert.active{
     background:#ff2b2b;
     border-color:#ff2b2b;
-    color:#fff;
     box-shadow:0 0 14px rgba(255,0,0,.75);
     animation:pulse 1.1s infinite alternate;
   }
@@ -115,150 +109,98 @@
     padding:14px;
   }
 
+  .sec{
+    margin-top:12px;
+    border:1px solid rgba(0,0,0,0.10);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .sec-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 12px;
+    background: rgba(0,0,0,0.04);
+    border-bottom:1px solid rgba(0,0,0,0.08);
+    font-weight:900;
+  }
+  .sec-head small{font-weight:800;opacity:.75;}
+  .sec-body{padding:12px;}
+
+  table{width:100%;border-collapse:collapse;table-layout:fixed;}
+  th,td{border:1px solid rgba(0,0,0,0.14);padding:10px;vertical-align:top;font-size:13px;}
+  th{background: rgba(0,0,0,0.05);text-align:left;font-weight:900;}
+  td .desc{line-height:1.35;}
+
+  .col-step{width:64px;text-align:center;font-weight:900;}
+  .col-status{width:180px;}
+  .col-note{width:260px;}
+  @media (max-width: 900px){
+    .col-status{width:160px;}
+    .col-note{width:200px;}
+  }
+
+  select,input[type="text"]{
+    width:100%;
+    padding:10px 10px;
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,0.18);
+    outline:none;
+    font-size:13px;
+    font-weight:800;
+    background:#fff;
+    color:#111;
+  }
+
   /* Locked but readable */
   .locked{
     opacity:.72;
     pointer-events:none;
+    user-select:none;
   }
 
-  /* Flash highlight when returning to triggering step */
+  /* Flash target row */
   .flash-step{
     outline: 3px solid rgba(0, 194, 255, 0.85);
     box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.18);
     border-radius: 10px;
   }
 
-  /* Your document layout preserved */
-  .page{ padding: 0; } /* inside doc-sheet now */
-
-  .top{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom: 10px;
-  }
-
-  h1{ margin:0; font-size:22px; font-weight:900; color:#111; }
-  .subtitle{ margin-top:6px; font-size:14px; font-weight:900; color:#111; opacity:.9; }
-
-  /* Sections */
-  .section{
-    margin-top: 14px;
-    border:1px solid #000;
-    background:#fff;
-  }
-  .section .hdr{
-    background: #D9D9D9;
-    border-bottom:1px solid #000;
-    padding: 6px 8px;
-    font-weight:900;
-    color:#111;
-  }
-  .section .body{ padding: 0; color:#111; }
-
-  table.sop{
-    width:100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-  table.sop td{
-    border-top: 1px solid #c9c9c9;
-    border-right: 1px solid #c9c9c9;
-    padding: 10px 10px;
-    vertical-align: top;
-    font-size: 16px;
-    line-height: 1.25;
-    color:#111;
-  }
-  table.sop tr:first-child td{ border-top:none; }
-  table.sop td.num{ width:60px; text-align:left; font-weight:400; }
-  table.sop td.txt{ width:auto; }
-  table.sop td.status{ width: 170px; text-align:left; }
-
-  .cellwrap{
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-
-  /* Word-style highlight behind TEXT ONLY (kept) */
+  /* Preserve your Word highlight spans exactly */
   .hl{ display:inline; padding: 2px 3px; }
-  .hl.red{ background: var(--hl-red); color:#000; }
-  .hl.yellow{ background: var(--hl-ylw); color:#000; }
-  .hl.green{ background: var(--hl-grn); color:#000; }
+  .hl.red{ background:#ff0000; color:#000; }
+  .hl.yellow{ background:#ffff00; color:#000; }
+  .hl.green{ background:#00ff00; color:#000; }
+  .hl.cyan{ background:#00e5ff; color:#000; }
 
-  a{ color:#000; }
+  a{ color:#111; }
 
-  /* Status controls */
-  .status-wrap{
-    display:flex;
+  .foot{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
     gap:12px;
-    align-items:center;
-    flex-wrap:wrap;
   }
-  .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size: 13px;
-    font-weight: 900;
-    user-select:none;
-    cursor:pointer;
-    color:#111;
-  }
-  .pill input{
-    width:16px;
-    height:16px;
-    margin:0;
-    accent-color:#000;
-  }
-  .pill.problem input{ accent-color:#b60000; }
+  @media (max-width: 900px){ .foot{grid-template-columns:1fr;} }
 
-  /* Chart table */
-  table.chart{
-    width:100%;
-    border-collapse: collapse;
-    margin-top: 8px;
-    table-layout: fixed;
+  .box{
+    border:1px solid rgba(0,0,0,0.10);
+    border-radius:14px;
+    background:#fff;
+    padding:12px;
   }
-  table.chart td{
-    border:1px solid #000;
-    padding: 3px 8px;
-    vertical-align: middle;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.1;
-    color:#111;
+  .box h3{margin:0 0 10px;font-size:14px;}
+  .legend{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:8px;
+    font-size:13px;
   }
-  table.chart td:first-child{ width: 30%; }
-  .black-fill{ background:#000; }
-
-  /* Comments lines */
-  .lines{
-    width:100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+  .tag{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 10px;border-radius:12px;border:1px solid rgba(0,0,0,0.10);
+    background: rgba(0,0,0,0.03);
   }
-  .lines td{
-    border-top: 1px solid #000;
-    height: 24px;
-  }
-
-  /* Approvals table */
-  table.appr{
-    width:100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-  table.appr td{
-    border:1px solid #000;
-    padding: 6px 8px;
-    vertical-align: middle;
-    font-weight:900;
-    color:#111;
-  }
-  table.appr tr:first-child td{ background: #D9D9D9; }
+  .sw{width:24px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,0.18);}
 
   /* Modal confirm */
   .modal-backdrop{
@@ -303,13 +245,6 @@
     background: rgba(0,0,0,0.35);
     border-top: 1px solid rgba(255,255,255,0.18);
   }
-
-  @media print{
-    .btn, .nx-session-banner, .nx-back-btn, #topControlsRow, #bottomControlsRow, #backoutCompleteWrap { display:none !important; }
-    .wrap{ max-width:none; margin:0; padding:0; }
-    .card{ background:transparent; border:none; box-shadow:none; }
-    body{ background:#fff !important; color:#000 !important; }
-  }
 </style>
 
 <link rel="stylesheet" href="assets/css/nexus-core.css">
@@ -323,7 +258,7 @@
     <span class="nx-pill" data-nx-status>Ready</span>
   </div>
   <div class="nx-right">
-    <label style="font-weight:800;font-size:12px;opacity:.95;color:#fff;">Set Role
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
       <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
         <option value="viewer">viewer</option>
         <option value="tech">tech</option>
@@ -354,7 +289,7 @@
 
 <div class="wrap">
   <div class="card">
-    <div class="row" id="topControlsRow">
+    <div class="row">
       <div class="left-actions">
         <a class="btn secondary" id="backTopBtn" href="#">← Back to Equipment</a>
       </div>
@@ -365,495 +300,49 @@
       </div>
     </div>
 
+    <h1>Megohmmeter Conductor Test Procedures SOP</h1>
+    <div class="sub" id="eqLabel">Mission Critical Program</div>
+
     <div class="doc-sheet">
-      <div class="page">
+      <div id="sections"></div>
 
-        <div class="top">
-          <div>
-            <h1>Megohmmeter Conductor Test Procedures SOP</h1>
-            <div class="subtitle" id="eqLabel">Mission Critical Program</div>
-          </div>
-          <button class="btn secondary" type="button" id="resetChecksBtn">Reset Selections</button>
-        </div>
-
-        <!-- Description -->
-        <div class="section" id="sec_desc">
-          <div class="hdr">Description</div>
-          <div class="body" style="padding:10px 10px; min-height:36px;"></div>
-        </div>
-
-        <!-- Work Area(s) -->
-        <div class="section" id="sec_work">
-          <div class="hdr">Work Area(s)</div>
-          <div class="body" style="padding:10px 10px; min-height:36px;"></div>
-        </div>
-
-        <!-- Affected Equipment -->
-        <div class="section" id="sec_ae">
-          <div class="hdr">Affected Equipment</div>
-          <div class="body" style="padding:10px 10px; min-height:36px;"></div>
-        </div>
-
-        <!-- Contacts -->
-        <div class="section" id="sec_contacts">
-          <div class="hdr">Contacts</div>
-          <div class="body" style="padding:10px 10px;">
-            GC - __________________________________________________________________________________________<br>
-            ACE - _________________________________________________________________________________________<br>
-            OTHER - ______________________________________________________________________________________
+      <div class="foot">
+        <div class="box">
+          <h3>Comments</h3>
+          <input id="globalComment" type="text" placeholder="Notes / findings / rework details…" />
+          <div style="margin-top:8px;font-size:12px;opacity:.8;font-weight:800;">
+            Tip: “Needs Attention” requires confirmation, triggers Backout, and returns to the step after Backout Complete.
           </div>
         </div>
 
-        <!-- Tools -->
-        <div class="section" id="sec_tools">
-          <div class="hdr">Tools</div>
-          <div class="body" style="padding:10px 10px;">
-            FLUKE 1507/1503 Insulation Tester
+        <div class="box">
+          <h3>Color Coding</h3>
+          <div class="legend">
+            <div class="tag"><span class="sw" style="background:#ff0000;"></span><b>Red</b> — Safety Note</div>
+            <div class="tag"><span class="sw" style="background:#ffff00;"></span><b>Yellow</b> — Location / Process Change</div>
+            <div class="tag"><span class="sw" style="background:#00ff00;"></span><b>Green</b> — Important Note</div>
           </div>
         </div>
+      </div>
 
-        <!-- Parts / Materials -->
-        <div class="section" id="sec_parts">
-          <div class="hdr">Parts / Materials</div>
-          <div class="body" style="padding:10px 10px;">
-            Plastic caps applicable to wire size<br>
-            Electrical Tape
-          </div>
+      <div id="backoutCompleteWrap" style="display:none;margin-top:14px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">
+          <span style="font-size:12px;font-weight:900;opacity:.85;">
+            Foreman+ required to confirm Backout completion
+          </span>
+          <button class="btn secondary" id="backoutCompleteBtn" type="button" disabled>
+            Backout Complete (Return to Step)
+          </button>
         </div>
-
-        <!-- Expected Risk -->
-        <div class="section" id="sec_risk">
-          <div class="hdr">Expected Risk to Facility</div>
-          <div class="body" style="padding:10px 10px;">
-            Improper testing may damage equipment
-          </div>
-        </div>
-
-        <!-- Potential Hazards -->
-        <div class="section" id="sec_haz">
-          <div class="hdr">Potential Hazards</div>
-          <div class="body" style="padding:10px 10px; min-height:36px;">
-            Hazard / Hazard Elimination
-          </div>
-        </div>
-
-        <!-- PPE -->
-        <div class="section" id="sec_ppe">
-          <div class="hdr">PPE / Safety Equipment</div>
-          <div class="body" style="padding:10px 10px;">
-            Approved Hardhat<br>
-            Z87+Safety Glasses<br>
-            Hi-visibility vest with Ace logo<br>
-            Cut level 4 Gloves<br>
-            Approved Safety Toe Shoes
-          </div>
-        </div>
-
-        <!-- Forms -->
-        <div class="section" id="sec_forms">
-          <div class="hdr">Forms / Permits / Reports</div>
-          <div class="body" style="padding:10px 10px;">
-            AA-Blank Meg Report (NC).xlsx
-          </div>
-        </div>
-
-        <!-- Supporting Info -->
-        <div class="section" id="sec_support">
-          <div class="hdr">Supporting Info</div>
-          <div class="body" style="padding:10px 10px;">
-            ANSI+NETA+ATS-2025.pdf
-          </div>
-        </div>
-
-        <!-- TPVR -->
-        <div class="section" id="sec_tpvr">
-          <div class="hdr">TPVR (Two Person Verification Rule)</div>
-          <div class="body" style="padding:10px 10px;">
-            Yes or No
-          </div>
-        </div>
-
-        <!-- Section 1 -->
-        <div class="section" id="sec_s1">
-          <div class="hdr">Section 1: Pre-Work / Initial Conditions</div>
-          <div class="body">
-            <table class="sop" aria-label="Section 1 checklist" id="table_s1">
-              <!-- CONTENT UNCHANGED -->
-              <tr>
-                <td class="num">1.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_1_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_1_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">2.</td>
-                <td class="txt"><div class="cellwrap">Conform with Foreman in area that all wires are installed as specified on the drawing and ready for termination in space to be tested.</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_2_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_2_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">3.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Follow LOTO procedure to ensure equipment is de-energized.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_3_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_3_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">4.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_4_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_4_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">5.</td>
-                <td class="txt">
-                  <div class="cellwrap">
-                    <span class="hl yellow">Retrieve Fluke 1503 or 1507 from tool cart or gang box and test battery using method on page 18 of the user manual.</span><br>
-                    <span class="hl yellow">
-                      <a href="https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf" target="_blank" rel="noopener noreferrer">
-                        https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf
-                      </a>
-                    </span>
-                  </div>
-                </td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_5_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_5_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">6.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Ensure no part of your body is in contact with any exposed conductor including ends of test leads through skin, clothes or gloves to prevent electrical shock.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_6_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_6_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">7.</td>
-                <td class="txt"><div class="cellwrap">Insert black test lead into common input terminal and insert black test lead to Insulation test terminal. Turn dial to 1000V setting and touch uninsulated tips of test leads together and press “TEST”. If “0” and 1050V is not shown immediately on screen move to Backout Procedure.</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_7_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_7_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">8.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl yellow">Retrieve plastic caps from cart and place over exposed conductor ends opposite of test area preferably downstream secure using electrical tape.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_8_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_8_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">9.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Secure opposite termination area using LOTO tools or a second trained person to ensure the conductors are not touched during testing procedure.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s1_9_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s1_9_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Section 2 -->
-        <div class="section" id="sec_s2">
-          <div class="hdr">Section 2: Testing the Conductors</div>
-          <div class="body">
-            <table class="sop" aria-label="Section 2 checklist" id="table_s2">
-              <!-- CONTENT UNCHANGED -->
-              <tr>
-                <td class="num">1.</td>
-                <td class="txt"><div class="cellwrap">Visually inspect the visible portions of the conductors to be tested for damage to insulation including but not limited to cuts, abrasion, wear or burns.</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s2_1_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s2_1_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">2.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">Ensure no part of your body is in contact with any exposed conductor including points of test leads through skin, clothes or gloves to prevent electrical shock.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s2_2_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s2_2_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">3.</td>
-                <td class="txt">
-                  <div class="cellwrap">
-                    Place the Common test lead onto the exposed portion of the phase 1 or A brown or black conductor and the insulation test terminal to the phase 2 or B orange or red conductor.
-                    <span class="hl yellow">Color designations correspond to system voltage ratings and can indicate an issue in construction of the equipment.</span>
-                  </div>
-                </td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s2_3_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s2_3_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">4.</td>
-                <td class="txt"><div class="cellwrap">Press the test button on the lead is equipped or on the meter then proceed as prescribed below while documenting each reading. If the shown reading is different move to Backout Procedure.</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s2_4_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s2_4_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">5.</td>
-                <td class="txt">
-                  <div class="cellwrap">
-                    Place the Black test lead on the 1 or A phase conductor and the Red test lead on the 2 or B phase conductor. Press the TEST button until the screen displays
-                    <span class="hl green">11MΩ and 1050VDC</span>
-                    then proceed as prescribed below while documenting each reading.
-                    <span class="hl red">If any conductor does not produce a test value of 11MΩ move to Backout Procedure.</span>
-
-                    <table class="chart" aria-label="Megohmmeter chart">
-                      <tr>
-                        <td>Phase to Phase</td>
-                        <td>A-B: ____________</td>
-                        <td>A-C: ____________</td>
-                        <td>B-C: ____________</td>
-                      </tr>
-                      <tr>
-                        <td>Phase to Ground</td>
-                        <td>A-G: ____________</td>
-                        <td>B-G: ____________</td>
-                        <td>C-G: ____________</td>
-                      </tr>
-                      <tr>
-                        <td>Phase to Neutral</td>
-                        <td>A-N: ____________</td>
-                        <td>B-N: ____________</td>
-                        <td>C-N: ____________</td>
-                      </tr>
-                      <tr>
-                        <td>Neutral to Ground</td>
-                        <td>N-G: ____________</td>
-                        <td class="black-fill" colspan="2"></td>
-                      </tr>
-                    </table>
-                  </div>
-                </td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="s2_5_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="s2_5_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Validation -->
-        <div class="section" id="sec_validation">
-          <div class="hdr">Validation</div>
-          <div class="body">
-            <table class="sop" aria-label="Validation checklist" id="table_validation">
-              <!-- CONTENT UNCHANGED -->
-              <tr>
-                <td class="num">1.</td>
-                <td class="txt">
-                  <div class="cellwrap">
-                    Verify all conductors to be tested have a <span class="hl green">passing value of 11MΩ</span> associated with them recorded in documentation sheet.
-                  </div>
-                </td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="v_1_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="v_1_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">2.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl yellow">Notify construction Foreman that testing has concluded, and all conductors tested have passed.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="v_2_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="v_2_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">3.</td>
-                <td class="txt"><div class="cellwrap">&nbsp;</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="v_3_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="v_3_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">4.</td>
-                <td class="txt"><div class="cellwrap">&nbsp;</div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="v_4_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="v_4_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Backout Procedure -->
-        <div class="section" id="backoutSection">
-          <div class="hdr">Backout Procedure</div>
-          <div class="body">
-            <table class="sop" aria-label="Backout checklist" id="table_backout">
-              <!-- CONTENT UNCHANGED -->
-              <tr>
-                <td class="num">1.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">STOP WORK</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="b_1_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="b_1_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">2.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl red">PLACE equipment in SAFE condition</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="b_2_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="b_2_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">3.</td>
-                <td class="txt"><div class="cellwrap"><span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span></div></td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="b_3_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="b_3_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="num">4.</td>
-                <td class="txt">
-                  <div class="cellwrap">
-                    Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work
-                    <span class="hl green">if Backout is initiated during testing re-start testing procedure from first conductor.</span>
-                  </div>
-                </td>
-                <td class="status">
-                  <div class="status-wrap">
-                    <label class="pill"><input type="radio" name="b_4_status" value="complete">Complete</label>
-                    <label class="pill problem"><input type="radio" name="b_4_status" value="problem">Problem</label>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Comments -->
-        <div class="section" id="sec_comments">
-          <div class="hdr">Comments</div>
-          <div class="body" style="padding:10px 10px;">
-            <div style="margin-bottom:10px;">
-              Color Key<br>
-              <span class="hl green">Important Note</span><br>
-              <span class="hl red">Safety Note</span><br>
-              <span class="hl yellow">Location Change</span>
-            </div>
-
-            <!-- Added: persisted notes field (does not change your lines) -->
-            <div style="margin: 8px 0 10px;">
-              <div style="font-weight:900;font-size:12px;opacity:.85;">Notes (saved with page)</div>
-              <input id="globalComment" type="text" style="width:100%;padding:10px;border:1px solid rgba(0,0,0,0.18);border-radius:12px;font-weight:800;"
-                     placeholder="Notes / findings / rework details…" />
-            </div>
-
-            <table class="lines" aria-label="Comment lines">
-              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-              <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Approvals -->
-        <div class="section" id="sec_approvals">
-          <div class="hdr">Approvals</div>
-          <div class="body" style="padding:10px 10px;">
-            <table class="appr" aria-label="Approvals">
-              <tr>
-                <td>Version</td>
-                <td>Date</td>
-                <td>Author(s)</td>
-                <td>Approved By</td>
-              </tr>
-              <tr>
-                <td></td>
-                <td>9/18/2025</td>
-                <td>Joel Gambrell</td>
-                <td></td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Foreman+ Backout Complete -->
-        <div id="backoutCompleteWrap" style="display:none;margin-top:14px;">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">
-            <span style="font-size:12px;font-weight:900;opacity:.85;">
-              Foreman+ required to confirm Backout completion
-            </span>
-            <button class="btn secondary" id="backoutCompleteBtn" type="button" disabled>
-              Backout Complete (Return to Step)
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    <div class="row" id="bottomControlsRow" style="margin-top:14px;">
+    <div class="row" style="margin-top:14px;">
       <div class="left-actions">
         <a class="btn secondary" id="backBottomBtn" href="#">← Back to Equipment</a>
+      </div>
+      <div class="right-actions">
+        <button class="btn secondary" id="resetBtn" type="button">Reset</button>
       </div>
     </div>
   </div>
@@ -862,8 +351,8 @@
 <!-- Confirm modal -->
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal">
-    <h3 id="modalTitle">Confirm</h3>
-    <p id="modalMsg">Confirm action?</p>
+    <h3 id="modalTitle">Confirm Backout</h3>
+    <p id="modalMsg">Selecting “Needs Attention” triggers Backout Procedure. Continue?</p>
     <div class="modal-actions">
       <button class="mbtn" id="modalCancel" type="button">Cancel</button>
       <button class="mbtn primary" id="modalConfirm" type="button">Confirm</button>
@@ -881,14 +370,119 @@
   document.getElementById("backTopBtn").href = backHref;
   document.getElementById("backBottomBtn").href = backHref;
 
-  // Subtitle label (append equipment if present)
+  // Label
   const eqLabel = document.getElementById("eqLabel");
-  if (eqLabel){
-    eqLabel.textContent = eq ? `Mission Critical Program • Equipment: ${eq}` : "Mission Critical Program";
-  }
+  if (eqLabel) eqLabel.textContent = eq ? `Mission Critical Program • Equipment: ${eq}` : "Mission Critical Program";
 
-  // Storage key (unique)
+  // Storage key
   const KEY = `nexus_${eq||"NO_EQ"}_megohmmeter_sop_v1`;
+
+  // Status values (standardized like Pre-FOD)
+  const STATUS = { NONE:"", OK:"ok", NA:"na", ATTENTION:"attention" };
+
+  // ====== CONTENT (your wording + highlights preserved) ======
+  const SECTIONS = [
+    { id:"desc", title:"Description", steps:[ `&nbsp;` ] },
+    { id:"workareas", title:"Work Area(s)", steps:[ `&nbsp;` ] },
+    { id:"equip", title:"Affected Equipment", steps:[ `&nbsp;` ] },
+    { id:"contacts", title:"Contacts", steps:[
+      `GC - __________________________________________________________________________________________<br>
+       ACE - _________________________________________________________________________________________<br>
+       OTHER - ______________________________________________________________________________________`
+    ]},
+    { id:"tools", title:"Tools", steps:[ `FLUKE 1507/1503 Insulation Tester` ]},
+    { id:"parts", title:"Parts / Materials", steps:[
+      `Plastic caps applicable to wire size<br>Electrical Tape`
+    ]},
+    { id:"risk", title:"Expected Risk to Facility", steps:[ `Improper testing may damage equipment` ]},
+    { id:"hazards", title:"Potential Hazards", steps:[ `Hazard / Hazard Elimination` ]},
+    { id:"ppe", title:"PPE / Safety Equipment", steps:[
+      `Approved Hardhat<br>Z87+Safety Glasses<br>Hi-visibility vest with Ace logo<br>Cut level 4 Gloves<br>Approved Safety Toe Shoes`
+    ]},
+    { id:"forms", title:"Forms / Permits / Reports", steps:[ `AA-Blank Meg Report (NC).xlsx` ]},
+    { id:"support", title:"Supporting Info", steps:[ `ANSI+NETA+ATS-2025.pdf` ]},
+    { id:"tpvr", title:"TPVR (Two Person Verification Rule)", steps:[ `Yes or No` ]},
+
+    { id:"s1", title:"Section 1: Pre-Work / Initial Conditions", steps:[
+      `<span class="hl red">Ensure all PPE is being worn and is serviceable throughout entire process.</span>`,
+      `Conform with Foreman in area that all wires are installed as specified on the drawing and ready for termination in space to be tested.`,
+      `<span class="hl red">Follow LOTO procedure to ensure equipment is de-energized.</span>`,
+      `<span class="hl red">Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately.</span>`,
+      `<span class="hl yellow">Retrieve Fluke 1503 or 1507 from tool cart or gang box and test battery using method on page 18 of the user manual.<br>
+        <a href="https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf" target="_blank" rel="noopener noreferrer">
+        https://www.fluke-direct.com/pdfs/cache/www.fluke-direct.com/1503/manual/1503-manual.pdf</a></span>`,
+      `<span class="hl red">Ensure no part of your body is in contact with any exposed conductor including ends of test leads through skin, clothes or gloves to prevent electrical shock.</span>`,
+      `Insert black test lead into common input terminal and insert black test lead to Insulation test terminal. Turn dial to 1000V setting and touch uninsulated tips of test leads together and press “TEST”. If “0” and 1050V is not shown immediately on screen move to Backout Procedure.`,
+      `<span class="hl yellow">Retrieve plastic caps from cart and place over exposed conductor ends opposite of test area preferably downstream secure using electrical tape.</span>`,
+      `<span class="hl red">Secure opposite termination area using LOTO tools or a second trained person to ensure the conductors are not touched during testing procedure.</span>`
+    ]},
+
+    { id:"s2", title:"Section 2: Testing the Conductors", steps:[
+      `Visually inspect the visible portions of the conductors to be tested for damage to insulation including but not limited to cuts, abrasion, wear or burns.`,
+      `<span class="hl red">Ensure no part of your body is in contact with any exposed conductor including points of test leads through skin, clothes or gloves to prevent electrical shock.</span>`,
+      `Place the Common test lead onto the exposed portion of the phase 1 or A brown or black conductor and the insulation test terminal to the phase 2 or B orange or red conductor. <span class="hl yellow">Color designations correspond to system voltage ratings and can indicate an issue in construction of the equipment.</span>`,
+      `Press the test button on the lead is equipped or on the meter then proceed as prescribed below while documenting each reading. If the shown reading is different move to Backout Procedure.`,
+      `Place the Black test lead on the 1 or A phase conductor and the Red test lead on the 2 or B phase conductor. Press the TEST button until the screen displays <span class="hl green">11MΩ and 1050VDC</span> then proceed as prescribed below while documenting each reading. <span class="hl red">If any conductor does not produce a test value of 11MΩ move to Backout Procedure.</span>
+       <div style="margin-top:10px;">
+         <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+           <tr>
+             <td style="border:1px solid #000;padding:6px 8px;width:30%;">Phase to Phase</td>
+             <td style="border:1px solid #000;padding:6px 8px;">A-B: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">A-C: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">B-C: ____________</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #000;padding:6px 8px;">Phase to Ground</td>
+             <td style="border:1px solid #000;padding:6px 8px;">A-G: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">B-G: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">C-G: ____________</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #000;padding:6px 8px;">Phase to Neutral</td>
+             <td style="border:1px solid #000;padding:6px 8px;">A-N: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">B-N: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;">C-N: ____________</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #000;padding:6px 8px;">Neutral to Ground</td>
+             <td style="border:1px solid #000;padding:6px 8px;">N-G: ____________</td>
+             <td style="border:1px solid #000;padding:6px 8px;background:#000;" colspan="2"></td>
+           </tr>
+         </table>
+       </div>`
+    ]},
+
+    { id:"validation", title:"Validation", steps:[
+      `Verify all conductors to be tested have a <span class="hl green">passing value of 11MΩ</span> associated with them recorded in documentation sheet.`,
+      `<span class="hl yellow">Notify construction Foreman that testing has concluded, and all conductors tested have passed.</span>`,
+      `&nbsp;`,
+      `&nbsp;`
+    ]},
+
+    { id:"backout", title:"Backout Procedure", steps:[
+      `<span class="hl red"><b>STOP WORK</b></span>`,
+      `<span class="hl red"><b>PLACE equipment in SAFE condition</b></span>`,
+      `<span class="hl yellow">COORDINATE with appropriate Contacts to determine safe path forward Foreman, Manager or Engineer.</span>`,
+      `Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work <span class="hl green">if Backout is initiated during testing re-start testing procedure from first conductor.</span>`
+    ]}
+  ];
+
+  // ====== UI refs ======
+  const sectionsEl = document.getElementById("sections");
+  const saveChip = document.getElementById("saveChip");
+  const backoutChip = document.getElementById("backoutChip");
+  const globalComment = document.getElementById("globalComment");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const backoutCompleteWrap = document.getElementById("backoutCompleteWrap");
+  const backoutCompleteBtn = document.getElementById("backoutCompleteBtn");
+
+  // Modal refs
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
+  const modalMsg = document.getElementById("modalMsg");
+  const modalTitle = document.getElementById("modalTitle");
 
   // Role helpers
   const ROLE_RANK = { viewer:0, tech:1, foreman:2, superintendent:3, admin:4 };
@@ -906,32 +500,12 @@
     return (ROLE_RANK[r] || 0) >= ROLE_RANK.foreman;
   }
 
-  // UI refs
-  const saveChip = document.getElementById("saveChip");
-  const saveBtn = document.getElementById("saveBtn");
-  const backoutChip = document.getElementById("backoutChip");
-  const globalComment = document.getElementById("globalComment");
-  const resetBtn = document.getElementById("resetChecksBtn");
-
-  const backoutCompleteWrap = document.getElementById("backoutCompleteWrap");
-  const backoutCompleteBtn = document.getElementById("backoutCompleteBtn");
-
-  // Modal refs
-  const modalBackdrop = document.getElementById("modalBackdrop");
-  const modalCancel = document.getElementById("modalCancel");
-  const modalConfirm = document.getElementById("modalConfirm");
-  const modalMsg = document.getElementById("modalMsg");
-  const modalTitle = document.getElementById("modalTitle");
-
-  // Sections for progressive unlock
-  const unlockOrder = ["sec_s1","sec_s2","sec_validation","sec_comments","sec_approvals"];
-
   // State
   let state = {
     comment: "",
     backoutTriggered: false,
-    backoutFrom: null, // { radioName, sectionId, rowIndex }
-    radios: {} // name => "complete"|"problem"
+    backoutFrom: null, // { sectionId, idx }
+    steps: {} // key: `${sectionId}:${idx}` => { status, note }
   };
 
   function readState(){
@@ -942,9 +516,6 @@
       if (obj && typeof obj === "object") state = { ...state, ...obj };
     }catch(e){}
   }
-
-  function markUnsaved(){ saveChip.textContent = "Unsaved"; }
-
   function writeState(){
     try{
       localStorage.setItem(KEY, JSON.stringify(state));
@@ -952,8 +523,20 @@
     }catch(e){
       saveChip.textContent = "Save failed";
     }
-    applyBackoutLock();
-    applyBackoutCompleteUI();
+    applyLocks();
+    applyBackoutUI();
+  }
+
+  function buildSelect(value){
+    const sel = document.createElement("select");
+    sel.innerHTML = `
+      <option value="${STATUS.NONE}">Select…</option>
+      <option value="${STATUS.OK}">Complete / OK</option>
+      <option value="${STATUS.NA}">N/A</option>
+      <option value="${STATUS.ATTENTION}">Needs Attention</option>
+    `;
+    sel.value = value || STATUS.NONE;
+    return sel;
   }
 
   // Modal helper
@@ -983,237 +566,246 @@
     }
   });
 
-  function setRadioValue(name, value){
-    state.radios[name] = value;
-    markUnsaved();
-  }
-
-  function restoreRadios(){
-    Object.keys(state.radios || {}).forEach(name => {
-      const val = state.radios[name];
-      const inp = document.querySelector(`input[type="radio"][name="${CSS.escape(name)}"][value="${val}"]`);
-      if (inp) inp.checked = true;
-    });
-  }
-
-  function anyProblemSelectedOutsideBackout(){
-    // Any "problem" checked except those in b_* (backout section)
-    const problems = Array.from(document.querySelectorAll('input[type="radio"][value="problem"]:checked'));
-    return problems.some(r => !(r.name || "").startsWith("b_"));
-  }
-
-  function getBackoutProgress(){
-    // Count consecutive OK for b_1..b_4
-    const keys = ["b_1_status","b_2_status","b_3_status","b_4_status"];
-    let progressed = 0;
-    for (let i=0;i<keys.length;i++){
-      const n = keys[i];
-      const v = state.radios[n] || "";
-      if (v === "complete") progressed++;
-      else break;
+  // Progressive unlock:
+  // - Normal mode: sections unlock in order as previous section becomes fully complete/NA (no blanks, no attention)
+  // - Backout mode: only Backout section unlocked; others locked but readable
+  function sectionReady(sectionId){
+    const sec = SECTIONS.find(s => s.id === sectionId);
+    if (!sec) return false;
+    for (let i=0;i<sec.steps.length;i++){
+      const k = `${sectionId}:${i}`;
+      const st = (state.steps[k] && state.steps[k].status) || STATUS.NONE;
+      if (!(st === STATUS.OK || st === STATUS.NA)) return false;
     }
-    return progressed; // 0..4
+    return true;
   }
 
-  function applyBackoutLock(){
-    const isBackout = !!state.backoutTriggered;
+  function applyBackoutUI(){
+    const on = !!state.backoutTriggered;
+    backoutChip.style.display = on ? "inline-flex" : "none";
+    backoutChip.classList.toggle("active", on);
 
-    backoutChip.style.display = isBackout ? "inline-flex" : "none";
-    backoutChip.classList.toggle("active", isBackout);
+    backoutCompleteWrap.style.display = on ? "block" : "none";
+    const allowed = on && isForemanPlus() && !!state.backoutFrom;
+    backoutCompleteBtn.disabled = !allowed;
 
-    if (!isBackout){
-      document.querySelectorAll(".section").forEach(sec => sec.classList.remove("locked"));
+    if (on && state.backoutFrom){
+      backoutCompleteBtn.textContent = allowed
+        ? `Backout Complete (Return to ${state.backoutFrom.sectionId.toUpperCase()} • Step ${state.backoutFrom.idx+1})`
+        : `Backout Complete (Foreman+ Required)`;
+    }else{
+      backoutCompleteBtn.textContent = allowed ? "Backout Complete (Return to Step)" : "Backout Complete (Foreman+ Required)";
+    }
+  }
+
+  function applyLocks(){
+    const on = !!state.backoutTriggered;
+    if (on){
+      // Lock all except backout
+      document.querySelectorAll(".sec").forEach(el => {
+        if (el.id === "backout") el.classList.remove("locked");
+        else el.classList.add("locked");
+      });
       return;
     }
 
-    // Progressive unlock
-    const progressed = getBackoutProgress(); // 0..4
-    const unlocked = new Set(unlockOrder.slice(0, progressed));
+    // Progressive unlock order (everything before SOP sections should unlock sequentially too)
+    const order = SECTIONS.map(s => s.id).filter(id => id !== "backout");
+    let unlockedCount = 1;
+    for (let i=0;i<order.length;i++){
+      const id = order[i];
+      if (sectionReady(id)) unlockedCount = i + 2;
+      else break;
+    }
 
-    document.querySelectorAll(".section").forEach(sec => {
-      if (sec.id === "backoutSection"){
-        sec.classList.remove("locked");
+    document.querySelectorAll(".sec").forEach((el) => {
+      const idx = order.indexOf(el.id);
+      if (idx === -1){
+        // backout
+        el.classList.remove("locked");
         return;
       }
-      // Always allow reading; locked = dim + no interaction
-      // Unlock only if in unlocked set OR not part of main workflow list (metadata sections stay locked until progress)
-      const isMain = unlockOrder.includes(sec.id);
-      if (!isMain){
-        sec.classList.toggle("locked", true);
-      }else{
-        sec.classList.toggle("locked", !unlocked.has(sec.id));
-      }
+      el.classList.toggle("locked", idx >= unlockedCount);
     });
   }
 
-  function applyBackoutCompleteUI(){
-    const show = !!state.backoutTriggered;
-    backoutCompleteWrap.style.display = show ? "block" : "none";
-    if (!show) return;
-
-    const allowed = isForemanPlus() && !!state.backoutFrom;
-    backoutCompleteBtn.disabled = !allowed;
-
-    if (state.backoutFrom && state.backoutFrom.sectionId){
-      const sid = state.backoutFrom.sectionId;
-      const step = (state.backoutFrom.rowIndex ?? 0) + 1;
-      backoutCompleteBtn.textContent = allowed
-        ? `Backout Complete (Return to ${sid.toUpperCase()} • Step ${step})`
-        : `Backout Complete (Foreman+ Required)`;
-    }else{
-      backoutCompleteBtn.textContent = allowed
-        ? "Backout Complete (Return to Step)"
-        : "Backout Complete (Foreman+ Required)";
-    }
-  }
-
-  function scrollToTrigger(){
+  function flashReturnTarget(){
     if (!state.backoutFrom) return;
-
     const secEl = document.getElementById(state.backoutFrom.sectionId);
     if (!secEl) return;
-
-    const rows = secEl.querySelectorAll("table.sop tr");
-    const row = rows && rows[state.backoutFrom.rowIndex] ? rows[state.backoutFrom.rowIndex] : null;
-
-    if (row){
-      row.scrollIntoView({ behavior:"smooth", block:"center" });
-      row.classList.add("flash-step");
-      setTimeout(() => row.classList.remove("flash-step"), 1600);
-
-      const firstRadio = row.querySelector('input[type="radio"]');
-      if (firstRadio) setTimeout(() => { try{ firstRadio.focus(); }catch(e){} }, 400);
-    }else{
-      secEl.scrollIntoView({ behavior:"smooth", block:"start" });
-    }
+    const rows = secEl.querySelectorAll("tbody tr");
+    const tr = rows[state.backoutFrom.idx];
+    if (!tr) return;
+    tr.scrollIntoView({ behavior:"smooth", block:"center" });
+    tr.classList.add("flash-step");
+    setTimeout(() => tr.classList.remove("flash-step"), 1600);
   }
 
-  function attachRadioHandlers(){
-    document.querySelectorAll('input[type="radio"]').forEach(r => {
-      // Determine section id + row index at runtime
-      const tr = r.closest("tr");
-      const sec = r.closest(".section");
-      const sectionId = sec ? sec.id : null;
-      const rowIndex = tr && sec ? Array.from(sec.querySelectorAll("table.sop tr")).indexOf(tr) : 0;
+  function render(){
+    sectionsEl.innerHTML = "";
 
-      r.addEventListener("change", () => {
-        const name = r.name;
-        const value = r.value;
+    SECTIONS.forEach(sec => {
+      const secWrap = document.createElement("div");
+      secWrap.className = "sec";
+      secWrap.id = sec.id;
 
-        // Backout progress updates should always refresh locking
-        if ((name || "").startsWith("b_")){
-          setRadioValue(name, value);
-          applyBackoutLock();
-          return;
-        }
+      const head = document.createElement("div");
+      head.className = "sec-head";
+      head.innerHTML = `<div>${sec.title}</div><small>${sec.steps.length} steps</small>`;
 
-        // If selecting "problem", require confirm -> trigger backout + remember where it happened
-        if (value === "problem"){
-          const prev = state.radios[name] || ""; // previous selection
+      const body = document.createElement("div");
+      body.className = "sec-body";
+
+      const tbl = document.createElement("table");
+      tbl.innerHTML = `
+        <thead>
+          <tr>
+            <th class="col-step">Step</th>
+            <th>Procedure</th>
+            <th class="col-status">Status</th>
+            <th class="col-note">Notes</th>
+          </tr>
+        </thead>
+      `;
+
+      const tb = document.createElement("tbody");
+
+      sec.steps.forEach((html, idx) => {
+        const key = `${sec.id}:${idx}`;
+        const saved = state.steps[key] || { status: STATUS.NONE, note: "" };
+
+        const tr = document.createElement("tr");
+
+        const tdStep = document.createElement("td");
+        tdStep.className = "col-step";
+        tdStep.textContent = String(idx + 1);
+
+        const tdDesc = document.createElement("td");
+        tdDesc.innerHTML = `<div class="desc">${html}</div>`;
+
+        const tdStatus = document.createElement("td");
+        tdStatus.className = "col-status";
+        const sel = buildSelect(saved.status);
+        tdStatus.appendChild(sel);
+
+        const tdNote = document.createElement("td");
+        tdNote.className = "col-note";
+        const note = document.createElement("input");
+        note.type = "text";
+        note.placeholder = "Optional note…";
+        note.value = saved.note || "";
+        tdNote.appendChild(note);
+
+        note.addEventListener("input", () => {
+          state.steps[key] = state.steps[key] || {};
+          state.steps[key].note = note.value || "";
+          saveChip.textContent = "Unsaved";
+        });
+
+        // Needs Attention => confirm => trigger backout
+        let prev = sel.value;
+        sel.addEventListener("focus", () => { prev = sel.value; });
+
+        sel.addEventListener("change", () => {
+          if (sel.value !== STATUS.ATTENTION){
+            state.steps[key] = state.steps[key] || {};
+            state.steps[key].status = sel.value;
+            saveChip.textContent = "Unsaved";
+            applyLocks();
+            return;
+          }
+
           openModal({
-            title: "Confirm Backout",
-            msg: "Selecting “Problem” triggers Backout Procedure. Continue?",
+            title:"Confirm Backout",
+            msg:"Selecting “Needs Attention” triggers Backout Procedure. Continue?",
             onConfirm: () => {
-              setRadioValue(name, value);
+              state.steps[key] = state.steps[key] || {};
+              state.steps[key].status = STATUS.ATTENTION;
+
               state.backoutTriggered = true;
-              state.backoutFrom = { radioName: name, sectionId: sectionId || "sec_s1", rowIndex: rowIndex >= 0 ? rowIndex : 0 };
-              applyBackoutLock();
-              applyBackoutCompleteUI();
+              state.backoutFrom = { sectionId: sec.id, idx };
 
-              const backout = document.getElementById("backoutSection");
-              if (backout) backout.scrollIntoView({ behavior:"smooth", block:"start" });
+              saveChip.textContent = "Unsaved";
+              applyLocks();
+              applyBackoutUI();
+
+              const el = document.getElementById("backout");
+              if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
             },
-            onCancel: () => {
-              // revert selection
-              // clear current
-              const cur = document.querySelectorAll(`input[type="radio"][name="${CSS.escape(name)}"]`);
-              cur.forEach(x => x.checked = false);
-              // restore previous if existed
-              if (prev){
-                const prevInp = document.querySelector(`input[type="radio"][name="${CSS.escape(name)}"][value="${prev}"]`);
-                if (prevInp) prevInp.checked = true;
-              }
-            }
+            onCancel: () => { sel.value = prev || STATUS.NONE; }
           });
-          return;
-        }
+        });
 
-        // Normal "complete" selection
-        setRadioValue(name, value);
-
-        // If a problem is no longer present anywhere outside backout, do not auto-clear backout (Foreman+ must confirm)
-        // but allow lock state to remain until Backout Complete is pressed.
+        tr.appendChild(tdStep);
+        tr.appendChild(tdDesc);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdNote);
+        tb.appendChild(tr);
       });
+
+      tbl.appendChild(tb);
+      body.appendChild(tbl);
+
+      secWrap.appendChild(head);
+      secWrap.appendChild(body);
+      sectionsEl.appendChild(secWrap);
     });
+
+    globalComment.value = state.comment || "";
+    saveChip.textContent = "Loaded";
+    applyLocks();
+    applyBackoutUI();
   }
 
-  // Backout Complete button (Foreman+)
+  // Backout Complete (Foreman+)
   backoutCompleteBtn.addEventListener("click", () => {
     if (!state.backoutTriggered) return;
     if (!isForemanPlus()) return;
     if (!state.backoutFrom) return;
 
-    const sid = state.backoutFrom.sectionId;
-    const step = (state.backoutFrom.rowIndex ?? 0) + 1;
-
     openModal({
-      title: "Confirm Backout Completed",
-      msg: `Confirm the Backout Procedure has been performed. This will exit Backout mode and return to ${sid.toUpperCase()} step ${step}. Continue?`,
+      title:"Confirm Backout Completed",
+      msg:`Confirm Backout Procedure has been performed. This will return you to ${state.backoutFrom.sectionId.toUpperCase()} step ${state.backoutFrom.idx+1}. Continue?`,
       onConfirm: () => {
         state.backoutTriggered = false;
-        markUnsaved();
-        applyBackoutLock();
-        applyBackoutCompleteUI();
-        scrollToTrigger();
+        saveChip.textContent = "Unsaved";
+        applyLocks();
+        applyBackoutUI();
+        flashReturnTarget();
       },
       onCancel: () => {}
     });
   });
 
   // Save
-  saveBtn.addEventListener("click", () => {
+  document.getElementById("saveBtn").addEventListener("click", () => {
     state.comment = (globalComment.value || "").trim();
     writeState();
   });
+  globalComment.addEventListener("input", () => { saveChip.textContent = "Unsaved"; });
 
-  if (globalComment){
-    globalComment.addEventListener("input", () => { state.comment = (globalComment.value || ""); markUnsaved(); });
-  }
-
-  // Reset selections (with save-state reset)
-  if (resetBtn){
-    resetBtn.addEventListener("click", () => {
-      openModal({
-        title: "Reset Selections",
-        msg: "Reset all Complete/Problem selections and clear Backout state?",
-        onConfirm: () => {
-          document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-          state.radios = {};
-          state.backoutTriggered = false;
-          state.backoutFrom = null;
-          markUnsaved();
-          applyBackoutLock();
-          applyBackoutCompleteUI();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        },
-        onCancel: () => {}
-      });
+  // Reset
+  resetBtn.addEventListener("click", () => {
+    openModal({
+      title:"Reset",
+      msg:"Reset all statuses/notes/comments and clear Backout state?",
+      onConfirm: () => {
+        state = { comment:"", backoutTriggered:false, backoutFrom:null, steps:{} };
+        localStorage.removeItem(KEY);
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+      onCancel: () => {}
     });
-  }
+  });
 
-  // Keep role-gated UI in sync if role changes
+  // Role change updates button availability
   const roleSel = document.getElementById("nxRoleSelect");
-  if (roleSel){
-    roleSel.addEventListener("change", () => applyBackoutCompleteUI());
-  }
+  if (roleSel) roleSel.addEventListener("change", applyBackoutUI);
 
-  // Init: load state -> restore UI
+  // Init
   readState();
-  restoreRadios();
-  if (globalComment) globalComment.value = state.comment || "";
-  saveChip.textContent = "Loaded";
-  applyBackoutLock();
-  applyBackoutCompleteUI();
+  render();
 })();
 </script>
 
