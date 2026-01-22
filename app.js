@@ -17,10 +17,7 @@
     return null;
   }
 
-  // Step Complete button (hide immediately to prevent any flash)
-  const stepBtn = document.getElementById("stepCompleteBtn");
-  if (stepBtn) stepBtn.style.display = "none";
-
+  // Require FORMS + valid ID
   if (!id || !window.FORMS || !window.FORMS[id]) {
     document.body.innerHTML =
       '<div style="background:#b60000;color:white;padding:40px;font-family:Arial">' +
@@ -33,11 +30,10 @@
   const cfg = window.FORMS[id];
 
   document.title = cfg.title || "Form";
-  const titleEl = document.getElementById("page-title");
-  if (titleEl) titleEl.textContent = cfg.title || "";
-
-  const sectionEl = document.getElementById("section-title");
-  if (sectionEl) sectionEl.textContent = cfg.sectionTitle || "";
+  const pageTitle = document.getElementById("page-title");
+  const sectionTitle = document.getElementById("section-title");
+  if (pageTitle) pageTitle.textContent = cfg.title || "";
+  if (sectionTitle) sectionTitle.textContent = cfg.sectionTitle || "";
 
   const eqLabel = document.getElementById("eqLabel");
   if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "";
@@ -50,6 +46,7 @@
   const buttonsEl = document.getElementById("buttons");
   const mediaEl = document.getElementById("media");
 
+  // Storage keys used by equipment.html
   function stepKey(stepId){ return `nexus_${eq || "NO_EQ"}_step_${stepId}`; }
   function landingKey(){ return `nexus_${eq || "NO_EQ"}_landing_complete`; }
 
@@ -99,11 +96,16 @@
   }
 
   // =========================
-  // Step Complete rules
+  // Step Complete button (ALL TASKS)
   // =========================
-  const SHOW_STEP_COMPLETE_ON = new Set(["rif"]);
+  const stepBtn = document.getElementById("stepCompleteBtn");
+
+  // pages that should never be completable
   const NON_COMPLETABLE = new Set(["construction","phenolic","transformer","supporting","megger_reporting"]);
   const hideToggle = NON_COMPLETABLE.has(id);
+
+  // Hide immediately (prevents flash)
+  if (stepBtn) stepBtn.style.display = "none";
 
   function usable(){ return !!(eq && id); }
   function done(){ return !!(eq && id && localStorage.getItem(stepKey(id)) === "1"); }
@@ -129,15 +131,19 @@
   function refreshStepBtn(){
     if (!stepBtn) return;
 
-    if (hideToggle || !SHOW_STEP_COMPLETE_ON.has(id)){
+    if (hideToggle){
       stepBtn.style.display = "none";
       return;
     }
 
+    // Show on ALL task pages
     stepBtn.style.display = "block";
     stepBtn.disabled = !usable();
     stepBtn.title = usable() ? "" : "Missing eq or id in URL";
-    stepBtn.classList.toggle("complete", done());
+
+    const isDone = done();
+    stepBtn.classList.toggle("complete", isDone);
+    stepBtn.textContent = isDone ? "Step Complete ✓" : "Mark Step Complete";
   }
 
   if (stepBtn){
@@ -149,12 +155,13 @@
     });
   }
 
+  // keep in sync
   refreshStepBtn();
   window.addEventListener("storage", refreshStepBtn);
   window.addEventListener("focus", refreshStepBtn);
   window.addEventListener("pageshow", refreshStepBtn);
 
-  if (usable() && SHOW_STEP_COMPLETE_ON.has(id)) fbListenStep(eq, id);
+  if (usable() && !hideToggle) fbListenStep(eq, id);
 
   window.addEventListener("beforeunload", () => {
     try{ if (fbUnsub) fbUnsub(); }catch(e){}
@@ -242,7 +249,7 @@
       a.rel = "noopener noreferrer";
     }
 
-    if (buttonsEl) buttonsEl.appendChild(a);
+    buttonsEl.appendChild(a);
   });
 
   refreshStepBtn();
