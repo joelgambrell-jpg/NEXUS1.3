@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pre-FOD SOP</title>
+
+<style>
+  :root{
+    --bg:#b60000;
+    --panel:rgba(255,255,255,0.20);
+    --panel2:rgba(0,0,0,0.35);
+    --line:rgba(255,255,255,0.22);
+    --btn-bg:#0a0f24;
+    --btn-txt:#3ecbff;
+    --accent:#00c2ff;
+    --ok:#2dff9b;
+    --warn:#ffd84d;
+    --stop:#ff3b3b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#fff;background:var(--bg);}
+  body{
+    background-image:url("transformer.jpg");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  /* Header */
+  .nx-header-wrap{
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+  }
+  .nx-header{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+  }
+  .nx-header img{ height: 54px; width:auto; object-fit:contain; }
+
+  .wrap{max-width:1100px;margin:18px auto 60px;padding:0 18px;}
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+  }
+
+  h1{margin:0 0 6px;font-size:28px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.35);}
+  .sub{margin:0 0 12px;font-weight:900;opacity:.95;}
+
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 14px;}
+  .left-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .right-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+
+  .btn{
+    padding:12px 16px;
+    font-size:14px;
+    font-weight:900;
+    border-radius:999px;
+    color:var(--btn-txt);
+    background:var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    gap:10px;
+  }
+  .btn.secondary{
+    background: rgba(0,0,0,0.22);
+    color:#fff;
+    border:2px solid rgba(255,255,255,0.35);
+  }
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+
+  .chip{
+    padding:8px 12px;border-radius:999px;font-weight:900;
+    border:1px solid rgba(255,255,255,0.25);
+    background:rgba(0,0,0,0.22);
+    white-space:nowrap;
+  }
+
+  .section{
+    margin-top:14px;
+    padding:14px;
+    border-radius:18px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.20);
+  }
+  .section h2{
+    margin:0 0 10px;
+    font-size:16px;
+    font-weight:900;
+    letter-spacing:.02em;
+  }
+  .hint{font-size:13px;opacity:.92;line-height:1.35;margin:6px 0 12px;}
+
+  table{width:100%;border-collapse:collapse;table-layout:fixed;}
+  th,td{
+    border:1px solid rgba(255,255,255,0.22);
+    padding:10px;
+    vertical-align:top;
+    font-size:13px;
+  }
+  th{background:rgba(0,0,0,0.22);text-align:left;font-weight:900;}
+  .col-num{width:56px;}
+  .col-status{width:190px;}
+  @media (max-width:900px){ .col-status{width:160px;} }
+
+  select, textarea, input{
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.18);
+    outline:none;
+    font-size:13px;
+    font-weight:900;
+    background: rgba(255,255,255,0.92);
+    color:#111;
+  }
+  textarea{min-height:110px;resize:vertical;font-weight:800;}
+
+  /* Status coloring (row glow + pill) */
+  tr[data-state="complete"]{box-shadow: inset 0 0 0 9999px rgba(45,255,155,0.10);}
+  tr[data-state="attention"]{box-shadow: inset 0 0 0 9999px rgba(255,216,77,0.12);}
+  tr[data-state="backout"]{box-shadow: inset 0 0 0 9999px rgba(255,59,59,0.12);}
+
+  .legend{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    margin-top:10px;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 10px;border-radius:999px;
+    border:1px solid rgba(255,255,255,0.22);
+    background:rgba(0,0,0,0.22);
+    font-weight:900;font-size:12px;
+  }
+  .dot{width:10px;height:10px;border-radius:999px;display:inline-block;}
+  .dot.ok{background:var(--ok);}
+  .dot.warn{background:var(--warn);}
+  .dot.stop{background:var(--stop);}
+
+  /* Backout styling */
+  .backoutBox{
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.22);
+  }
+  .backoutRow{
+    display:grid;
+    grid-template-columns: 56px 1fr;
+    gap:0;
+    border-bottom:1px solid rgba(255,255,255,0.18);
+  }
+  .backoutRow:last-child{border-bottom:none;}
+  .backoutNum{
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;
+    background:rgba(0,0,0,0.25);
+    padding:12px 8px;
+  }
+  .backoutText{
+    padding:12px 12px;
+    font-weight:900;
+    color:#111;
+  }
+  .bk-red .backoutText{background: rgba(255,59,59,0.95); color:#111;}
+  .bk-yellow .backoutText{background: rgba(255,216,77,0.95); color:#111;}
+
+  .anchor{scroll-margin-top:120px;}
+
+  .actionsBottom{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px;}
+
+  .nx-footer{
+    margin-top: 40px;
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+</style>
+
+<link rel="stylesheet" href="assets/css/nexus-core.css">
+</head>
+
+<body>
+<div id="nxSessionBanner" class="nx-session-banner">
+  <div class="nx-left">
+    <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
+    <span class="nx-pill">Role: <span data-nx-role>viewer</span></span>
+    <span class="nx-pill" data-nx-status>Ready</span>
+  </div>
+  <div class="nx-right">
+    <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
+      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+        <option value="viewer">viewer</option>
+        <option value="tech">tech</option>
+        <option value="foreman">foreman</option>
+        <option value="superintendent">superintendent</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+  </div>
+</div>
+
+<script>
+  (function(){
+    try{
+      var sel=document.getElementById("nxRoleSelect");
+      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
+        sel.value = window.NEXUS.getRole();
+      }
+    }catch(e){}
+  })();
+</script>
+
+<a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
+
+<div class="nx-header-wrap">
+  <div class="nx-header"><img src="nexus.png" alt="NEXUS" /></div>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="row">
+      <div class="left-actions">
+        <a class="btn secondary" id="backTopBtn" href="#">← Back to Equipment</a>
+      </div>
+      <div class="right-actions">
+        <span class="chip" id="statusChip">Not saved</span>
+        <!-- Step complete buttons (Line/Load completion) -->
+        <button class="btn" id="lineCompleteBtn" type="button" style="display:none;">Line Side Complete</button>
+        <button class="btn" id="loadCompleteBtn" type="button" style="display:none;">Load Side Complete</button>
+      </div>
+    </div>
+
+    <h1>Pre-FOD SOP</h1>
+    <div class="sub" id="eqLabel">Equipment: (missing eq)</div>
+
+    <div class="section">
+      <h2>TPVR (Two Person Verification Rule)</h2>
+      <div class="hint">Select Yes or No.</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Requirement</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tpvrBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Section 1: Exterior Inspection</h2>
+      <div class="hint">Complete all checks. If any step is non-conforming, move to Backout Procedure immediately.</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Step</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="s1Body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Section 2: Open All Equipment Panels and Inspect</h2>
+      <div class="hint">If any step is found to be non-conforming, move to Backout Procedure immediately.</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Step</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="s2Body"></tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Section 3: Final Cleaning Process</h2>
+      <div class="hint">Perform final cleaning. If a step requires repetition, note it and repeat as needed.</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Step</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="s3Body"></tbody>
+      </table>
+    </div>
+
+    <div class="section anchor" id="backoutAnchor">
+      <h2>Backout Procedure</h2>
+      <div class="hint">Backout Steps 1–2 are <b style="color:#ffd84d">Critical Stop</b>. Steps 3–4 are <b style="color:#ffd84d">Caution / Resume</b>.</div>
+
+      <div class="backoutBox">
+        <div class="backoutRow bk-red">
+          <div class="backoutNum">1</div>
+          <div class="backoutText">STOP WORK</div>
+        </div>
+        <div class="backoutRow bk-red">
+          <div class="backoutNum">2</div>
+          <div class="backoutText">PLACE equipment in SAFE condition</div>
+        </div>
+        <div class="backoutRow bk-yellow">
+          <div class="backoutNum">3</div>
+          <div class="backoutText">COORDINATE with appropriate contacts Foreman, Manager or Engineer to determine safe path forward.</div>
+        </div>
+        <div class="backoutRow bk-yellow">
+          <div class="backoutNum">4</div>
+          <div class="backoutText">Once issue is resolved, return to appropriate Section and Step in this procedure, verify steps previously completed were unaffected and resume work.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Comments</h2>
+      <div class="hint">Use comments to document issues, decisions, and any backout triggers.</div>
+
+      <div class="legend" aria-label="Color coding legend">
+        <span class="pill"><span class="dot ok"></span>Complete / OK</span>
+        <span class="pill"><span class="dot warn"></span>Needs Attention / Note</span>
+        <span class="pill"><span class="dot stop"></span>Backout / Stop Work</span>
+      </div>
+
+      <div style="margin-top:10px;">
+        <textarea id="comments" placeholder="Add comments here..."></textarea>
+      </div>
+
+      <div class="actionsBottom">
+        <button class="btn secondary" id="saveBtn" type="button">Save</button>
+        <button class="btn" id="markReviewedBtn" type="button">Mark Reviewed</button>
+      </div>
+
+      <div style="margin-top:10px;opacity:.9;font-size:13px;line-height:1.35">
+        Saves to localStorage per equipment. If you choose <b>Backout</b> on any step, a confirmation prompt appears before jumping to the Backout Procedure.
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <div class="left-actions">
+        <a class="btn secondary" id="backBottomBtn" href="#">← Back to Equipment</a>
+      </div>
+      <div class="right-actions">
+        <button class="btn secondary" id="scrollTopBtn" type="button">Back to Top</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const eq = (qs.get("eq") || "").trim();
+
+  // ---- Links + labels
+  const eqLabel = document.getElementById("eqLabel");
+  if (eqLabel) eqLabel.textContent = eq ? `Equipment: ${eq}` : "Missing equipment ID (eq)";
+
+  const backHref = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "index.html";
+  document.getElementById("backTopBtn").href = backHref;
+  document.getElementById("backBottomBtn").href = backHref;
+
+  document.getElementById("scrollTopBtn").addEventListener("click", () => window.scrollTo({top:0,behavior:"smooth"}));
+
+  // ---- Storage keys
+  const keyPrefod = `nexus_${eq||"NO_EQ"}_prefod_sop_v1`;
+  const keyReviewed = `nexus_${eq||"NO_EQ"}_step_prefod`; // optional: allows Equipment page completion tile to light up if you want
+  // NOTE: If your equipment.html expects `nexus_${eq}_step_prefod` this matches.
+
+  // If you want “step complete” buttons similar to Meg (line/load) on this SOP:
+  // Keep them hidden by default unless you later decide to show them.
+  const lineCompleteBtn = document.getElementById("lineCompleteBtn");
+  const loadCompleteBtn = document.getElementById("loadCompleteBtn");
+  if (lineCompleteBtn) lineCompleteBtn.style.display = "none";
+  if (loadCompleteBtn) loadCompleteBtn.style.display = "none";
+
+  const statusChip = document.getElementById("statusChip");
+  const commentsEl = document.getElementById("comments");
+
+  const STATUS = [
+    { v:"",  t:"Select…" , state:"" },
+    { v:"ok", t:"Complete / OK", state:"complete" },
+    { v:"na", t:"N/A", state:"complete" },
+    { v:"attn", t:"Needs Attention", state:"attention" },
+    { v:"backout", t:"Backout (STOP)", state:"backout", isBackout:true }
+  ];
+
+  // ---- Content (editable)
+  const tpvr = [
+    { n: 1, text: "TPVR (Two Person Verification Rule) — Yes or No" }
+  ];
+
+  const section1 = [
+    { n: 1, text: "Ensure all PPE is being worn and is serviceable throughout entire process" },
+    { n: 2, text: "Follow LOTO procedure and confirm equipment is de-energized" },
+    { n: 3, text: "Confirm with foreman that work in this piece of equipment has been finished and verify all work is complete above this piece of equipment during this inspection" },
+    { n: 4, text: "Prepare work site by removing all debris, tools and nonessential personnel. If unsafe conditions are present and unavoidable move to Backout procedure immediately" },
+    { n: 5, text: "Verify that all labels display all the correct information and are placed in the appropriate locations on the equipment" },
+    { n: 6, text: "Verify location, clearance and orientation of equipment matches engineering drawing and conforms to NEC article 110 and 400 series" },
+    { n: 7, text: "Look for missing knockout covers, damaged connectors or gaps in exterior penetrations" },
+    { n: 8, text: "Inspect for gaps at base or wall contact points while inspecting anchoring hardware for appropriate condition and usage per NEC article 110 and 400 series" },
+    { n: 9, text: "Look for evidence of liquid on or around the equipment that could penetrate the enclosure" },
+    { n: 10, text: "Inspect for dents, scratches and other damage to the exterior that diminish functionality" },
+    { n: 11, text: "Remove any debris suppression plastic from vents" }
+  ];
+
+  const section2 = [
+    { n: 1, text: "If any step is found to be non-conforming move to Backout Procedure immediately" },
+    { n: 2, text: "Open all accessible panels and inspect all cavities for debris, loose hardware, tools, wire clippings, or foreign material" },
+    { n: 3, text: "Verify all wire terminations are properly installed, dressed, and there are no loose conductors" },
+    { n: 4, text: "Inspect for damaged insulation, pinch points, sharp edges, or abrasion risk inside the enclosure" },
+    { n: 5, text: "Verify grounding/bonding conductors and hardware are installed correctly and secure" }
+  ];
+
+  const section3 = [
+    { n: 1, text: "Use a vacuum cleaner with HEPA filtration system to clean every interior surface starting at the top of the enclosure working downward including walls but bars and floor" },
+    { n: 2, text: "Retrieve a Swiffer duster from QCx cart to clean every surface that is not completely accessible to clean with a gloved hand" },
+    { n: 3, text: "Coordinate with foreman or manager to perform borescope inspection of all cavities that are not fully visible from the access panels removed previously for debris" },
+    { n: 4, text: "Retrieve a microfiber cloth and spray bottle of isopropyl alcohol from the QCx cart or gang box. Fold cloth into 4 sections and apply 4 sprays onto the microfiber cloth." },
+    { n: 5, text: "Wipe every surface starting at the top of the enclosure working downward to remove any residual dust debris or oils. As the cloth becomes soiled fold opposing directions to maintain a clean surface touching the equipment as may be necessary." },
+    { n: 6, text: "Step 4 may need to be repeated to keep the alcohol evaporating as well as the microfiber cloth becoming soiled in step 5." }
+  ];
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function readJSON(key){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+  }
+  function writeJSON(key, obj){
+    localStorage.setItem(key, JSON.stringify(obj));
+  }
+
+  function buildRow(stepKey, item, saved){
+    const tr = document.createElement("tr");
+    tr.dataset.stepKey = stepKey;
+
+    const savedVal = (saved && saved[stepKey]) ? saved[stepKey] : "";
+    const prevVal = savedVal;
+
+    tr.dataset.state = "";
+
+    const select = document.createElement("select");
+    STATUS.forEach(o => {
+      const opt = document.createElement("option");
+      opt.value = o.v;
+      opt.textContent = o.t;
+      if (o.v === savedVal) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    function applyState(val){
+      const match = STATUS.find(x => x.v === val);
+      tr.dataset.state = match?.state || "";
+    }
+    applyState(savedVal);
+
+    select.addEventListener("focus", () => {
+      select.dataset.prev = select.value || "";
+    });
+
+    select.addEventListener("change", () => {
+      const next = select.value || "";
+      const was = select.dataset.prev ?? prevVal ?? "";
+
+      const isBackout = next === "backout";
+      if (isBackout){
+        const ok = confirm("Backout selected. Confirm you want to trigger the Backout Procedure?");
+        if (!ok){
+          select.value = was;
+          applyState(select.value || "");
+          return;
+        }
+        // confirmed: scroll to Backout section
+        setTimeout(() => {
+          const el = document.getElementById("backoutAnchor");
+          if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+        }, 50);
+      }
+      applyState(next);
+      markDirty();
+      // keep prev updated
+      select.dataset.prev = next;
+    });
+
+    tr.innerHTML = `
+      <td class="col-num" style="font-weight:900;text-align:center;">${escapeHtml(item.n)}</td>
+      <td>${escapeHtml(item.text)}</td>
+      <td class="col-status"></td>
+    `;
+    tr.children[2].appendChild(select);
+    return tr;
+  }
+
+  function renderSection(tbodyId, items, prefix, savedMap){
+    const body = document.getElementById(tbodyId);
+    body.innerHTML = "";
+    items.forEach(it => {
+      const k = `${prefix}_${String(it.n).padStart(2,"0")}`;
+      body.appendChild(buildRow(k, it, savedMap));
+    });
+  }
+
+  let dirty = false;
+  function markDirty(){
+    dirty = true;
+    if (statusChip) statusChip.textContent = "Unsaved changes";
+  }
+
+  function collectStates(){
+    const map = {};
+    document.querySelectorAll("tbody tr[data-step-key]").forEach(tr => {
+      const k = tr.dataset.stepKey;
+      const sel = tr.querySelector("select");
+      map[k] = sel ? (sel.value || "") : "";
+    });
+    return map;
+  }
+
+  function save(){
+    const payload = {
+      eq: eq || "",
+      updatedAt: new Date().toLocaleString(),
+      states: collectStates(),
+      comments: commentsEl ? (commentsEl.value || "") : ""
+    };
+    writeJSON(keyPrefod, payload);
+    dirty = false;
+    if (statusChip) statusChip.textContent = "Saved";
+  }
+
+  function load(){
+    const saved = readJSON(keyPrefod) || {};
+    const states = saved.states || {};
+    if (commentsEl) commentsEl.value = saved.comments || "";
+
+    renderSection("tpvrBody", tpvr, "tpvr", states);
+    renderSection("s1Body", section1, "s1", states);
+    renderSection("s2Body", section2, "s2", states);
+    renderSection("s3Body", section3, "s3", states);
+
+    if (statusChip){
+      statusChip.textContent = saved.updatedAt ? `Loaded (${saved.updatedAt})` : "Not saved";
+    }
+  }
+
+  // Buttons
+  document.getElementById("saveBtn").addEventListener("click", save);
+
+  document.getElementById("markReviewedBtn").addEventListener("click", () => {
+    // Mark the Pre-FOD task as complete (equipment tile can pick this up)
+    try{
+      localStorage.setItem(keyReviewed, "1");
+    }catch(e){}
+    save();
+    if (statusChip) statusChip.textContent = "Reviewed + Saved";
+  });
+
+  // Autosave safety: keep light, only save on unload if dirty
+  window.addEventListener("beforeunload", () => {
+    try{ if (dirty) save(); }catch(e){}
+  });
+
+  // Change tracking
+  document.addEventListener("input", (e) => {
+    if (e.target && (e.target.id === "comments")) markDirty();
+  });
+
+  load();
+})();
+</script>
+
+<script>
+(function(){
+  window.NEXUS_back = function(){
+    try{
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1){
+        history.back();
+        return false;
+      }
+    }catch(e){}
+    const qs = new URLSearchParams(location.search);
+    const eq = qs.get("eq");
+    location.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
+    return false;
+  };
+})();
+</script>
+
+<footer class="nx-footer">
+  © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
+</footer>
+
+<script src="assets/js/nexus-core.js"></script>
+<script src="assets/js/nexus-firebase-bridge.js"></script>
+</body>
+</html>
