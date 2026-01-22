@@ -1,4 +1,4 @@
-<!-- prefod_sop.html (FULL drop-in) -->
+<!-- prefod_sop.html (FULL drop-in with progressive Backout unlock + readable gray lock) -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -91,6 +91,25 @@
     border-color: rgba(255,90,90,0.55);
     color:#fff;
     box-shadow: 0 0 0 2px rgba(255,60,60,0.10) inset;
+  }
+
+  /* Bright active backout alert */
+  .chip.alert.active{
+    background:#ff2b2b;
+    border-color:#ff2b2b;
+    color:#fff;
+    box-shadow:0 0 14px rgba(255,0,0,.75);
+    animation:pulse 1.1s infinite alternate;
+  }
+  @keyframes pulse{
+    from{ box-shadow:0 0 8px rgba(255,0,0,.45); }
+    to{ box-shadow:0 0 20px rgba(255,0,0,.95); }
+  }
+
+  /* Locked but still readable */
+  .locked{
+    opacity:.72;
+    pointer-events:none;
   }
 
   /* White document-only area (requested) */
@@ -459,6 +478,45 @@
       if (obj && typeof obj === "object") state = { ...state, ...obj };
     }catch(e){}
   }
+
+  function applyBackoutLock(){
+    const isBackout = !!state.backoutTriggered;
+
+    // chip state
+    backoutChip.style.display = isBackout ? "inline-flex" : "none";
+    backoutChip.classList.toggle("active", isBackout);
+
+    if (!isBackout){
+      // unlock everything
+      document.querySelectorAll(".sec").forEach(sec => sec.classList.remove("locked"));
+      return;
+    }
+
+    // Determine progress through Backout steps:
+    // Count consecutive Backout steps marked OK from step 1 onward.
+    const backoutStepsCount = (SECTIONS.find(s => s.id === "backout")?.steps.length) || 0;
+
+    let progressed = 0;
+    for (let i = 0; i < backoutStepsCount; i++){
+      const k = `backout:${i}`;
+      const st = (state.steps[k]?.status) || "";
+      if (st === STATUS.OK) progressed++;
+      else break;
+    }
+
+    // Unlock sections in order as Backout steps are completed
+    const unlockOrder = ["sec1","sec2","sec3","sec4","validation"];
+    const unlockedIds = new Set(unlockOrder.slice(0, progressed));
+
+    document.querySelectorAll(".sec").forEach(sec => {
+      if (sec.id === "backout"){
+        sec.classList.remove("locked"); // backout always usable
+        return;
+      }
+      sec.classList.toggle("locked", !unlockedIds.has(sec.id));
+    });
+  }
+
   function writeState(){
     try{
       localStorage.setItem(KEY, JSON.stringify(state));
@@ -466,14 +524,7 @@
     }catch(e){
       saveChip.textContent = "Save failed";
     }
-    backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
-  }
-
-  function statusLabel(v){
-    if (v===STATUS.OK) return "Complete / OK";
-    if (v===STATUS.NA) return "N/A";
-    if (v===STATUS.ATTENTION) return "Needs Attention";
-    return "Select…";
+    applyBackoutLock();
   }
 
   function buildSelect(value){
@@ -549,15 +600,20 @@
           saveChip.textContent = "Unsaved";
         });
 
-        // Needs Attention => confirm => trigger backout (no Backout option exists)
+        // Needs Attention => confirm => trigger backout
         let prev = sel.value;
         sel.addEventListener("focus", () => { prev = sel.value; });
 
         sel.addEventListener("change", () => {
+          // Normal (non-attention) changes
           if (sel.value !== STATUS.ATTENTION){
             state.steps[key] = state.steps[key] || {};
             state.steps[key].status = sel.value;
             saveChip.textContent = "Unsaved";
+
+            // If editing backout section, refresh progressive unlock
+            if (sec.id === "backout") applyBackoutLock();
+
             return;
           }
 
@@ -570,11 +626,13 @@
               state.steps[key] = state.steps[key] || {};
               state.steps[key].status = STATUS.ATTENTION;
 
-              // default to Backout flow
+              // Trigger backout flow
               state.backoutTriggered = true;
-              backoutChip.style.display = "inline-flex";
 
               saveChip.textContent = "Unsaved";
+
+              // Apply lock now (everything dims/locks until backout progress unlocks)
+              applyBackoutLock();
 
               // Jump to Backout Procedure section
               const el = document.getElementById("backout");
@@ -604,8 +662,10 @@
     });
 
     globalComment.value = state.comment || "";
-    backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
     saveChip.textContent = "Loaded";
+
+    // Apply initial lock/unlock state after DOM is built
+    applyBackoutLock();
   }
 
   // Modal helper
@@ -653,9 +713,6 @@
   // Init
   readState();
   render();
-
-  // If already triggered backout, show chip immediately
-  backoutChip.style.display = state.backoutTriggered ? "inline-flex" : "none";
 })();
 </script>
 
