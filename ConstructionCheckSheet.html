@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Construction Check Sheet</title>
 
+<link rel="stylesheet" href="assets/css/nexus-core.css">
+<script defer src="assets/js/nexus-core.js"></script>
+<script defer src="assets/js/nexus-firebase-bridge.js"></script>
+
 <style>
   :root{
     --bg:#b60000;
@@ -333,16 +337,14 @@
 
   @media print{
     body{ background:#fff !important; color:#000 !important; }
-    .nx-header-wrap, .actions, .topbar{ display:none !important; }
+    .nx-header-wrap, .actions, .topbar, #nxSessionBanner, .nx-back-btn{ display:none !important; }
     .card{ background:#fff !important; border:none !important; backdrop-filter:none !important; }
     .sheet-panel{ border:none !important; }
     th{ color:#000 !important; background:#eee !important; }
     .table-wrap{ border:1px solid #ccc !important; }
     .cell-input{ border:1px solid #999 !important; background:#fff !important; color:#000 !important; }
   }
-</style>
 
-<style>
   .nx-footer{
     margin-top: 40px;
     padding: 18px 12px;
@@ -354,11 +356,9 @@
     border-top: 1px solid rgba(255,255,255,0.18);
   }
 </style>
-
-  <link rel="stylesheet" href="assets/css/nexus-core.css">
 </head>
 
-<body>\n
+<body>
 <div id="nxSessionBanner" class="nx-session-banner">
   <div class="nx-left">
     <span class="nx-pill">Equipment: <span data-nx-eq>(none)</span></span>
@@ -367,7 +367,7 @@
   </div>
   <div class="nx-right">
     <label style="font-weight:800;font-size:12px;opacity:.95;">Set Role
-      <select id="nxRoleSelect" onchange="NEXUS.setRole(this.value)">
+      <select id="nxRoleSelect">
         <option value="viewer">viewer</option>
         <option value="tech">tech</option>
         <option value="foreman">foreman</option>
@@ -377,16 +377,6 @@
     </label>
   </div>
 </div>
-<script>
-  (function(){
-    try{
-      var sel=document.getElementById("nxRoleSelect");
-      if(sel && window.NEXUS && typeof window.NEXUS.getRole==="function"){
-        sel.value = window.NEXUS.getRole();
-      }
-    }catch(e){}
-  })();
-</script>
 
 <a class="nx-back-btn" href="#" onclick="return NEXUS_back();">← Back</a>
 
@@ -487,23 +477,47 @@
   // Role (pre-Firebase UI gate)
   const ROLE_KEY = "nexus_user_role";
   const roleSelect = document.getElementById("roleSelect");
+  const nxRoleSelect = document.getElementById("nxRoleSelect");
 
   const ROLE_ORDER = ["viewer","tech","foreman","superintendent","admin"];
   function roleAtLeast(role, minRole){
     return ROLE_ORDER.indexOf(role) >= ROLE_ORDER.indexOf(minRole);
   }
 
+  // Use NEXUS role helpers if present; fallback to localStorage
   function getRole(){
+    try{
+      if (window.NEXUS && typeof window.NEXUS.getRole === "function") {
+        const r = window.NEXUS.getRole();
+        return ROLE_ORDER.includes(r) ? r : "viewer";
+      }
+    }catch(e){}
     const raw = (localStorage.getItem(ROLE_KEY) || "viewer").trim();
     return ROLE_ORDER.includes(raw) ? raw : "viewer";
   }
 
   function setRole(role){
+    try{
+      if (window.NEXUS && typeof window.NEXUS.setRole === "function") {
+        window.NEXUS.setRole(role);
+        return;
+      }
+    }catch(e){}
     localStorage.setItem(ROLE_KEY, role);
   }
 
+  function syncRoleUI(role){
+    if (roleSelect) roleSelect.value = role;
+    if (nxRoleSelect) nxRoleSelect.value = role;
+
+    // update banner pills if nexus-core isn't doing it yet
+    try{
+      const pillRole = document.querySelector("[data-nx-role]");
+      if (pillRole) pillRole.textContent = role;
+    }catch(e){}
+  }
+
   // Template lines derived from your Google Sheet structure
-  // Each checklist item stores Date, Initials, Notes, Complete
   const TEMPLATE = [
     {type:"section", text:"LV Transformer 001"},
     {type:"item", id:"rif_completed", text:"RIF Completed"},
@@ -552,7 +566,6 @@
   ];
 
   function uuid(){
-    // small uuid for local usage
     return "r_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
   }
 
@@ -582,7 +595,7 @@
     lines.push(`SignedOffAt: ${record.signedOffAt || ""}`);
 
     return {
-      to: "", // filled during Firebase phase (job/site distribution)
+      to: "",
       subject,
       body: lines.join("\n"),
       meta: {
@@ -617,16 +630,15 @@
     return Math.round((done / items.length) * 100);
   }
 
-  function canEditRecord(role, record){
-    // After signoff: only admin can edit
-    if (record.signedOff && role !== "admin") return false;
-    // Before signoff: anyone can edit fields (unless you later want stricter)
-    return true;
-  }
-
   function render(){
     const role = getRole();
-    roleSelect.value = role;
+    syncRoleUI(role);
+
+    // banner equipment pill (if nexus-core doesn't do it yet)
+    try{
+      const pillEq = document.querySelector("[data-nx-eq]");
+      if (pillEq) pillEq.textContent = eq || "(none)";
+    }catch(e){}
 
     const foremanPlus = roleAtLeast(role, "foreman");
     btnAddRecord.disabled = !foremanPlus;
@@ -739,18 +751,13 @@
         const g = document.createElement("div");
         g.className = "grid-2";
 
-        // Equipment Name
         g.appendChild(makeSheetField("Equipment Name", makeTextInput(rec, "equipmentName", "e.g., LV Transformer 001", locked)));
-        // Equip ID
         g.appendChild(makeSheetField("Equip ID", makeTextInput(rec, "equipId", "Equip ID", locked)));
-        // Date Int.
         g.appendChild(makeSheetField("Date Int.", makeTextInput(rec, "dateInt", "MM/DD/YYYY", locked)));
-        // Notes
         g.appendChild(makeSheetField("Notes", makeTextInput(rec, "notes", "Notes", locked)));
 
         body.appendChild(g);
 
-        // Checklist
         const tableWrap = document.createElement("div");
         tableWrap.className = "table-wrap";
 
@@ -769,7 +776,6 @@
 
         const tbody = document.createElement("tbody");
 
-        // Render template items
         TEMPLATE.forEach(t => {
           if (t.type === "section"){
             const tr = document.createElement("tr");
@@ -781,13 +787,11 @@
             tbody.appendChild(tr);
             return;
           }
-
           if (t.type === "item"){
             tbody.appendChild(renderChecklistRow(rec, t.id, t.text, locked, foremanPlus, false));
           }
         });
 
-        // Render custom lines
         if (rec.customLines.length){
           const tr = document.createElement("tr");
           tr.className = "section-row";
@@ -806,7 +810,6 @@
         tableWrap.appendChild(table);
         body.appendChild(tableWrap);
 
-        // Sign-off
         const signWrap = document.createElement("div");
         signWrap.style.marginTop = "12px";
         signWrap.style.display = "grid";
@@ -895,7 +898,6 @@
       recordsEl.appendChild(wrap);
     });
 
-    // If empty: seed one record
     if (!state.records.length){
       const empty = document.createElement("div");
       empty.className = "hint";
@@ -994,7 +996,6 @@
     tdDone.appendChild(chk);
     tr.appendChild(tdDone);
 
-    // Custom line remove button (foreman+)
     if (isCustom){
       const btn = document.createElement("button");
       btn.type = "button";
@@ -1048,7 +1049,6 @@
   function applyPayload(data){
     if (!data) return;
 
-    // header meta
     const m = data.meta || {};
     document.getElementById("building").value = m.building || "";
     document.getElementById("phase").value = m.phase || "";
@@ -1062,7 +1062,6 @@
       foreman: m.foreman || ""
     };
 
-    // records
     const recs = Array.isArray(data.records) ? data.records : [];
     state.records = recs.map(r => ({
       id: r.id || uuid(),
@@ -1086,7 +1085,6 @@
     if (!raw) return false;
     try{
       const v1 = JSON.parse(raw);
-      // v1 schema: {eq, building, phase, pod, foreman, fields:{rX_date/init/notes}}
       const meta = {
         building: v1.building || "",
         phase: v1.phase || "",
@@ -1110,7 +1108,6 @@
         emailPayload: null
       };
 
-      // Best-effort: map the first 10 old rows onto early items
       const orderedIds = TEMPLATE.filter(t=>t.type==="item").map(t=>t.id);
       const fields = v1.fields || {};
       for (let i=0;i<orderedIds.length;i++){
@@ -1163,13 +1160,11 @@
       }catch(e){}
     }
 
-    // Try v1 migration
     if (tryMigrateV1()){
       render();
       return;
     }
 
-    // Seed default record
     state.records = [{
       id: uuid(),
       expanded: true,
@@ -1188,7 +1183,6 @@
     setStatus("New");
   }
 
-  // Wire header inputs to status
   ["building","phase","pod","foreman"].forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener("input", ()=> setStatus("Not saved"));
@@ -1220,14 +1214,17 @@
     render();
   });
 
-  roleSelect.addEventListener("change", ()=>{
-    setRole(roleSelect.value);
+  // Role selects (keep both, synced)
+  function onRoleChange(next){
+    setRole(next);
+    syncRoleUI(next);
     render();
-  });
+  }
+  roleSelect.addEventListener("change", ()=> onRoleChange(roleSelect.value));
+  nxRoleSelect.addEventListener("change", ()=> onRoleChange(nxRoleSelect.value));
 
   load();
-  // initial role
-  roleSelect.value = getRole();
+  syncRoleUI(getRole());
   render();
 })();
 </script>
@@ -1249,12 +1246,9 @@
 })();
 </script>
 
-
 <footer class="nx-footer">
   © 2026 NEXUS Data Science — Built for ACE Electric — All Rights Reserved
 </footer>
 
-  <script src="assets/js/nexus-core.js"></script>
-  <script src="assets/js/nexus-firebase-bridge.js"></script>
 </body>
 </html>
