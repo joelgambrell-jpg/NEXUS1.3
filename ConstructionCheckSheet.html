@@ -204,24 +204,30 @@
     border: 1px solid var(--sheet-line);
     border-radius: 14px;
     overflow: hidden;
+    background:#fff;
   }
 
-  .record-summary{
+  .record-header{
+    padding: 12px 12px;
+    background: var(--sheet-head);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .record-header-top{
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap: 10px;
-    padding: 12px 12px;
-    background: var(--sheet-head);
-    cursor: pointer;
-    user-select: none;
+    flex-wrap:wrap;
   }
-  .record-summary .left{
+  .record-header-left{
     display:flex;
     align-items:center;
     gap: 10px;
     flex-wrap: wrap;
   }
+
   .pill{
     display:inline-flex;
     align-items:center;
@@ -236,6 +242,35 @@
   .pill.muted{ color: var(--sheet-muted); }
   .pill.ok{ border-color: rgba(26,127,55,0.25); color: var(--ok); }
   .pill.bad{ border-color: rgba(255,77,77,0.25); color: #b00020; }
+
+  .progress-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .progress-bar{
+    width: 260px;
+    max-width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    background: #e9e9e9;
+    border: 1px solid #dcdcdc;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: #d00;
+    transition: width 120ms linear;
+  }
+  .progress-text{
+    font-weight:900;
+    color: var(--sheet-muted);
+    font-size: 12px;
+    letter-spacing:.04em;
+  }
 
   .record-body{
     padding: 12px;
@@ -335,6 +370,39 @@
     font-weight: 900;
   }
 
+  .insert-panel{
+    border: 1px dashed #d0d0d0;
+    border-radius: 12px;
+    padding: 10px;
+    background:#fbfbfb;
+    margin: 10px 0 12px;
+  }
+  .insert-grid{
+    display:grid;
+    grid-template-columns: 160px 1fr 1fr;
+    gap:10px;
+    align-items:end;
+  }
+  @media (max-width:900px){
+    .insert-grid{ grid-template-columns:1fr; }
+  }
+  .mini-btn{
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 900;
+    border-radius: 999px;
+    color: var(--btn-txt);
+    background: var(--btn-bg);
+    border:2px solid var(--accent);
+    cursor:pointer;
+    user-select:none;
+  }
+  .mini-btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .stack-2{ display:flex; flex-direction:column; gap:8px; }
+  .inline-2{ display:flex; gap:8px; }
+  .inline-2 > *{ flex:1; }
+
   @media print{
     body{ background:#fff !important; color:#000 !important; }
     .nx-header-wrap, .actions, .topbar, #nxSessionBanner, .nx-back-btn{ display:none !important; }
@@ -343,6 +411,8 @@
     th{ color:#000 !important; background:#eee !important; }
     .table-wrap{ border:1px solid #ccc !important; }
     .cell-input{ border:1px solid #999 !important; background:#fff !important; color:#000 !important; }
+    .insert-panel, .row-actions .btn, .row-actions .mini-btn{ display:none !important; }
+    .progress-bar{ border:1px solid #aaa !important; }
   }
 
   .nx-footer{
@@ -451,7 +521,7 @@
     <div class="sheet-panel">
       <div class="records" id="records"></div>
       <div class="hint" style="margin-top:10px;">
-        Access control: Add/Remove/Sign-off requires role foreman+ (UI gate now; Firebase rules later).
+        Access control: Add/Remove/Insert/Delete/Sign-off requires role foreman+ (UI gate now; Firebase rules later).
       </div>
     </div>
   </div>
@@ -470,7 +540,7 @@
   const back = document.getElementById("backToEquipment");
   back.href = eq ? `equipment.html?eq=${encodeURIComponent(eq)}` : "equipment.html";
 
-  // Versioned storage key
+  // Storage key (keep continuity; payload version field will bump)
   const KEY_V2 = `nexus_${eq || "NO_EQ"}_construction_check_sheet_v2`;
   const KEY_V1 = `nexus_${eq || "NO_EQ"}_construction_check_sheet_v1`;
 
@@ -569,14 +639,29 @@
     return "r_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
   }
 
-  function freshChecklist(){
+  function freshChecklistFromLines(lines){
     const out = {};
-    TEMPLATE.forEach(t => {
-      if (t.type === "item"){
-        out[t.id] = { date:"", initials:"", notes:"", complete:false };
+    (lines || []).forEach(l => {
+      if (l.type === "item"){
+        out[l.id] = { date:"", initials:"", notes:"", complete:false };
       }
     });
     return out;
+  }
+
+  function buildTemplateLines(){
+    return TEMPLATE.map(t => {
+      if (t.type === "section"){
+        return { type:"section", id:"sec_" + uuid(), text:t.text, isCustom:false };
+      }
+      return { type:"item", id:t.id, text:t.text, isCustom:false };
+    });
+  }
+
+  function progressColor(pct){
+    const p = Math.max(0, Math.min(100, pct || 0));
+    const hue = Math.round((p / 100) * 120); // 0 red -> 120 green
+    return `hsl(${hue}, 85%, 45%)`;
   }
 
   function buildEmailPayload({eq, record, meta}){
@@ -593,7 +678,6 @@
     lines.push(`QCX Foreman: ${record.signoff.qcxForeman || ""}`);
     lines.push(`Sign-off Date: ${record.signoff.date || ""}`);
     lines.push(`SignedOffAt: ${record.signedOffAt || ""}`);
-
     return {
       to: "",
       subject,
@@ -623,287 +707,24 @@
     document.getElementById("saveStatus").textContent = txt;
   }
 
-  function computeProgress(record){
-    const items = Object.values(record.checklist || {});
-    if (!items.length) return 0;
-    const done = items.filter(x => !!x.complete).length;
-    return Math.round((done / items.length) * 100);
-  }
+  function computeProgress(rec){
+    const lines = rec.lines || [];
+    let total = 0;
+    let done = 0;
 
-  function render(){
-    const role = getRole();
-    syncRoleUI(role);
-
-    // banner equipment pill (if nexus-core doesn't do it yet)
-    try{
-      const pillEq = document.querySelector("[data-nx-eq]");
-      if (pillEq) pillEq.textContent = eq || "(none)";
-    }catch(e){}
-
-    const foremanPlus = roleAtLeast(role, "foreman");
-    btnAddRecord.disabled = !foremanPlus;
-
-    recordsEl.innerHTML = "";
-
-    state.records.forEach((rec, idx) => {
-      const progress = computeProgress(rec);
-      const locked = rec.signedOff && role !== "admin";
-
-      const wrap = document.createElement("div");
-      wrap.className = "record";
-
-      const summary = document.createElement("div");
-      summary.className = "record-summary";
-      summary.setAttribute("role","button");
-      summary.setAttribute("tabindex","0");
-
-      const left = document.createElement("div");
-      left.className = "left";
-
-      const title = document.createElement("span");
-      title.className = "pill";
-      title.textContent = rec.equipmentName || `Sheet ${idx+1}`;
-      left.appendChild(title);
-
-      const prog = document.createElement("span");
-      prog.className = "pill muted";
-      prog.textContent = `Progress ${progress}%`;
-      left.appendChild(prog);
-
-      const sign = document.createElement("span");
-      sign.className = rec.signedOff ? "pill ok" : "pill bad";
-      sign.textContent = rec.signedOff ? "Signed Off" : "Not Signed";
-      left.appendChild(sign);
-
-      const right = document.createElement("div");
-      right.style.display = "flex";
-      right.style.gap = "10px";
-      right.style.alignItems = "center";
-
-      const hint = document.createElement("span");
-      hint.className = "pill muted";
-      hint.textContent = rec.expanded ? "Hide" : "Open";
-      right.appendChild(hint);
-
-      summary.appendChild(left);
-      summary.appendChild(right);
-
-      function toggle(){
-        rec.expanded = !rec.expanded;
-        render();
+    lines.forEach(l => {
+      if (l.type === "item"){
+        total++;
+        const v = (rec.checklist && rec.checklist[l.id]) ? rec.checklist[l.id] : null;
+        if (v && v.complete) done++;
+      }else if (l.type === "handoff"){
+        total++;
+        if (l.signed) done++;
       }
-      summary.addEventListener("click", toggle);
-      summary.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" ") toggle(); });
-
-      wrap.appendChild(summary);
-
-      if (rec.expanded){
-        const body = document.createElement("div");
-        body.className = "record-body";
-
-        const rowActions = document.createElement("div");
-        rowActions.className = "row-actions";
-
-        const leftA = document.createElement("div");
-        leftA.style.display = "flex";
-        leftA.style.gap = "10px";
-        leftA.style.flexWrap = "wrap";
-        leftA.style.alignItems = "center";
-
-        const rightA = document.createElement("div");
-        rightA.style.display = "flex";
-        rightA.style.gap = "10px";
-        rightA.style.flexWrap = "wrap";
-        rightA.style.alignItems = "center";
-
-        const btnAddLine = document.createElement("button");
-        btnAddLine.className = "btn secondary";
-        btnAddLine.type = "button";
-        btnAddLine.textContent = "Add Custom Line";
-        btnAddLine.disabled = !foremanPlus || locked;
-        btnAddLine.addEventListener("click", ()=>{
-          const id = "custom_" + uuid();
-          rec.customLines.push({ id, text: "(custom item)" });
-          rec.checklist[id] = { date:"", initials:"", notes:"", complete:false };
-          setStatus("Not saved");
-          render();
-        });
-
-        const btnRemove = document.createElement("button");
-        btnRemove.className = "btn danger";
-        btnRemove.type = "button";
-        btnRemove.textContent = "Remove Sheet";
-        btnRemove.disabled = !foremanPlus;
-        btnRemove.addEventListener("click", ()=>{
-          if (!confirm("Remove this sheet?")) return;
-          state.records = state.records.filter(r => r.id !== rec.id);
-          setStatus("Not saved");
-          render();
-        });
-
-        leftA.appendChild(btnAddLine);
-        rightA.appendChild(btnRemove);
-
-        rowActions.appendChild(leftA);
-        rowActions.appendChild(rightA);
-        body.appendChild(rowActions);
-
-        const g = document.createElement("div");
-        g.className = "grid-2";
-
-        g.appendChild(makeSheetField("Equipment Name", makeTextInput(rec, "equipmentName", "e.g., LV Transformer 001", locked)));
-        g.appendChild(makeSheetField("Equip ID", makeTextInput(rec, "equipId", "Equip ID", locked)));
-        g.appendChild(makeSheetField("Date Int.", makeTextInput(rec, "dateInt", "MM/DD/YYYY", locked)));
-        g.appendChild(makeSheetField("Notes", makeTextInput(rec, "notes", "Notes", locked)));
-
-        body.appendChild(g);
-
-        const tableWrap = document.createElement("div");
-        tableWrap.className = "table-wrap";
-
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        thead.innerHTML = `
-          <tr>
-            <th style="width:44%;">Item</th>
-            <th style="width:16%;">Date</th>
-            <th style="width:12%;">Initials</th>
-            <th style="width:22%;">Notes</th>
-            <th style="width:6%;">Done</th>
-          </tr>
-        `;
-        table.appendChild(thead);
-
-        const tbody = document.createElement("tbody");
-
-        TEMPLATE.forEach(t => {
-          if (t.type === "section"){
-            const tr = document.createElement("tr");
-            tr.className = "section-row";
-            const td = document.createElement("td");
-            td.colSpan = 5;
-            td.textContent = t.text;
-            tr.appendChild(td);
-            tbody.appendChild(tr);
-            return;
-          }
-          if (t.type === "item"){
-            tbody.appendChild(renderChecklistRow(rec, t.id, t.text, locked, foremanPlus, false));
-          }
-        });
-
-        if (rec.customLines.length){
-          const tr = document.createElement("tr");
-          tr.className = "section-row";
-          const td = document.createElement("td");
-          td.colSpan = 5;
-          td.textContent = "Custom Lines";
-          tr.appendChild(td);
-          tbody.appendChild(tr);
-
-          rec.customLines.forEach(cl => {
-            tbody.appendChild(renderChecklistRow(rec, cl.id, cl.text, locked, foremanPlus, true));
-          });
-        }
-
-        table.appendChild(tbody);
-        tableWrap.appendChild(table);
-        body.appendChild(tableWrap);
-
-        const signWrap = document.createElement("div");
-        signWrap.style.marginTop = "12px";
-        signWrap.style.display = "grid";
-        signWrap.style.gridTemplateColumns = "1fr 1fr 1fr";
-        signWrap.style.gap = "10px";
-
-        signWrap.appendChild(makeSheetField("Construction Foreman Name", makeTextInput(rec.signoff, "constructionForeman", "Name", locked)));
-        signWrap.appendChild(makeSheetField("QCX Foreman Name", makeTextInput(rec.signoff, "qcxForeman", "Name", locked)));
-        signWrap.appendChild(makeSheetField("Date", makeTextInput(rec.signoff, "date", "MM/DD/YYYY", locked)));
-
-        body.appendChild(signWrap);
-
-        const signActions = document.createElement("div");
-        signActions.className = "row-actions";
-
-        const leftS = document.createElement("div");
-        leftS.style.display = "flex";
-        leftS.style.gap = "10px";
-        leftS.style.flexWrap = "wrap";
-        leftS.style.alignItems = "center";
-
-        const rightS = document.createElement("div");
-        rightS.style.display = "flex";
-        rightS.style.gap = "10px";
-        rightS.style.flexWrap = "wrap";
-        rightS.style.alignItems = "center";
-
-        const btnSign = document.createElement("button");
-        btnSign.className = "btn";
-        btnSign.type = "button";
-        btnSign.textContent = rec.signedOff ? "Signed" : "Sign Off";
-        btnSign.disabled = !foremanPlus || rec.signedOff;
-        btnSign.addEventListener("click", ()=>{
-          if (!foremanPlus) return;
-          const s = rec.signoff;
-          if (!(s.constructionForeman && s.qcxForeman && s.date)){
-            alert("Fill Construction Foreman, QCX Foreman, and Date before sign-off.");
-            return;
-          }
-          rec.signedOff = true;
-          rec.signedOffAt = new Date().toISOString();
-          rec.signedOffByRole = role;
-          rec.emailPayload = buildEmailPayload({eq: state.eq, record: rec, meta: state.meta});
-          setStatus("Not saved");
-          render();
-        });
-
-        const btnUnlock = document.createElement("button");
-        btnUnlock.className = "btn secondary";
-        btnUnlock.type = "button";
-        btnUnlock.textContent = "Admin Unlock";
-        btnUnlock.disabled = role !== "admin" || !rec.signedOff;
-        btnUnlock.addEventListener("click", ()=>{
-          rec.signedOff = false;
-          rec.signedOffAt = null;
-          rec.signedOffByRole = null;
-          rec.emailPayload = null;
-          setStatus("Not saved");
-          render();
-        });
-
-        leftS.appendChild(btnSign);
-        leftS.appendChild(btnUnlock);
-
-        if (rec.signedOff){
-          const p = document.createElement("div");
-          p.className = "hint";
-          p.textContent = `Email payload generated (stored only): subject “${(rec.emailPayload && rec.emailPayload.subject) ? rec.emailPayload.subject : ""}”`;
-          rightS.appendChild(p);
-        }
-
-        signActions.appendChild(leftS);
-        signActions.appendChild(rightS);
-        body.appendChild(signActions);
-
-        if (locked){
-          const ln = document.createElement("div");
-          ln.className = "lock-note";
-          ln.textContent = "This sheet is signed off and locked. Only admin can edit.";
-          body.appendChild(ln);
-        }
-
-        wrap.appendChild(body);
-      }
-
-      recordsEl.appendChild(wrap);
     });
 
-    if (!state.records.length){
-      const empty = document.createElement("div");
-      empty.className = "hint";
-      empty.textContent = "No sheets yet. Foreman+ can add a sheet.";
-      recordsEl.appendChild(empty);
-    }
+    if (!total) return 0;
+    return Math.round((done / total) * 100);
   }
 
   function makeSheetField(labelText, controlEl){
@@ -930,26 +751,527 @@
     return i;
   }
 
-  function renderChecklistRow(rec, itemId, text, locked, foremanPlus, isCustom){
-    const v = rec.checklist[itemId] || { date:"", initials:"", notes:"", complete:false };
-    rec.checklist[itemId] = v;
+  function render(){
+    const role = getRole();
+    syncRoleUI(role);
+
+    // banner equipment pill (if nexus-core doesn't do it yet)
+    try{
+      const pillEq = document.querySelector("[data-nx-eq]");
+      if (pillEq) pillEq.textContent = eq || "(none)";
+    }catch(e){}
+
+    const foremanPlus = roleAtLeast(role, "foreman");
+    btnAddRecord.disabled = !foremanPlus;
+
+    recordsEl.innerHTML = "";
+
+    state.records.forEach((rec, idx) => {
+      const progress = computeProgress(rec);
+      const locked = rec.signedOff && role !== "admin";
+
+      const wrap = document.createElement("div");
+      wrap.className = "record";
+
+      // Header (always visible, no show/hide)
+      const header = document.createElement("div");
+      header.className = "record-header";
+
+      const headerTop = document.createElement("div");
+      headerTop.className = "record-header-top";
+
+      const left = document.createElement("div");
+      left.className = "record-header-left";
+
+      const title = document.createElement("span");
+      title.className = "pill";
+      title.textContent = rec.equipmentName || `Sheet ${idx+1}`;
+      left.appendChild(title);
+
+      const progPill = document.createElement("span");
+      progPill.className = "pill muted";
+      progPill.textContent = `Progress ${progress}%`;
+      left.appendChild(progPill);
+
+      const sign = document.createElement("span");
+      sign.className = rec.signedOff ? "pill ok" : "pill bad";
+      sign.textContent = rec.signedOff ? "Signed Off" : "Not Signed";
+      left.appendChild(sign);
+
+      const right = document.createElement("div");
+      right.className = "progress-wrap";
+
+      const ptxt = document.createElement("div");
+      ptxt.className = "progress-text";
+      ptxt.textContent = `${progress}%`;
+      right.appendChild(ptxt);
+
+      const pbar = document.createElement("div");
+      pbar.className = "progress-bar";
+
+      const fill = document.createElement("div");
+      fill.className = "progress-fill";
+      fill.style.width = `${progress}%`;
+      fill.style.background = progressColor(progress);
+      pbar.appendChild(fill);
+      right.appendChild(pbar);
+
+      headerTop.appendChild(left);
+      headerTop.appendChild(right);
+      header.appendChild(headerTop);
+      wrap.appendChild(header);
+
+      // Body (always rendered)
+      const body = document.createElement("div");
+      body.className = "record-body";
+
+      const rowActions = document.createElement("div");
+      rowActions.className = "row-actions";
+
+      const leftA = document.createElement("div");
+      leftA.style.display = "flex";
+      leftA.style.gap = "10px";
+      leftA.style.flexWrap = "wrap";
+      leftA.style.alignItems = "center";
+
+      const rightA = document.createElement("div");
+      rightA.style.display = "flex";
+      rightA.style.gap = "10px";
+      rightA.style.flexWrap = "wrap";
+      rightA.style.alignItems = "center";
+
+      const btnRemove = document.createElement("button");
+      btnRemove.className = "btn danger";
+      btnRemove.type = "button";
+      btnRemove.textContent = "Remove Sheet";
+      btnRemove.disabled = !foremanPlus;
+      btnRemove.addEventListener("click", ()=>{
+        if (!confirm("Remove this sheet?")) return;
+        state.records = state.records.filter(r => r.id !== rec.id);
+        setStatus("Not saved");
+        render();
+      });
+
+      rightA.appendChild(btnRemove);
+      rowActions.appendChild(leftA);
+      rowActions.appendChild(rightA);
+      body.appendChild(rowActions);
+
+      // Sheet meta fields
+      const g = document.createElement("div");
+      g.className = "grid-2";
+
+      g.appendChild(makeSheetField("Equipment Name", makeTextInput(rec, "equipmentName", "e.g., LV Transformer 001", locked)));
+      g.appendChild(makeSheetField("Equip ID", makeTextInput(rec, "equipId", "Equip ID", locked)));
+      g.appendChild(makeSheetField("Date Int.", makeTextInput(rec, "dateInt", "MM/DD/YYYY", locked)));
+      g.appendChild(makeSheetField("Notes", makeTextInput(rec, "notes", "Notes", locked)));
+
+      body.appendChild(g);
+
+      // Insert panel (foreman+ only)
+      const insertPanel = document.createElement("div");
+      insertPanel.className = "insert-panel";
+
+      const insertTitle = document.createElement("div");
+      insertTitle.className = "hint";
+      insertTitle.textContent = "Insert line into the checklist (Foreman+).";
+      insertPanel.appendChild(insertTitle);
+
+      const ig = document.createElement("div");
+      ig.className = "insert-grid";
+
+      // Type
+      const typeBox = makeSheetField("Type", (function(){
+        const s = document.createElement("select");
+        s.disabled = !foremanPlus || locked;
+        s.innerHTML = `
+          <option value="item">Item</option>
+          <option value="section">Section Header</option>
+          <option value="handoff">Handoff</option>
+        `;
+        return s;
+      })());
+      ig.appendChild(typeBox);
+
+      // Insert-after selector
+      const afterBox = makeSheetField("Insert After (required)", (function(){
+        const s = document.createElement("select");
+        s.disabled = !foremanPlus || locked;
+        const opts = [];
+        opts.push(`<option value="">Select…</option>`);
+        (rec.lines || []).forEach((l, i) => {
+          const label = l.type === "section"
+            ? `— ${l.text}`
+            : (l.type === "handoff"
+              ? `Handoff: ${(l.label || l.text || "").trim() || "(handoff)"}`
+              : l.text);
+          const clean = (label || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+          opts.push(`<option value="${l.id}">${i+1}. ${clean}</option>`);
+        });
+        s.innerHTML = opts.join("");
+        return s;
+      })());
+      ig.appendChild(afterBox);
+
+      // Text/Direction/Insert (dynamic area)
+      const third = document.createElement("div");
+      third.className = "sheet-field";
+
+      const k = document.createElement("div");
+      k.className = "k";
+      k.textContent = "Details";
+      third.appendChild(k);
+
+      const typeSel = typeBox.querySelector("select");
+      const afterSel = afterBox.querySelector("select");
+
+      const details = document.createElement("div");
+      details.className = "stack-2";
+      third.appendChild(details);
+
+      const textInput = document.createElement("input");
+      textInput.type = "text";
+      textInput.className = "cell-input";
+      textInput.placeholder = "Custom text (required for Item/Section)";
+      textInput.disabled = !foremanPlus || locked;
+
+      const dirSelect = document.createElement("select");
+      dirSelect.disabled = !foremanPlus || locked;
+      dirSelect.innerHTML = `
+        <option value="">Handoff Direction (required)</option>
+        <option value="c_to_qcx">Construction → QCx</option>
+        <option value="qcx_to_c">QCx → Construction</option>
+      `;
+
+      const insertBtn = document.createElement("button");
+      insertBtn.type = "button";
+      insertBtn.className = "mini-btn";
+      insertBtn.textContent = "Insert";
+      insertBtn.disabled = true;
+
+      function refreshDetails(){
+        details.innerHTML = "";
+
+        const t = typeSel.value;
+        if (t === "handoff"){
+          // optional label, direction required
+          const label = document.createElement("input");
+          label.type = "text";
+          label.className = "cell-input";
+          label.placeholder = "Optional label (e.g., Handoff after torque)";
+          label.disabled = !foremanPlus || locked;
+
+          details.appendChild(label);
+          details.appendChild(dirSelect);
+          details.appendChild(insertBtn);
+
+          // tie label input to textInput variable (reuse)
+          textInput.value = "";
+          textInput._handoffLabelEl = label;
+        } else {
+          // required custom text
+          details.appendChild(textInput);
+          details.appendChild(insertBtn);
+        }
+
+        wireEnable();
+      }
+
+      function wireEnable(){
+        const t = typeSel.value;
+        const afterOk = !!(afterSel && afterSel.value);
+        let ok = false;
+
+        if (!foremanPlus || locked){
+          ok = false;
+        } else if (!afterOk){
+          ok = false;
+        } else if (t === "handoff"){
+          ok = !!dirSelect.value;
+        } else {
+          ok = !!(textInput.value || "").trim();
+        }
+
+        insertBtn.disabled = !ok;
+      }
+
+      typeSel.addEventListener("change", ()=>{
+        refreshDetails();
+        setStatus("Not saved");
+      });
+      afterSel.addEventListener("change", wireEnable);
+      textInput.addEventListener("input", wireEnable);
+      dirSelect.addEventListener("change", wireEnable);
+
+      insertBtn.addEventListener("click", ()=>{
+        const role = getRole();
+        const foremanPlusNow = roleAtLeast(role, "foreman");
+        if (!foremanPlusNow || locked) return;
+
+        const afterId = afterSel.value;
+        if (!afterId) return;
+
+        const t = typeSel.value;
+
+        const lines = rec.lines || [];
+        const idxAfter = lines.findIndex(x => x.id === afterId);
+        const insertAt = (idxAfter >= 0) ? idxAfter + 1 : lines.length;
+
+        if (t === "section"){
+          const txt = (textInput.value || "").trim();
+          if (!txt) return;
+          const nl = { type:"section", id:"sec_" + uuid(), text: txt, isCustom:true };
+          lines.splice(insertAt, 0, nl);
+        } else if (t === "item"){
+          const txt = (textInput.value || "").trim();
+          if (!txt) return;
+          const id = "custom_" + uuid();
+          const nl = { type:"item", id, text: txt, isCustom:true };
+          lines.splice(insertAt, 0, nl);
+          rec.checklist[id] = { date:"", initials:"", notes:"", complete:false };
+        } else if (t === "handoff"){
+          const dir = dirSelect.value;
+          if (!dir) return;
+          const labelEl = textInput._handoffLabelEl;
+          const label = labelEl ? (labelEl.value || "").trim() : "";
+          const id = "handoff_" + uuid();
+          const nl = {
+            type:"handoff",
+            id,
+            isCustom:true,
+            label,
+            direction: dir,
+            date:"",
+            fromName:"",
+            toName:"",
+            notes:"",
+            signed:false,
+            signedAt:null
+          };
+          lines.splice(insertAt, 0, nl);
+        }
+
+        rec.lines = lines;
+
+        // Clear only what matters; keep insert location selected
+        if (t === "handoff"){
+          const labelEl = textInput._handoffLabelEl;
+          if (labelEl) labelEl.value = "";
+          dirSelect.value = "";
+        } else {
+          textInput.value = "";
+        }
+
+        setStatus("Not saved");
+        render();
+      });
+
+      refreshDetails();
+      ig.appendChild(third);
+
+      insertPanel.appendChild(ig);
+      body.appendChild(insertPanel);
+
+      // Checklist table
+      const tableWrap = document.createElement("div");
+      tableWrap.className = "table-wrap";
+
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      thead.innerHTML = `
+        <tr>
+          <th style="width:44%;">Item</th>
+          <th style="width:16%;">Date</th>
+          <th style="width:12%;">Initials / From</th>
+          <th style="width:22%;">Notes / To</th>
+          <th style="width:6%;">Done</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+
+      (rec.lines || []).forEach(line => {
+        if (line.type === "section"){
+          const tr = document.createElement("tr");
+          tr.className = "section-row";
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.textContent = line.text;
+          tr.appendChild(td);
+
+          // Delete custom sections (foreman+ only)
+          if (line.isCustom){
+            td.style.display = "flex";
+            td.style.alignItems = "center";
+            td.style.justifyContent = "space-between";
+            td.style.gap = "10px";
+
+            const tspan = document.createElement("span");
+            tspan.textContent = line.text;
+            td.textContent = "";
+            td.appendChild(tspan);
+
+            const canDel = foremanPlus && !locked;
+            const delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.className = "btn danger";
+            delBtn.style.padding = "8px 10px";
+            delBtn.style.fontSize = "12px";
+            delBtn.textContent = "Delete Row";
+            delBtn.disabled = !canDel;
+            delBtn.addEventListener("click", ()=>{
+              if (!confirm("Delete this section row?")) return;
+              rec.lines = (rec.lines || []).filter(x => x.id !== line.id);
+              setStatus("Not saved");
+              render();
+            });
+            td.appendChild(delBtn);
+          }
+
+          tbody.appendChild(tr);
+          return;
+        }
+
+        if (line.type === "item"){
+          tbody.appendChild(renderItemRow(rec, line, locked, foremanPlus));
+          return;
+        }
+
+        if (line.type === "handoff"){
+          tbody.appendChild(renderHandoffRow(rec, line, locked, foremanPlus));
+          return;
+        }
+      });
+
+      table.appendChild(tbody);
+      tableWrap.appendChild(table);
+      body.appendChild(tableWrap);
+
+      // Sign-off area (final)
+      const signWrap = document.createElement("div");
+      signWrap.style.marginTop = "12px";
+      signWrap.style.display = "grid";
+      signWrap.style.gridTemplateColumns = "1fr 1fr 1fr";
+      signWrap.style.gap = "10px";
+
+      signWrap.appendChild(makeSheetField("Construction Foreman Name", makeTextInput(rec.signoff, "constructionForeman", "Name", locked)));
+      signWrap.appendChild(makeSheetField("QCX Foreman Name", makeTextInput(rec.signoff, "qcxForeman", "Name", locked)));
+      signWrap.appendChild(makeSheetField("Date", makeTextInput(rec.signoff, "date", "MM/DD/YYYY", locked)));
+
+      body.appendChild(signWrap);
+
+      const signActions = document.createElement("div");
+      signActions.className = "row-actions";
+
+      const leftS = document.createElement("div");
+      leftS.style.display = "flex";
+      leftS.style.gap = "10px";
+      leftS.style.flexWrap = "wrap";
+      leftS.style.alignItems = "center";
+
+      const rightS = document.createElement("div");
+      rightS.style.display = "flex";
+      rightS.style.gap = "10px";
+      rightS.style.flexWrap = "wrap";
+      rightS.style.alignItems = "center";
+
+      const btnSign = document.createElement("button");
+      btnSign.className = "btn";
+      btnSign.type = "button";
+      btnSign.textContent = rec.signedOff ? "Signed" : "Sign Off";
+      btnSign.disabled = !foremanPlus || rec.signedOff;
+      btnSign.addEventListener("click", ()=>{
+        if (!foremanPlus) return;
+
+        const s = rec.signoff;
+        if (!(s.constructionForeman && s.qcxForeman && s.date)){
+          alert("Fill Construction Foreman, QCX Foreman, and Date before sign-off.");
+          return;
+        }
+
+        // Require ALL handoffs present to be signed
+        const handoffs = (rec.lines || []).filter(l => l.type === "handoff");
+        const unsigned = handoffs.filter(h => !h.signed);
+        if (unsigned.length){
+          alert(`Cannot sign off: ${unsigned.length} handoff row(s) are not signed yet.`);
+          return;
+        }
+
+        rec.signedOff = true;
+        rec.signedOffAt = new Date().toISOString();
+        rec.signedOffByRole = role;
+        rec.emailPayload = buildEmailPayload({eq: state.eq, record: rec, meta: state.meta});
+        setStatus("Not saved");
+        render();
+      });
+
+      const btnUnlock = document.createElement("button");
+      btnUnlock.className = "btn secondary";
+      btnUnlock.type = "button";
+      btnUnlock.textContent = "Admin Unlock";
+      btnUnlock.disabled = role !== "admin" || !rec.signedOff;
+      btnUnlock.addEventListener("click", ()=>{
+        rec.signedOff = false;
+        rec.signedOffAt = null;
+        rec.signedOffByRole = null;
+        rec.emailPayload = null;
+        setStatus("Not saved");
+        render();
+      });
+
+      leftS.appendChild(btnSign);
+      leftS.appendChild(btnUnlock);
+
+      if (rec.signedOff){
+        const p = document.createElement("div");
+        p.className = "hint";
+        p.textContent = `Email payload generated (stored only): subject “${(rec.emailPayload && rec.emailPayload.subject) ? rec.emailPayload.subject : ""}”`;
+        rightS.appendChild(p);
+      }
+
+      signActions.appendChild(leftS);
+      signActions.appendChild(rightS);
+      body.appendChild(signActions);
+
+      if (locked){
+        const ln = document.createElement("div");
+        ln.className = "lock-note";
+        ln.textContent = "This sheet is signed off and locked. Only admin can edit.";
+        body.appendChild(ln);
+      }
+
+      wrap.appendChild(body);
+      recordsEl.appendChild(wrap);
+    });
+
+    if (!state.records.length){
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "No sheets yet. Foreman+ can add a sheet.";
+      recordsEl.appendChild(empty);
+    }
+  }
+
+  function renderItemRow(rec, line, locked, foremanPlus){
+    const v = rec.checklist[line.id] || { date:"", initials:"", notes:"", complete:false };
+    rec.checklist[line.id] = v;
 
     const tr = document.createElement("tr");
 
     const tdItem = document.createElement("td");
-    if (isCustom){
+    if (line.isCustom){
       const edit = document.createElement("input");
       edit.className = "cell-input";
-      edit.value = text;
+      edit.value = line.text || "";
       edit.disabled = locked;
       edit.addEventListener("input", ()=>{
-        const cl = rec.customLines.find(x => x.id === itemId);
-        if (cl) cl.text = edit.value;
+        line.text = edit.value;
         setStatus("Not saved");
       });
       tdItem.appendChild(edit);
     }else{
-      tdItem.textContent = text;
+      tdItem.textContent = line.text;
       tdItem.style.fontWeight = "900";
     }
     tr.appendChild(tdItem);
@@ -994,27 +1316,163 @@
     chk.disabled = locked;
     chk.addEventListener("change", ()=>{ v.complete = chk.checked; setStatus("Not saved"); render(); });
     tdDone.appendChild(chk);
-    tr.appendChild(tdDone);
 
-    if (isCustom){
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "btn danger";
-      btn.style.padding = "8px 10px";
-      btn.style.fontSize = "12px";
-      btn.textContent = "Remove";
-      btn.disabled = !foremanPlus || locked;
-      btn.addEventListener("click", ()=>{
-        if (!confirm("Remove this custom line?")) return;
-        rec.customLines = rec.customLines.filter(x => x.id !== itemId);
-        delete rec.checklist[itemId];
+    // Row delete (Foreman+ only), custom items only, not locked
+    if (line.isCustom){
+      const canDel = foremanPlus && !locked;
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn danger";
+      delBtn.style.padding = "8px 10px";
+      delBtn.style.fontSize = "12px";
+      delBtn.style.marginTop = "8px";
+      delBtn.textContent = "Delete Row";
+      delBtn.disabled = !canDel;
+      delBtn.addEventListener("click", ()=>{
+        if (!confirm("Delete this custom item row?")) return;
+        rec.lines = (rec.lines || []).filter(x => x.id !== line.id);
+        delete rec.checklist[line.id];
         setStatus("Not saved");
         render();
       });
       tdDone.appendChild(document.createElement("div"));
-      tdDone.appendChild(btn);
+      tdDone.appendChild(delBtn);
     }
 
+    tr.appendChild(tdDone);
+    return tr;
+  }
+
+  function renderHandoffRow(rec, line, locked, foremanPlus){
+    const tr = document.createElement("tr");
+
+    const tdItem = document.createElement("td");
+    const labelBox = document.createElement("div");
+    labelBox.className = "stack-2";
+
+    const top = document.createElement("div");
+    top.style.fontWeight = "900";
+    const dirTxt = (line.direction === "qcx_to_c")
+      ? "Handoff: QCx → Construction"
+      : "Handoff: Construction → QCx";
+    top.textContent = dirTxt;
+
+    labelBox.appendChild(top);
+
+    const lbl = document.createElement("input");
+    lbl.type = "text";
+    lbl.className = "cell-input";
+    lbl.placeholder = "Optional label (e.g., Handoff after torque)";
+    lbl.value = line.label || "";
+    lbl.disabled = locked;
+    lbl.addEventListener("input", ()=>{
+      line.label = lbl.value;
+      setStatus("Not saved");
+    });
+    labelBox.appendChild(lbl);
+    tdItem.appendChild(labelBox);
+    tr.appendChild(tdItem);
+
+    const tdDate = document.createElement("td");
+    const date = document.createElement("input");
+    date.type = "text";
+    date.className = "cell-input";
+    date.placeholder = "MM/DD/YYYY";
+    date.value = line.date || "";
+    date.disabled = locked || (!!line.signed && getRole() !== "admin");
+    date.addEventListener("input", ()=>{ line.date = date.value; setStatus("Not saved"); });
+    tdDate.appendChild(date);
+    tr.appendChild(tdDate);
+
+    const tdFrom = document.createElement("td");
+    const from = document.createElement("input");
+    from.type = "text";
+    from.className = "cell-input";
+    from.placeholder = "From Foreman (required)";
+    from.value = line.fromName || "";
+    from.disabled = locked || (!!line.signed && getRole() !== "admin");
+    from.addEventListener("input", ()=>{ line.fromName = from.value; setStatus("Not saved"); });
+    tdFrom.appendChild(from);
+    tr.appendChild(tdFrom);
+
+    const tdTo = document.createElement("td");
+    const stack = document.createElement("div");
+    stack.className = "stack-2";
+
+    const to = document.createElement("input");
+    to.type = "text";
+    to.className = "cell-input";
+    to.placeholder = "To Foreman/Rep (required)";
+    to.value = line.toName || "";
+    to.disabled = locked || (!!line.signed && getRole() !== "admin");
+    to.addEventListener("input", ()=>{ line.toName = to.value; setStatus("Not saved"); });
+    stack.appendChild(to);
+
+    const notes = document.createElement("input");
+    notes.type = "text";
+    notes.className = "cell-input cell-notes";
+    notes.placeholder = "Notes";
+    notes.value = line.notes || "";
+    notes.disabled = locked || (!!line.signed && getRole() !== "admin");
+    notes.addEventListener("input", ()=>{ line.notes = notes.value; setStatus("Not saved"); });
+    stack.appendChild(notes);
+
+    tdTo.appendChild(stack);
+    tr.appendChild(tdTo);
+
+    const tdDone = document.createElement("td");
+    const signed = document.createElement("input");
+    signed.type = "checkbox";
+    signed.checked = !!line.signed;
+    signed.disabled = locked;
+    signed.addEventListener("change", ()=>{
+      if (signed.checked){
+        // Require from/to before signing
+        const missing = [];
+        if (!((line.fromName || "").trim())) missing.push("From Foreman");
+        if (!((line.toName || "").trim())) missing.push("To Foreman/Rep");
+        if (missing.length){
+          signed.checked = false;
+          alert(`Fill required fields before signing: ${missing.join(", ")}`);
+          return;
+        }
+        line.signed = true;
+        line.signedAt = new Date().toISOString();
+      }else{
+        // Allow un-sign only for admin (or if you prefer foreman+; current: admin only)
+        if (getRole() !== "admin"){
+          signed.checked = true;
+          alert("Only admin can un-sign a handoff.");
+          return;
+        }
+        line.signed = false;
+        line.signedAt = null;
+      }
+      setStatus("Not saved");
+      render();
+    });
+    tdDone.appendChild(signed);
+
+    // Delete handoff row (Foreman+ only), not locked
+    const canDel = foremanPlus && !locked;
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "btn danger";
+    delBtn.style.padding = "8px 10px";
+    delBtn.style.fontSize = "12px";
+    delBtn.style.marginTop = "8px";
+    delBtn.textContent = "Delete Row";
+    delBtn.disabled = !canDel;
+    delBtn.addEventListener("click", ()=>{
+      if (!confirm("Delete this handoff row?")) return;
+      rec.lines = (rec.lines || []).filter(x => x.id !== line.id);
+      setStatus("Not saved");
+      render();
+    });
+    tdDone.appendChild(document.createElement("div"));
+    tdDone.appendChild(delBtn);
+
+    tr.appendChild(tdDone);
     return tr;
   }
 
@@ -1033,8 +1491,8 @@
         equipId: r.equipId || "",
         dateInt: r.dateInt || "",
         notes: r.notes || "",
+        lines: r.lines || [],
         checklist: r.checklist || {},
-        customLines: r.customLines || [],
         signoff: r.signoff || { constructionForeman:"", qcxForeman:"", date:"" },
         signedOff: !!r.signedOff,
         signedOffAt: r.signedOffAt || null,
@@ -1042,8 +1500,68 @@
         emailPayload: r.emailPayload || null
       })),
       updatedAt: new Date().toISOString(),
-      version: 2
+      version: 3
     };
+  }
+
+  function normalizeRecord(r){
+    const rec = {
+      id: r.id || uuid(),
+      equipmentName: r.equipmentName || "LV Transformer 001",
+      equipId: r.equipId || "",
+      dateInt: r.dateInt || "",
+      notes: r.notes || "",
+      lines: Array.isArray(r.lines) ? r.lines : null,
+      checklist: r.checklist || {},
+      signoff: r.signoff || { constructionForeman:"", qcxForeman:"", date:"" },
+      signedOff: !!r.signedOff,
+      signedOffAt: r.signedOffAt || null,
+      signedOffByRole: r.signedOffByRole || null,
+      emailPayload: r.emailPayload || null
+    };
+
+    // If missing lines, rebuild from template
+    if (!rec.lines){
+      rec.lines = buildTemplateLines();
+
+      // v2 legacy: customLines -> append as custom items under a "Custom Lines" custom section
+      if (Array.isArray(r.customLines) && r.customLines.length){
+        rec.lines.push({ type:"section", id:"sec_" + uuid(), text:"Custom Lines (migrated)", isCustom:true });
+        r.customLines.forEach(cl => {
+          const id = cl.id || ("custom_" + uuid());
+          rec.lines.push({ type:"item", id, text: cl.text || "(custom item)", isCustom:true });
+          if (!rec.checklist[id]) rec.checklist[id] = { date:"", initials:"", notes:"", complete:false };
+        });
+      }
+    }
+
+    // Ensure checklist has keys for any item lines (especially new custom items)
+    (rec.lines || []).forEach(l => {
+      if (l.type === "item"){
+        if (!rec.checklist[l.id]) rec.checklist[l.id] = { date:"", initials:"", notes:"", complete:false };
+      }
+      if (l.type === "handoff"){
+        // ensure required shape
+        l.label = l.label || "";
+        l.direction = l.direction || "c_to_qcx";
+        l.date = l.date || "";
+        l.fromName = l.fromName || "";
+        l.toName = l.toName || "";
+        l.notes = l.notes || "";
+        l.signed = !!l.signed;
+        l.signedAt = l.signedAt || null;
+        l.isCustom = (l.isCustom !== false); // handoffs are always custom
+      }
+      if (l.type === "section"){
+        l.id = l.id || ("sec_" + uuid());
+        if (typeof l.isCustom !== "boolean") l.isCustom = false;
+      }
+      if (l.type === "item"){
+        if (typeof l.isCustom !== "boolean") l.isCustom = false;
+      }
+    });
+
+    return rec;
   }
 
   function applyPayload(data){
@@ -1063,21 +1581,7 @@
     };
 
     const recs = Array.isArray(data.records) ? data.records : [];
-    state.records = recs.map(r => ({
-      id: r.id || uuid(),
-      expanded: false,
-      equipmentName: r.equipmentName || "LV Transformer 001",
-      equipId: r.equipId || "",
-      dateInt: r.dateInt || "",
-      notes: r.notes || "",
-      checklist: r.checklist || freshChecklist(),
-      customLines: Array.isArray(r.customLines) ? r.customLines : [],
-      signoff: r.signoff || { constructionForeman:"", qcxForeman:"", date:"" },
-      signedOff: !!r.signedOff,
-      signedOffAt: r.signedOffAt || null,
-      signedOffByRole: r.signedOffByRole || null,
-      emailPayload: r.emailPayload || null
-    }));
+    state.records = recs.map(normalizeRecord);
   }
 
   function tryMigrateV1(){
@@ -1092,21 +1596,8 @@
         foreman: v1.foreman || ""
       };
 
-      const rec = {
-        id: uuid(),
-        expanded: true,
-        equipmentName: "LV Transformer 001",
-        equipId: "",
-        dateInt: "",
-        notes: "",
-        checklist: freshChecklist(),
-        customLines: [],
-        signoff: { constructionForeman:"", qcxForeman:"", date:"" },
-        signedOff: false,
-        signedOffAt: null,
-        signedOffByRole: null,
-        emailPayload: null
-      };
+      const lines = buildTemplateLines();
+      const checklist = freshChecklistFromLines(lines);
 
       const orderedIds = TEMPLATE.filter(t=>t.type==="item").map(t=>t.id);
       const fields = v1.fields || {};
@@ -1115,15 +1606,27 @@
         const date = fields[`r${i+1}_date`] || "";
         const init = fields[`r${i+1}_init`] || "";
         const notes = fields[`r${i+1}_notes`] || "";
-        if (rec.checklist[id]){
-          rec.checklist[id].date = date;
-          rec.checklist[id].initials = init;
-          rec.checklist[id].notes = notes;
-          rec.checklist[id].complete = false;
+        if (checklist[id]){
+          checklist[id].date = date;
+          checklist[id].initials = init;
+          checklist[id].notes = notes;
+          checklist[id].complete = false;
         }
       }
 
-      applyPayload({ meta, records:[rec], updatedAt: new Date().toISOString(), version:2 });
+      const rec = normalizeRecord({
+        id: uuid(),
+        equipmentName: "LV Transformer 001",
+        equipId: "",
+        dateInt: "",
+        notes: "",
+        lines,
+        checklist,
+        signoff: { constructionForeman:"", qcxForeman:"", date:"" },
+        signedOff: false
+      });
+
+      applyPayload({ meta, records:[rec], updatedAt: new Date().toISOString(), version:3 });
       localStorage.setItem(KEY_V2, JSON.stringify(collectPayload()));
       setStatus("Migrated from v1 (local)");
       return true;
@@ -1165,21 +1668,19 @@
       return;
     }
 
-    state.records = [{
+    // New record
+    const lines = buildTemplateLines();
+    state.records = [ normalizeRecord({
       id: uuid(),
-      expanded: true,
       equipmentName: "LV Transformer 001",
       equipId: "",
       dateInt: "",
       notes: "",
-      checklist: freshChecklist(),
-      customLines: [],
+      lines,
+      checklist: freshChecklistFromLines(lines),
       signoff: { constructionForeman:"", qcxForeman:"", date:"" },
-      signedOff: false,
-      signedOffAt: null,
-      signedOffByRole: null,
-      emailPayload: null
-    }];
+      signedOff: false
+    }) ];
     setStatus("New");
   }
 
@@ -1195,21 +1696,20 @@
   btnAddRecord.addEventListener("click", ()=>{
     const role = getRole();
     if (!roleAtLeast(role, "foreman")) return;
-    state.records.unshift({
+
+    const lines = buildTemplateLines();
+    state.records.unshift(normalizeRecord({
       id: uuid(),
-      expanded: true,
       equipmentName: "LV Transformer 001",
       equipId: "",
       dateInt: "",
       notes: "",
-      checklist: freshChecklist(),
-      customLines: [],
+      lines,
+      checklist: freshChecklistFromLines(lines),
       signoff: { constructionForeman:"", qcxForeman:"", date:"" },
-      signedOff: false,
-      signedOffAt: null,
-      signedOffByRole: null,
-      emailPayload: null
-    });
+      signedOff: false
+    }));
+
     setStatus("Not saved");
     render();
   });
